@@ -128,11 +128,10 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// API جلب المستخدمين
+// API جلب المستخدمين (يعرض جميع البيانات بما فيها كلمات المرور)
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
-    const safeUsers = users.map(u => ({ name: u.name, email: u.email, role: u.role }));
-    res.json(safeUsers);
+    res.json(users);
 });
 
 app.listen(PORT, () => {
