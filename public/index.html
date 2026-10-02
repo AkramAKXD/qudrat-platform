@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة قدرات الاحترافية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1, h2 { color: var(--primary); text-align: center; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 14px; }
+        
+        /* تنسيق حقل كلمة المرور مع زر الإظهار والإخفاء */
+        .password-container { position: relative; width: 100%; }
+        .password-container input { width: 100%; padding: 10px 40px 10px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
+        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; width: auto; margin: 0; padding: 0; }
+
+        input, select, textarea { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        button:hover { background: var(--primary-dark); }
+        .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
+        .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
+        .hidden { display: none !important; }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 700; display: none; font-size: 14px; }
+        .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        
+        /* واجهة البداية */
+        .hero-section { text-align: center; }
+        .hero-logo { font-size: 65px; margin-bottom: 10px; }
+        .hero-title { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
+        .hero-subtitle { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; text-align: right; }
+        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; }
+        .feature-box h4 { color: var(--primary); font-size: 14px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+        .feature-box p { color: #64748b; font-size: 12px; }
+        .hero-buttons { display: flex; gap: 10px; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: #e0e7ff; color: var(--primary-dark); }
+
+        /* قسم الفيديو والتحفيز المضاف حديثاً لواجهة الطالب */
+        .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .student-video-card video { width: 100%; max-height: 320px; border-radius: 12px; background: #000; outline: none; margin-bottom: 12px; }
+        .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; margin-top: 10px; }
+        .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 5px; }
+        .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 600; }
+
+        /* الأقسام الرئيسية للطالب */
+        .sections-stack { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 22px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .section-big-card:hover { border-color: var(--primary); background: #e0e7ff; transform: translateY(-2px); }
+        .section-big-card h3 { color: var(--primary); font-size: 20px; margin-bottom: 8px; }
+        .section-big-card p { color: #64748b; font-size: 14px; }
+
+        /* صفحة تفاصيل القسم */
+        .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: right; }
+        .section-detail-box h3 { color: var(--primary); margin-bottom: 10px; font-size: 18px; }
+        .section-detail-box p { color: #475569; font-size: 14px; line-height: 1.7; margin-bottom: 10px; }
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+
+        .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 20px; border-radius: 12px; margin-top: 20px; }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; text-align: right; }
+
+        @media (max-width: 600px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .hero-buttons, .action-buttons-grid { flex-direction: card; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 1. واجهة البداية (Landing Page) -->
+        <div id="landing-section" class="hero-section">
+            <div class="hero-logo">🚀</div>
+            <div class="hero-title">منصة قدرات الاحترافية</div>
+            <p class="hero-subtitle">طريقك الأضمن نحو القمة والدرجات العالية. تتدرب بذكاء، تقيس مستواك، وتصنع مستقبلك بثقة!</p>
+            
+            <div class="features-grid">
+                <div class="feature-box">
+                    <h4>🎯 تدريب ذكي</h4>
+                    <p>أقسام كمية ولفظية مصممة خصيصاً لتطوير مهاراتك.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>🔥 تحفيز مستمر</h4>
+                    <p>بيئة تفاعلية تدفعك لتحطيم أرقامك القياسية.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>⚡ سهولة وسرعة</h4>
+                    <p>واجهة سلسة وسريعة متوافقة مع كافة الأجهزة.</p>
+                </div>
+            </div>
+
+            <div class="hero-buttons">
+                <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
+                <button class="btn-outline" onclick="switchView('register')">إنشاء حساب جديد ✨</button>
+            </div>
+        </div>
+
+        <!-- 2. شاشة تسجيل الدخول -->
+        <div id="login-section" class="hidden">
+            <h1>🎯 تسجيل الدخول لمنصة قدرات</h1>
+            <div id="login-alert" class="alert"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني:</label>
+                    <input type="email" id="loginEmail" required placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور (من 6 إلى 18 حرفاً):</label>
+                    <div class="password-container">
+                        <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="أدخل كلمة المرور">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️</button>
+                    </div>
+                </div>
+                <button type="submit">دخول للمنصة 🚀</button>
+            </form>
+            <div class="switch-link" style="margin-top: 12px;">
+                <span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span>
+            </div>
+            <div class="switch-link">
+                ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً كطالب</span>
+            </div>
+            <div class="switch-link" style="margin-top: 10px;">
+                <span onclick="switchView('landing')" style="color: #64748b;">⬅ العودة للرئيسية</span>
+            </div>
+        </div>
+
+        <!-- 3. شاشة نسيت كلمة المرور -->
+        <div id="forgot-section" class="hidden">
+            <h1>🔑 استعادة كلمة المرور</h1>
+            <div id="forgot-alert" class="alert"></div>
+            <div id="forgot-step-1">
+                <div class="form-group">
+                    <label>أدخل بريدك الإلكتروني المسجل:</label>
+                    <input type="email" id="forgotEmail" placeholder="student@gmail.com">
+                </div>
+                <button type="button" onclick="verifyForgotEmail()">تحقق من البريد 🔍</button>
+            </div>
+            <div id="forgot-step-2" class="hidden" style="margin-top: 15px;">
+                <div class="form-group">
+                    <label>كلمة المرور الجديدة (من 6 إلى 18 حرفاً أو رقماً):</label>
+                    <div class="password-container">
+                        <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="أدخل كلمة المرور الجديدة">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️</button>
+                    </div>
+                </div>
+                <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
+            </div>
+            <div class="switch-link">
+                تذكرت كلمة المرور؟ <span onclick="switchView('login')">تسجيل الدخول</span>
+            </div>
+        </div>
+
+        <!-- 4. شاشة تسجيل حساب جديد -->
+        <div id="register-section" class="hidden">
+            <h1>✨ انضم إلى نخبة المتدربين</h1>
+            <div id="reg-alert" class="alert"></div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>الاسم الكامل (3 أحرف على الأقل):</label>
+                    <input type="text" id="regName" required placeholder="اسمك الكريم">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني:</label>
+                    <input type="email" id="regEmail" required placeholder="student@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور (من 6 إلى 18 حرفاً أو رقماً):</label>
+                    <div class="password-container">
+                        <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور القوية">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
+                    </div>
+                </div>
+                <button type="submit">إنشاء حساب وابدأ التحدي 🔥</button>
+            </form>
+            <div class="switch-link">
+                لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span>
+            </div>
+            <div class="switch-link" style="margin-top: 10px;">
+                <span onclick="switchView('landing')" style="color: #64748b;">⬅ العودة للرئيسية</span>
+            </div>
+        </div>
+
+        <!-- 5. لوحة تحكم الطالب (الأقسام الرئيسية + الفيديو والعبارات التحفيزية المضافة) -->
+        <div id="student-dashboard" class="hidden">
+            <h1 id="student-welcome">أهلاً بك يا بطل!</h1>
+            <p style="text-align:center; color:#64748b; margin-bottom:15px;">اختر أحد الأقسام أدناه لتبدأ رحلة التدريب نحو القمة:</p>
+            
+            <!-- قسم الفيديو التعليمي والتحفيزي -->
+            <div class="student-video-card">
+                <video controls autoplay >
+                    <source src="intro-qudrat.mp4" type="video/mp4">
+                    متصفحك لا يدعم تشغيل الفيديو.
+                </video>
+                <div class="motivation-box">
+                    <h4>🌟 رسالتك اليوم للتفوق:</h4>
+                    <p>اختبار القدرات العامة ليس مجرد اختبار تقليدي، بل هو بوابتك الذهبية لتطوير مهارات التفكير، حل المشكلات، والوصول إلى مستقبلك الجامعي بثقة تامة! ابدأ بالتدريب تدريجياً، ولا تنسَ أن الاستمرار هو سر النجاح.</p>
+                </div>
+            </div>
+
+            <div class="sections-stack">
+                <div class="section-big-card" onclick="openSectionPage('quant')">
+                    <h3>📐 القسم الكمي</h3>
+                    <p>اختبر قدراتك الرياضية، الجبرية، والمهارات التحليلية</p>
+                </div>
+                <div class="section-big-card" onclick="openSectionPage('verbal')">
+                    <h3>📚 القسم اللفظي</h3>
+                    <p>استكشف مهارات الفهم، التناظر اللفظي، واستيعاب المقروء</p>
+                </div>
+            </div>
+            <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
+        </div>
+
+        <!-- 6. صفحة تفاصيل القسم الكمي -->
+        <div id="quant-page" class="hidden">
+            <h2>📐 القسم الكمي</h2>
+            <div class="section-detail-box">
+                <h3>💡 معلومات وشرح القسم:</h3>
+                <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية، وينقسم إلى أربعة مواضيع رئيسية:</p>
+                <p><b>1. الحساب:</b> ويشمل العمليات الأربع، الكسور، النسب المئوية، التناسب، والمسائل الحياتية والزمنية.<br>
+                <b>2. الهندسة:</b> حساب المساحات، الأحياد، الزوايا، خصائص المثلثات والأشكال الهندسية.<br>
+                <b>3. الجبر:</b> المعادلات، المتجهات، الأسيّات، وحل المسائل الجبرية.<br>
+                <b>4. الإحصاء والتحليل:</b> قراءة الرسوم البيانية، الجداول الإحصائية، وحساب الاحتمالات.</p>
+            </div>
+            <div style="background: #e0e7ff; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
+                <p style="color: var(--primary-dark); font-weight: 700;">🌟 "النجاح يبدأ بخطوة، وكل مسألة تحلها تقربك أكثر من حلمك!"</p>
+            </div>
+            <div class="action-buttons-grid">
+                <button onclick="showInProgress('اختبار محاكي - القسم الكمي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="showInProgress('التدريب - القسم الكمي')">⚡ تدرب على بعض الأسئلة</button>
+            </div>
+            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
+        </div>
+
+        <!-- 7. صفحة تفاصيل القسم اللفظي -->
+        <div id="verbal-page" class="hidden">
+            <h2>📚 القسم اللفظي</h2>
+            <div class="section-detail-box">
+                <h3>💡 معلومات وشرح القسم:</h3>
+                <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ واللغة العربية، ويحتوي على عدة أجزاء رئيسية:</p>
+                <p><b>1. استيعاب المقروء:</b> قراءة نصوص علمية أو أدبية والإجابة عن أسئلة تفصيلية وتحليلية تتعلق بمضمونها.<br>
+                <b>2. التناظر اللفظي:</b> إيجاد العلاقة المماثلة بين زوجين من الكلمات.<br>
+                <b>3. إكمال الجمل:</b> اختيار الكلمات المناسبة لفراغات الجملة لاستقامة المعنى.<br>
+                <b>4. الخطأ السياقي:</b> تحديد الكلمة التي تخالف سياق الجملة وتفسد المعنى المقصود.</p>
+            </div>
+            <div style="background: #e0e7ff; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
+                <p style="color: var(--primary-dark); font-weight: 700;">🌟 "لغتنا هويتك، وبراعتك فيها مفتاحك لعبور أبواب التفوق!"</p>
+            </div>
+            <div class="action-buttons-grid">
+                <button onclick="showInProgress('اختبار محاكي - القسم اللفظي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="showInProgress('التدريب - القسم اللفظي')">⚡ تدرب على بعض الأسئلة</button>
+            </div>
+            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
+        </div>
+
+        <!-- 8. شاشة قيد التنفيذ -->
+        <div id="in-progress-section" class="hidden">
+            <h2 id="progress-title">قسم الاختبار</h2>
+            <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1; margin-top: 20px;">
+                <div style="font-size: 50px; margin-bottom: 15px;">🚧</div>
+                <h3 style="color: var(--primary); margin-bottom: 10px;">القسم قيد التنفيذ والتحديث قريباً!</h3>
+                <p style="color: #64748b; font-size: 15px; line-height: 1.6;">نعمل حالياً على تجهيز الأسئلة والتدريبات الاحترافية خصيصاً لك يا بطل، انتظرنا قريباً!</p>
+            </div>
+            <button id="back-to-sec-btn" onclick="switchView('student')" style="background:#64748b; margin-top:25px;">العودة للأقسام الرئيسية</button>
+        </div>
+
+        <!-- 9. لوحة تحكم المشرف -->
+        <div id="admin-dashboard" class="hidden">
+            <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
+            <div class="admin-panel">
+                <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد لقدرات</button>
+                <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة المضافة</button>
+                <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 استعراض الحسابات المسجلة</button>
+            </div>
+            <div id="add-question-box" class="hidden" style="margin-top: 20px; background: #f1f5f9; padding: 15px; border-radius: 12px;">
+                <h4 style="margin-bottom: 10px; color: var(--primary);">إضافة سؤال جديد لقاعدة البيانات</h4>
+                <div id="q-alert" class="alert"></div>
+                <form id="questionForm">
+                    <div class="form-group">
+                        <label>قسم الاختبار:</label>
+                        <select id="qSection">
+                            <option value="كمي">القسم الكمي</option>
+                            <option value="لفظي">القسم اللفظي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نص السؤال:</label>
+                        <textarea id="qText" rows="3" required placeholder="اكتب نص السؤال هنا..."></textarea>
+                    </div>
+                    <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
+                    <div class="form-group"><label>الخيار ب:</label><input type="text" id="qB" required></div>
+                    <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required></div>
+                    <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required></div>
+                    <div class="form-group">
+                        <label>الإجابة الصحيحة:</label>
+                        <select id="qCorrect">
+                            <option value="a">الخيار أ</option>
+                            <option value="b">الخيار ب</option>
+                            <option value="c">الخيار ج</option>
+                            <option value="d">الخيار د</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="background: var(--accent);">💾 حفظ وإضافة السؤال</button>
+                </form>
+            </div>
+            <div id="data-list-container" class="hidden" style="margin-top: 20px;">
+                <h4 id="list-title" style="margin-bottom: 10px;">البيانات المسجلة:</h4>
+                <div id="data-output"></div>
+            </div>
+            <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUserRole = 'student';
+        let verifiedForgotEmail = '';
+        let lastActiveSection = 'quant';
+
+        // دالة إظهار وإخفاء كلمة المرور
+        function togglePasswordVisibility(fieldId, btnElement) {
+            const passwordInput = document.getElementById(fieldId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                btnElement.innerText = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                btnElement.innerText = '👁️';
+            }
+        }
+
+        function switchView(view) {
+            document.getElementById('landing-section').classList.add('hidden');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('forgot-section').classList.add('hidden');
+            document.getElementById('student-dashboard').classList.add('hidden');
+            document.getElementById('quant-page').classList.add('hidden');
+            document.getElementById('verbal-page').classList.add('hidden');
+            document.getElementById('in-progress-section').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+
+            if(view === 'landing') document.getElementById('landing-section').classList.remove('hidden');
+            if(view === 'login') document.getElementById('login-section').classList.remove('hidden');
+            if(view === 'register') document.getElementById('register-section').classList.remove('hidden');
+            if(view === 'forgot') {
+                document.getElementById('forgot-section').classList.remove('hidden');
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
+                document.getElementById('forgotEmail').value = '';
+                document.getElementById('newPasswordInput').value = '';
+            }
+            if(view === 'student') document.getElementById('student-dashboard').classList.remove('hidden');
+            if(view === 'quant') { lastActiveSection = 'quant'; document.getElementById('quant-page').classList.remove('hidden'); }
+            if(view === 'verbal') { lastActiveSection = 'verbal'; document.getElementById('verbal-page').classList.remove('hidden'); }
+            if(view === 'in-progress') document.getElementById('in-progress-section').classList.remove('hidden');
+            if(view === 'admin') document.getElementById('admin-dashboard').classList.remove('hidden');
+        }
+
+        function openSectionPage(sectionType) {
+            switchView(sectionType);
+        }
+
+        function showInProgress(titleName) {
+            switchView('in-progress');
+            document.getElementById('progress-title').innerText = titleName;
+            document.getElementById('back-to-sec-btn').setAttribute('onclick', `switchView('${lastActiveSection}')`);
+        }
+
+        function logout() {
+            currentUserRole = 'student';
+            document.getElementById('loginForm').reset();
+            switchView('landing');
+        }
+
+        function showAlert(section, text, success) {
+            const el = document.getElementById(section + '-alert');
+            if(!el) return;
+            el.innerText = text;
+            el.className = 'alert ' + (success ? 'alert-success' : 'alert-error');
+            el.style.display = 'block';
+        }
+
+        function toggleBox(boxId) {
+            document.getElementById(boxId).classList.toggle('hidden');
+            document.getElementById('data-list-container').classList.add('hidden');
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, pass }) });
+            const data = await res.json();
+            if(data.success) { 
+                showAlert('reg', data.message, true); 
+                setTimeout(() => switchView('login'), 2000); 
+            } else { 
+                showAlert('reg', data.message, false); 
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, pass }) });
+            const data = await res.json();
+            
+            if(data.success) {
+                currentUserRole = data.role;
+                if(data.role === 'admin') {
+                    document.getElementById('admin-welcome').innerText = 'أهلاً بك، ' + data.name + ' (مشرف النظام 👑)';
+                    switchView('admin');
+                } else {
+                    document.getElementById('student-welcome').innerText = 'أهلاً بك يا بطل، ' + data.name + ' 👋 جاهز للتفوق؟';
+                    switchView('student');
+                }
+            } else { 
+                showAlert('login', data.message, false); 
+            }
+        });
+
+        async function verifyForgotEmail() {
+            const email = document.getElementById('forgotEmail').value;
+            const res = await fetch('/api/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+            const data = await res.json();
+            if(data.success) {
+                verifiedForgotEmail = email;
+                showAlert('forgot', data.message, true);
+                document.getElementById('forgot-step-1').classList.add('hidden');
+                document.getElementById('forgot-step-2').classList.remove('hidden');
+            } else {
+                showAlert('forgot', data.message, false);
+            }
+        }
+
+        async function submitNewPassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            const res = await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
+            const data = await res.json();
+            if(data.success) {
+                showAlert('forgot', data.message, true);
+                setTimeout(() => switchView('login'), 2500);
+            } else {
+                showAlert('forgot', data.message, file => {});
+            }
+        }
+
+        document.getElementById('questionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const section = document.getElementById('qSection').value;
+            const text = document.getElementById('qText').value;
+            const options = { a: document.getElementById('qA').value, b: document.getElementById('qB').value, c: document.getElementById('qC').value, d: document.getElementById('qD').value };
+            const correct = document.getElementById('qCorrect').value;
+            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, text, options, correct }) });
+            const data = await res.json();
+            if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
+            else { showAlert('q', 'حدث خطأ في الحفظ', false); }
+        });
+
+        async function loadQuestionsList() {
+            document.getElementById('add-question-box').classList.add('hidden');
+            document.getElementById('data-list-container').classList.remove('hidden');
+            document.getElementById('list-title').innerText = 'الأسئلة المسجلة في المنصة:';
+            const res = await fetch('/api/questions');
+            const data = await res.json();
+            const output = document.getElementById('data-output');
+            if(data.length === 0) { output.innerHTML = '<p style="color:#64748b; text-align:center;">لا توجد أسئلة مضافة حالياً.</p>'; return; }
+            output.innerHTML = data.map((q, i) => `<div class="question-card"><strong>[${q.section}] س${i+1}:</strong> ${q.text}<br><small style="color:#4f46e5;">أ) ${q.options.a} | ب) ${q.options.b} | ج) ${q.options.c} | د) ${q.options.d}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${q.correct.toUpperCase()}</span></div>`).join('');
+        }
+
+        async function loadUsersList() {
+            document.getElementById('add-question-box').classList.add('hidden');
+            document.getElementById('data-list-container').classList.remove('hidden');
+            document.getElementById('list-title').innerText = '📂 الحسابات المسجلة:';
+            const res = await fetch('/api/users');
+            const data = await res.json();
+            document.getElementById('data-output').innerHTML = data.map((u, i) => `<div class="user-card"><strong>الحساب ${i+1}:</strong> ${u.name} <br><small style="color:#64748b;">البريد: ${u.email} | الدور: <b>${u.role}</b></small></div>`).join('');
+        }
+    </script>
+</body>
+</html>

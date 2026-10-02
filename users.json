@@ -1,0 +1,14 @@
+[
+  {
+    "name": "أكرم عبيد",
+    "email": "bydakrm767@gmail.com",
+    "pass": "Zain@123123",
+    "role": "admin"
+  },
+  {
+    "name": "احمد",
+    "email": "aaa111@gmail.com",
+    "pass": "123456789",
+    "role": "student"
+  }
+]
