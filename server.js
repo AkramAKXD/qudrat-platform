@@ -44,7 +44,7 @@ app.post('/api/register', (req, res) => {
         return res.json({ success: false, message: '⚠ عذراً يا أكرم، اسم المستخدم يجب ألا يقل عن 3 أحرف!' });
     }
     if (!email || !email.includes('@')) {
-        return res.json({ success: false, message: '⚠️ تنبيه: يجب إدخال بريد إلكتروني صحيح وصالح!' });
+        return res.json({ success: false, message: '⚠️️ تنبيه: يجب إدخال بريد إلكتروني صحيح وصالح!' });
     }
     if (!pass || pass.length < 6 || pass.length > 18) {
         return res.json({ success: false, message: '⚠ كلمة المرور يجب أن تكون بين 6 إلى 18 حرفاً أو رقماً!' });
