@@ -115,7 +115,7 @@
                     <label>كلمة المرور (من 6 إلى 18 حرفاً):</label>
                     <div class="password-container">
                         <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="أدخل كلمة المرور">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️</button>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️️</button>
                     </div>
                 </div>
                 <button type="submit">دخول للمنصة 🚀</button>
@@ -375,6 +375,8 @@
 
         function logout() {
             currentUserRole = 'student';
+            // مسح الإيميل من المتصفح عند تسجيل الخروج للأمان
+            localStorage.removeItem('userEmail');
             document.getElementById('loginForm').reset();
             switchView('landing');
         }
@@ -415,6 +417,9 @@
             const data = await res.json();
             
             if(data.success) {
+                // ✅ هنا تم إضافة سطر حفظ الإيميل في المتصفح تلقائياً عند نجاح الدخول
+                localStorage.setItem('userEmail', email);
+
                 currentUserRole = data.role;
                 if(data.role === 'admin') {
                     document.getElementById('admin-welcome').innerText = 'أهلاً بك، ' + data.name + ' (مشرف النظام 👑)';
@@ -450,7 +455,7 @@
                 showAlert('forgot', data.message, true);
                 setTimeout(() => switchView('login'), 2500);
             } else {
-                showAlert('forgot', data.message, file => {});
+                showAlert('forgot', data.message, false);
             }
         }
 
