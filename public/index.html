@@ -15,7 +15,6 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 14px; }
         
-        /* تنسيق حقل كلمة المرور مع زر الإظهار والإخفاء */
         .password-container { position: relative; width: 100%; }
         .password-container input { width: 100%; padding: 10px 40px 10px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
         .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; width: auto; margin: 0; padding: 0; }
@@ -30,7 +29,6 @@
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
         
-        /* واجهة البداية */
         .hero-section { text-align: center; }
         .hero-logo { font-size: 65px; margin-bottom: 10px; }
         .hero-title { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
@@ -43,39 +41,38 @@
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-outline:hover { background: #e0e7ff; color: var(--primary-dark); }
 
-        /* قسم الفيديو والتحفيز المضاف حديثاً لواجهة الطالب */
         .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
         .student-video-card video { width: 100%; max-height: 320px; border-radius: 12px; background: #000; outline: none; margin-bottom: 12px; }
         .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; margin-top: 10px; }
         .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 5px; }
         .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 600; }
 
-        /* الأقسام الرئيسية للطالب */
         .sections-stack { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 22px; border-radius: 16px; text-align: center; cursor: pointer; transition: 0.3s; }
         .section-big-card:hover { border-color: var(--primary); background: #e0e7ff; transform: translateY(-2px); }
         .section-big-card h3 { color: var(--primary); font-size: 20px; margin-bottom: 8px; }
         .section-big-card p { color: #64748b; font-size: 14px; }
 
-        /* صفحة تفاصيل القسم */
         .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: right; }
         .section-detail-box h3 { color: var(--primary); margin-bottom: 10px; font-size: 18px; }
         .section-detail-box p { color: #475569; font-size: 14px; line-height: 1.7; margin-bottom: 10px; }
         .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
 
         .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 20px; border-radius: 12px; margin-top: 20px; }
-        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; transition: 0.2s; }
+        .admin-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        
         .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; text-align: right; }
 
         @media (max-width: 600px) {
             .features-grid { grid-template-columns: 1fr; }
-            .hero-buttons, .action-buttons-grid { flex-direction: card; }
+            .hero-buttons, .action-buttons-grid { flex-direction: column; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 1. واجهة البداية (Landing Page) -->
+        <!-- 1. واجهة البداية -->
         <div id="landing-section" class="hero-section">
             <div class="hero-logo">🚀</div>
             <div class="hero-title">منصة قدرات الاحترافية</div>
@@ -115,7 +112,7 @@
                     <label>كلمة المرور (من 6 إلى 18 حرفاً):</label>
                     <div class="password-container">
                         <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="أدخل كلمة المرور">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️️</button>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁</button>
                     </div>
                 </div>
                 <button type="submit">دخول للمنصة 🚀</button>
@@ -187,14 +184,13 @@
             </div>
         </div>
 
-        <!-- 5. لوحة تحكم الطالب (الأقسام الرئيسية + الفيديو والعبارات التحفيزية المضافة) -->
+        <!-- 5. لوحة تحكم الطالب -->
         <div id="student-dashboard" class="hidden">
             <h1 id="student-welcome">أهلاً بك يا بطل!</h1>
             <p style="text-align:center; color:#64748b; margin-bottom:15px;">اختر أحد الأقسام أدناه لتبدأ رحلة التدريب نحو القمة:</p>
             
-            <!-- قسم الفيديو التعليمي والتحفيزي -->
             <div class="student-video-card">
-                <video controls autoplay >
+                <video controls autoplay>
                     <source src="intro-qudrat.mp4" type="video/mp4">
                     متصفحك لا يدعم تشغيل الفيديو.
                 </video>
@@ -217,19 +213,12 @@
             <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
         </div>
 
-        <!-- 6. صفحة تفاصيل القسم الكمي -->
+        <!-- 6. صفحة القسم الكمي -->
         <div id="quant-page" class="hidden">
             <h2>📐 القسم الكمي</h2>
             <div class="section-detail-box">
                 <h3>💡 معلومات وشرح القسم:</h3>
-                <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية، وينقسم إلى أربعة مواضيع رئيسية:</p>
-                <p><b>1. الحساب:</b> ويشمل العمليات الأربع، الكسور، النسب المئوية، التناسب، والمسائل الحياتية والزمنية.<br>
-                <b>2. الهندسة:</b> حساب المساحات، الأحياد، الزوايا، خصائص المثلثات والأشكال الهندسية.<br>
-                <b>3. الجبر:</b> المعادلات، المتجهات، الأسيّات، وحل المسائل الجبرية.<br>
-                <b>4. الإحصاء والتحليل:</b> قراءة الرسوم البيانية، الجداول الإحصائية، وحساب الاحتمالات.</p>
-            </div>
-            <div style="background: #e0e7ff; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
-                <p style="color: var(--primary-dark); font-weight: 700;">🌟 "النجاح يبدأ بخطوة، وكل مسألة تحلها تقربك أكثر من حلمك!"</p>
+                <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
             </div>
             <div class="action-buttons-grid">
                 <button onclick="showInProgress('اختبار محاكي - القسم الكمي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
@@ -238,19 +227,12 @@
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
 
-        <!-- 7. صفحة تفاصيل القسم اللفظي -->
+        <!-- 7. صفحة القسم اللفظي -->
         <div id="verbal-page" class="hidden">
             <h2>📚 القسم اللفظي</h2>
             <div class="section-detail-box">
                 <h3>💡 معلومات وشرح القسم:</h3>
-                <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ واللغة العربية، ويحتوي على عدة أجزاء رئيسية:</p>
-                <p><b>1. استيعاب المقروء:</b> قراءة نصوص علمية أو أدبية والإجابة عن أسئلة تفصيلية وتحليلية تتعلق بمضمونها.<br>
-                <b>2. التناظر اللفظي:</b> إيجاد العلاقة المماثلة بين زوجين من الكلمات.<br>
-                <b>3. إكمال الجمل:</b> اختيار الكلمات المناسبة لفراغات الجملة لاستقامة المعنى.<br>
-                <b>4. الخطأ السياقي:</b> تحديد الكلمة التي تخالف سياق الجملة وتفسد المعنى المقصود.</p>
-            </div>
-            <div style="background: #e0e7ff; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
-                <p style="color: var(--primary-dark); font-weight: 700;">🌟 "لغتنا هويتك، وبراعتك فيها مفتاحك لعبور أبواب التفوق!"</p>
+                <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
             </div>
             <div class="action-buttons-grid">
                 <button onclick="showInProgress('اختبار محاكي - القسم اللفظي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
@@ -265,19 +247,22 @@
             <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1; margin-top: 20px;">
                 <div style="font-size: 50px; margin-bottom: 15px;">🚧</div>
                 <h3 style="color: var(--primary); margin-bottom: 10px;">القسم قيد التنفيذ والتحديث قريباً!</h3>
-                <p style="color: #64748b; font-size: 15px; line-height: 1.6;">نعمل حالياً على تجهيز الأسئلة والتدريبات الاحترافية خصيصاً لك يا بطل، انتظرنا قريباً!</p>
             </div>
             <button id="back-to-sec-btn" onclick="switchView('student')" style="background:#64748b; margin-top:25px;">العودة للأقسام الرئيسية</button>
         </div>
 
-        <!-- 9. لوحة تحكم المشرف -->
+        <!-- 9. لوحة تحكم المشرف (مع الزر/الأيقونة الجديدة لصفحة الحسابات) -->
         <div id="admin-dashboard" class="hidden">
             <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
             <div class="admin-panel">
                 <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد لقدرات</button>
                 <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة المضافة</button>
                 <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 استعراض الحسابات المسجلة</button>
+                
+                <!-- 🌟 الأيقونة / الزر الجديد للانتقال مباشرة لصفحة الحسابات المنفصلة (admin.html) -->
+                <button class="admin-btn" style="background:#8b5cf6;" onclick="goToAdminAccountsPage()">🔗 📁 فتح صفحة إدارة الحسابات الكاملة (admin.html)</button>
             </div>
+
             <div id="add-question-box" class="hidden" style="margin-top: 20px; background: #f1f5f9; padding: 15px; border-radius: 12px;">
                 <h4 style="margin-bottom: 10px; color: var(--primary);">إضافة سؤال جديد لقاعدة البيانات</h4>
                 <div id="q-alert" class="alert"></div>
@@ -309,10 +294,12 @@
                     <button type="submit" style="background: var(--accent);">💾 حفظ وإضافة السؤال</button>
                 </form>
             </div>
+
             <div id="data-list-container" class="hidden" style="margin-top: 20px;">
                 <h4 id="list-title" style="margin-bottom: 10px;">البيانات المسجلة:</h4>
                 <div id="data-output"></div>
             </div>
+            
             <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
         </div>
     </div>
@@ -322,7 +309,6 @@
         let verifiedForgotEmail = '';
         let lastActiveSection = 'quant';
 
-        // دالة إظهار وإخفاء كلمة المرور
         function togglePasswordVisibility(fieldId, btnElement) {
             const passwordInput = document.getElementById(fieldId);
             if (passwordInput.type === 'password') {
@@ -375,7 +361,6 @@
 
         function logout() {
             currentUserRole = 'student';
-            // مسح الإيميل من المتصفح عند تسجيل الخروج للأمان
             localStorage.removeItem('userEmail');
             document.getElementById('loginForm').reset();
             switchView('landing');
@@ -392,6 +377,11 @@
         function toggleBox(boxId) {
             document.getElementById(boxId).classList.toggle('hidden');
             document.getElementById('data-list-container').classList.add('hidden');
+        }
+
+        // 🚀 الدالة المسؤولة عن الانتقال لصفحة admin.html الخارجية بأمان
+        function goToAdminAccountsPage() {
+            window.location.href = 'admin.html';
         }
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -417,7 +407,7 @@
             const data = await res.json();
             
             if(data.success) {
-                // ✅ هنا تم إضافة سطر حفظ الإيميل في المتصفح تلقائياً عند نجاح الدخول
+                // حفظ الإيميل للتحقق في صفحة admin.html
                 localStorage.setItem('userEmail', email);
 
                 currentUserRole = data.role;
