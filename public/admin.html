@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف - منصة قدرات</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .error { color: red; text-align: center; font-weight: bold; margin-top: 20px; }
+        .btn-back { display: inline-block; margin-bottom: 15px; padding: 8, 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="btn-back">← عودة للموقع</a>
+    <h2>👑 لوحة تحكم المشرف (إدارة المستخدمين)</h2>
+    <div id="content">
+        <p style="text-align: center;">جاري التحقق من الصلاحيات وتحميل البيانات...</p>
+    </div>
+</div>
+
+<script>
+    async function loadAdminData() {
+        // نفترض أن إيميل المشرف مخزن في الـ localStorage عند تسجيل الدخول
+        const userEmail = localStorage.getItem('userEmail') || 'bydakrm767@gmail.com'; // أو يتم جلب الإيميل من جلسة الدخول
+
+        try {
+            const response = await fetch('/api/admin/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail })
+            });
+            const data = await response.json();
+
+            const container = document.getElementById('content');
+            if (data.success) {
+                let html = `<table>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>كلمة المرور</th>
+                        <th>الصلاحية</th>
+                    </tr>`;
+                
+                data.users.forEach(u => {
+                    html += `<tr>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td><code>${u.pass}</code></td>
+                        <td>${u.role}</td>
+                    </tr>`;
+                });
+                html += `</table>`;
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `<div class="error">${data.message}</div>`;
+            }
+        } catch (err) {
+            document.getElementById('content').innerHTML = `<div class="error">حدث خطأ أثناء الاتصال بالخادم.</div>`;
+        }
+    }
+
+    loadAdminData();
+</script>
+
+</body>
+</html>
