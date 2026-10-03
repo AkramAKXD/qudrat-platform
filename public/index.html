@@ -11,7 +11,7 @@
         body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; min-height: 450px; }
         
-        /* أنيماشن أبطأ قليلاً، هادئ وبغاية النعومة والرقة */
+        /* أنيماشن أبطأ وأكثر هدوءاً ونسيابية (0.6 ثانية) */
         .app-section {
             position: absolute;
             top: 35px;
@@ -19,14 +19,14 @@
             left: 35px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(20px) scale(0.97);
-            transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1), 
-                        transform 0.55s cubic-bezier(0.25, 1, 0.5, 1), 
-                        visibility 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateY(20px) scale(0.96);
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                        transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                        visibility 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             pointer-events: none;
         }
 
-        /* القسم النشط والظاهر بانسياق هادئ */
+        /* القسم النشط والظاهر بهدوء تام */
         .app-section.active-view {
             position: relative;
             top: auto;
@@ -53,6 +53,7 @@
         button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s, transform 0.1s; }
         button:hover { background: var(--primary-dark); }
         button:active { transform: scale(0.99); }
+        button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
         
         .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
         .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
@@ -61,6 +62,13 @@
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
         
+        /* شاشة التحميل الواقعية */
+        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 24px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .loading-overlay.active { opacity: 1; visibility: visible; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e0e7ff; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+        .loading-text { color: var(--primary); font-weight: 700; font-size: 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .hero-section { text-align: center; }
         .hero-logo { font-size: 65px; margin-bottom: 10px; }
         .hero-title { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
@@ -105,6 +113,12 @@
 </head>
 <body>
     <div class="container">
+        <!-- طبقة جارِ التحميل العامة -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <div id="loadingText" class="loading-text">جارِ التحميل، يرجى الانتظار...</div>
+        </div>
+
         <!-- 1. واجهة البداية -->
         <div id="landing-section" class="app-section hero-section active-view">
             <div class="hero-logo">🚀</div>
@@ -148,7 +162,7 @@
                         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁</button>
                     </div>
                 </div>
-                <button type="submit">دخول للمنصة 🚀</button>
+                <button type="submit" id="loginSubmitBtn">دخول للمنصة 🚀</button>
             </form>
             <div class="switch-link" style="margin-top: 12px;">
                 <span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span>
@@ -207,7 +221,7 @@
                         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
                     </div>
                 </div>
-                <button type="submit">إنشاء حساب وابدأ التحدي 🔥</button>
+                <button type="submit" id="regSubmitBtn">إنشاء حساب وابدأ التحدي 🔥</button>
             </form>
             <div class="switch-link">
                 لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span>
@@ -358,7 +372,7 @@
             }
         }
 
-        // دالة التنقل مع وقت أبطأ قليلاً وحركة هادئة ومتزنة
+        // دالة التنقل بانسيابية هادئة وأبطأ (تتناسب مع 0.6s في الـ CSS)
         function switchView(view) {
             document.querySelectorAll('.app-section').forEach(el => {
                 el.classList.remove('active-view');
@@ -395,12 +409,23 @@
             if (targetId) {
                 const targetEl = document.getElementById(targetId);
                 if (targetEl) {
-                    // مهلة بسيطة متناسبة مع الأنيماشن الأبطأ لضمان سلاسة التتابع
                     setTimeout(() => {
                         targetEl.classList.add('active-view');
-                    }, 80);
+                    }, 100);
                 }
             }
+        }
+
+        // دالة لإظهار شاشة التحميل الواقعية لمدة ثانيتين
+        function showLoading(text, callback) {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').innerText = text;
+            overlay.classList.add('active');
+            
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                if (callback) callback();
+            }, 2000); // مدة ثانيتان للتحميل
         }
 
         function openSectionPage(sectionType) {
@@ -437,68 +462,80 @@
             window.location.href = 'admin.html';
         }
 
+        // إنشاء حساب مع شاشة التحميل الواقعية لمدة ثانيتان
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const pass = document.getElementById('regPass').value;
-            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, pass }) });
-            const data = await res.json();
-            if(data.success) { 
-                showAlert('reg', data.message, true); 
-                setTimeout(() => switchView('login'), 2000); 
-            } else { 
-                showAlert('reg', data.message, false); 
-            }
+            
+            showLoading('جاري إنشاء الحساب وإعداد سجلك...', async () => {
+                const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, pass }) });
+                const data = await res.json();
+                if(data.success) { 
+                    showAlert('reg', data.message, true); 
+                    setTimeout(() => switchView('login'), 1500); 
+                } else { 
+                    showAlert('reg', data.message, false); 
+                }
+            });
         });
 
+        // تسجيل الدخول مع شاشة التحميل الواقعية لمدة ثانيتان
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
-            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, pass }) });
-            const data = await res.json();
             
-            if(data.success) {
-                localStorage.setItem('userEmail', email);
+            showLoading('جارِ التحقق من بيانات الدخول...', async () => {
+                const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, pass }) });
+                const data = await res.json();
+                
+                if(data.success) {
+                    localStorage.setItem('userEmail', email);
 
-                currentUserRole = data.role;
-                if(data.role === 'admin') {
-                    document.getElementById('admin-welcome').innerText = 'أهلاً بك، ' + data.name + ' (مشرف النظام 👑)';
-                    switchView('admin');
-                } else {
-                    document.getElementById('student-welcome').innerText = 'أهلاً بك يا بطل، ' + data.name + ' 👋 جاهز للتفوق؟';
-                    switchView('student');
+                    currentUserRole = data.role;
+                    if(data.role === 'admin') {
+                        document.getElementById('admin-welcome').innerText = 'أهلاً بك، ' + data.name + ' (مشرف النظام 👑)';
+                        switchView('admin');
+                    } else {
+                        document.getElementById('student-welcome').innerText = 'أهلاً بك يا بطل، ' + data.name + ' 👋 جاهز للتفوق؟';
+                        switchView('student');
+                    }
+                } else { 
+                    showAlert('login', data.message, false); 
                 }
-            } else { 
-                showAlert('login', data.message, false); 
-            }
+            });
         });
 
         async function verifyForgotEmail() {
             const email = document.getElementById('forgotEmail').value;
-            const res = await fetch('/api/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-            const data = await res.json();
-            if(data.success) {
-                verifiedForgotEmail = email;
-                showAlert('forgot', data.message, true);
-                document.getElementById('forgot-step-1').classList.add('hidden');
-                document.getElementById('forgot-step-2').classList.remove('hidden');
-            } else {
-                showAlert('forgot', data.message, false);
-            }
+            showLoading('جارِ البحث عن البريد الإلكتروني...', async () => {
+                const res = await fetch('/api/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+                const data = await res.json();
+                if(data.success) {
+                    verifiedForgotEmail = email;
+                    showAlert('forgot', data.message, true);
+                    document.getElementById('forgot-step-1').classList.add('hidden');
+                    document.getElementById('forgot-step-2').classList.remove('hidden');
+                } else {
+                    showAlert('forgot', data.message, false);
+                }
+            });
         }
 
         async function submitNewPassword() {
             const newPass = document.getElementById('newPasswordInput').value;
-            const res = await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
-            const data = await res.json();
-            if(data.success) {
-                showAlert('forgot', data.message, true);
-                setTimeout(() => switchView('login'), 2500);
-            } else {
-                showAlert('forgot', data.message, false);
-            }
+            showLoading('جارِ تحديث كلمة المرور...', async () => {
+                const res = await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
+                const data = await res.json();
+                if(data.success) {
+                    showAlert('forgot', data.message, true);
+                    setTimeout(() => switchView('login'), 2000);
+                } else {
+                    showAlert('forgot', data.message, false);
+                }
+            });
         }
 
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
@@ -510,7 +547,7 @@
             const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, text, options, correct }) });
             const data = await res.json();
             if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
-            else { showAlert('q', 'حدث خطأ في الحفظ', false); }
+            else { showAlert('q', 'حدث خطأ في الحفظ',false); }
         });
 
         async function loadQuestionsList() {
