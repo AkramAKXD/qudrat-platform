@@ -30,7 +30,7 @@ function writeJsonFile(filePath, data) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// تهيئة الملفات عند التشغيل
+// تهيئة الملفات عند التشغيل (حساب المشرف الأساسي)
 if (!fs.existsSync(USERS_FILE)) writeJsonFile(USERS_FILE, [
     { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
 ]);
@@ -78,7 +78,7 @@ app.post('/api/login', (req, res) => {
         return res.json({ success: false, message: '❌ بيانات الدخول خاطئة! تأكد من البريد وكلمة المرور وحاول مجدداً.' });
     }
     
-    res.json({ success: true, message: '🚀 أهلاً بك مجدداً في قمة النجاح!', name: user.name, role: user.role });
+    res.json({ success: true, message: '🚀 أهلاً بك مجدداً في قمة النجاح!', name: user.name, role: user.role, email: user.email });
 });
 
 // API التحقق من البريد لنسيت كلمة المرور
@@ -128,10 +128,15 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// API جلب المستخدمين (يعرض جميع البيانات بما فيها كلمات المرور)
-app.get('/api/users', (req, res) => {
-    const users = readJsonFile(USERS_FILE);
-    res.json(users);
+// API جلب المستخدمين محمي (للمشرف فقط بناءً على الإيميل أو الصلاحية)
+app.post('/api/admin/users', (req, res) => {
+    const { email } = req.body;
+    // التحقق هل هو إيميل المشرف الأساسي (أكرم)
+    if (email && email.toLowerCase() === 'bydakrm767@gmail.com') {
+        const users = readJsonFile(USERS_FILE);
+        return res.json({ success: true, users: users });
+    }
+    res.json({ success: false, message: '⛔ ليس لديك صلاحية للوصول لهذه البيانات!' });
 });
 
 app.listen(PORT, () => {
