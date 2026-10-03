@@ -131,12 +131,11 @@ app.get('/api/questions', (req, res) => {
 // API جلب المستخدمين المتوافق مع الواجهة (GET)
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
-    // إرسال البيانات بدون كلمات المرور للأمان
     const safeUsers = users.map(u => ({ name: u.name, email: u.email, role: u.role }));
     res.json(safeUsers);
 });
 
-// API جلب المستخدمين القديم (محمي كـ POST للمحافظة على التوافق)
+// API جلب المستخدمين القديم (محمي كـ POST)
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
     if (email && email.toLowerCase() === 'bydakrm767@gmail.com') {
