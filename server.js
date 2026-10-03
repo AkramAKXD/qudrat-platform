@@ -128,10 +128,17 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// API جلب المستخدمين محمي (للمشرف فقط بناءً على الإيميل أو الصلاحية)
+// API جلب المستخدمين المتوافق مع الواجهة (GET)
+app.get('/api/users', (req, res) => {
+    const users = readJsonFile(USERS_FILE);
+    // إرسال البيانات بدون كلمات المرور للأمان
+    const safeUsers = users.map(u => ({ name: u.name, email: u.email, role: u.role }));
+    res.json(safeUsers);
+});
+
+// API جلب المستخدمين القديم (محمي كـ POST للمحافظة على التوافق)
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
-    // التحقق هل هو إيميل المشرف الأساسي (أكرم)
     if (email && email.toLowerCase() === 'bydakrm767@gmail.com') {
         const users = readJsonFile(USERS_FILE);
         return res.json({ success: true, users: users });
