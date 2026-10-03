@@ -13,7 +13,7 @@
         th { background-color: #007bff; color: white; }
         tr:nth-child(even) { background-color: #f9f9f9; }
         .error { color: red; text-align: center; font-weight: bold; margin-top: 20px; }
-        .btn-back { display: inline-block; margin-bottom: 15px; padding: 8, 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .btn-back { display: inline-block; margin-bottom: 15px; padding: 8px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -28,8 +28,13 @@
 
 <script>
     async function loadAdminData() {
-        // نفترض أن إيميل المشرف مخزن في الـ localStorage عند تسجيل الدخول
-        const userEmail = localStorage.getItem('userEmail') || 'bydakrm767@gmail.com'; // أو يتم جلب الإيميل من جلسة الدخول
+        // جلب الإيميل من ذاكرة المتصفح حصراً بدون أي قيم افتراضية للأمان
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (!userEmail) {
+            document.getElementById('content').innerHTML = `<div class="error">⛔ لم تقم بتسجيل الدخول! يرجى تسجيل الدخول بحساب المشرف أولاً.</div>`;
+            return;
+        }
 
         try {
             const response = await fetch('/api/admin/users', {
