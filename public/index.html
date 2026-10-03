@@ -11,18 +11,17 @@
         body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; }
         
-        /* تأثيرات الانتقال السلس بين الشاشات والأقسام */
-        .hero-section, #login-section, #register-section, #forgot-section, 
-        #student-dashboard, #quant-page, #verbal-page, #in-progress-section, #admin-dashboard {
-            opacity: 0;
-            transform: translateY(15px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+        /* إخفاء افتراضي لجميع الأقسام وتأثير الانيميشن السلس */
+        .app-section {
             display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        /* فئة التفعيل لإظهار القسم بسلاسة وانيميشن جميل */
-        .active-view {
-            display: block !important;
+        /* القسم النشط يظهر بوضوح وبانيميشن جميل */
+        .app-section.active-view {
+            display: block;
             opacity: 1;
             transform: translateY(0);
         }
@@ -89,7 +88,7 @@
 <body>
     <div class="container">
         <!-- 1. واجهة البداية -->
-        <div id="landing-section" class="hero-section active-view">
+        <div id="landing-section" class="app-section hero-section active-view">
             <div class="hero-logo">🚀</div>
             <div class="hero-title">منصة قدرات الاحترافية</div>
             <p class="hero-subtitle">طريقك الأضمن نحو القمة والدرجات العالية. تتدرب بذكاء، تقيس مستواك، وتصنع مستقبلك بثقة!</p>
@@ -116,7 +115,7 @@
         </div>
 
         <!-- 2. شاشة تسجيل الدخول -->
-        <div id="login-section">
+        <div id="login-section" class="app-section">
             <h1>🎯 تسجيل الدخول لمنصة قدرات</h1>
             <div id="login-alert" class="alert"></div>
             <form id="loginForm">
@@ -145,7 +144,7 @@
         </div>
 
         <!-- 3. شاشة نسيت كلمة المرور -->
-        <div id="forgot-section">
+        <div id="forgot-section" class="app-section">
             <h1>🔑 استعادة كلمة المرور</h1>
             <div id="forgot-alert" class="alert"></div>
             <div id="forgot-step-1">
@@ -171,7 +170,7 @@
         </div>
 
         <!-- 4. شاشة تسجيل حساب جديد -->
-        <div id="register-section">
+        <div id="register-section" class="app-section">
             <h1>✨ انضم إلى نخبة المتدربين</h1>
             <div id="reg-alert" class="alert"></div>
             <form id="registerForm">
@@ -201,7 +200,7 @@
         </div>
 
         <!-- 5. لوحة تحكم الطالب -->
-        <div id="student-dashboard">
+        <div id="student-dashboard" class="app-section">
             <h1 id="student-welcome">أهلاً بك يا بطل!</h1>
             <p style="text-align:center; color:#64748b; margin-bottom:15px;">اختر أحد الأقسام أدناه لتبدأ رحلة التدريب نحو القمة:</p>
             
@@ -230,7 +229,7 @@
         </div>
 
         <!-- 6. صفحة القسم الكمي -->
-        <div id="quant-page">
+        <div id="quant-page" class="app-section">
             <h2>📐 القسم الكمي</h2>
             <div class="section-detail-box">
                 <h3>💡 معلومات وشرح القسم:</h3>
@@ -244,7 +243,7 @@
         </div>
 
         <!-- 7. صفحة القسم اللفظي -->
-        <div id="verbal-page">
+        <div id="verbal-page" class="app-section">
             <h2>📚 القسم اللفظي</h2>
             <div class="section-detail-box">
                 <h3>💡 معلومات وشرح القسم:</h3>
@@ -258,7 +257,7 @@
         </div>
 
         <!-- 8. شاشة قيد التنفيذ -->
-        <div id="in-progress-section">
+        <div id="in-progress-section" class="app-section">
             <h2 id="progress-title">قسم الاختبار</h2>
             <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1; margin-top: 20px;">
                 <div style="font-size: 50px; margin-bottom: 15px;">🚧</div>
@@ -268,7 +267,7 @@
         </div>
 
         <!-- 9. لوحة تحكم المشرف -->
-        <div id="admin-dashboard">
+        <div id="admin-dashboard" class="app-section">
             <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
             <div class="admin-panel">
                 <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد لقدرات</button>
@@ -323,7 +322,7 @@
         let verifiedForgotEmail = '';
         let lastActiveSection = 'quant';
 
-        // فحص الرابط عند تحميل الصفحة لتحديد إذا تم القدوم من admin.html متجاوزاً الصوت
+        // فحص الرابط عند تحميل الصفحة لتحديد إذا تم القدوم من admin.html لتخطي الصوت
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('skipSound')) {
@@ -342,19 +341,11 @@
             }
         }
 
-        // دالة التنقل المحسنة مع تأثيرات الانتقال السلس (Animations)
+        // دالة التنقل الصحيحة والسلسة
         function switchView(view) {
-            const views = [
-                'landing-section', 'login-section', 'register-section', 'forgot-section',
-                'student-dashboard', 'quant-page', 'verbal-page', 'in-progress-section', 'admin-dashboard'
-            ];
-
-            // إزالة فئة النشاط لجميع الشاشات لتطبيق تأثير الخروج (Fade out)
-            views.forEach(v => {
-                const el = document.getElementById(v);
-                if (el) {
-                    el.classList.remove('active-view');
-                }
+            // إزالة فئة النشاط من جميع الأقسام
+            document.querySelectorAll('.app-section').forEach(el => {
+                el.classList.remove('active-view');
             });
 
             document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
@@ -373,7 +364,6 @@
             if (view === 'student') {
                 targetId = 'student-dashboard';
                 
-                // فحص ما إذا كان يجب تشغيل الصوت/الفيديو أو تخطيه
                 const urlParams = new URLSearchParams(window.location.search);
                 const skipSound = urlParams.get('skipSound');
                 const studentVideo = document.getElementById('studentVideo');
@@ -390,10 +380,9 @@
             if (targetId) {
                 const targetEl = document.getElementById(targetId);
                 if (targetEl) {
-                    // تأخير بسيط جداً لضمان سلاسة ظهور الانيميشن (Fade in & Slide up)
                     setTimeout(() => {
                         targetEl.classList.add('active-view');
-                    }, 50);
+                    }, 20);
                 }
             }
         }
