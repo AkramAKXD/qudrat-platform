@@ -144,7 +144,7 @@
                     <label>كلمة المرور الجديدة (من 6 إلى 18 حرفاً أو رقماً):</label>
                     <div class="password-container">
                         <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="أدخل كلمة المرور الجديدة">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️</button>
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️️</button>
                     </div>
                 </div>
                 <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
@@ -190,7 +190,7 @@
             <p style="text-align:center; color:#64748b; margin-bottom:15px;">اختر أحد الأقسام أدناه لتبدأ رحلة التدريب نحو القمة:</p>
             
             <div class="student-video-card">
-                <video controls autoplay>
+                <video id="studentVideo" controls>
                     <source src="intro-qudrat.mp4" type="video/mp4">
                     متصفحك لا يدعم تشغيل الفيديو.
                 </video>
@@ -340,7 +340,18 @@
                 document.getElementById('forgotEmail').value = '';
                 document.getElementById('newPasswordInput').value = '';
             }
-            if(view === 'student') document.getElementById('student-dashboard').classList.remove('hidden');
+            if(view === 'student') {
+                document.getElementById('student-dashboard').classList.remove('hidden');
+                
+                // فحص ما إذا كان يجب تشغيل الفيديو/الصوت أو تخطيه
+                const urlParams = new URLSearchParams(window.location.search);
+                const skipSound = urlParams.get('skipSound');
+                const studentVideo = document.getElementById('studentVideo');
+                
+                if (!skipSound && studentVideo) {
+                    studentVideo.play().catch(e => console.log("تم حظر التشغيل التلقائي بواسطة المتصفح"));
+                }
+            }
             if(view === 'quant') { lastActiveSection = 'quant'; document.getElementById('quant-page').classList.remove('hidden'); }
             if(view === 'verbal') { lastActiveSection = 'verbal'; document.getElementById('verbal-page').classList.remove('hidden'); }
             if(view === 'in-progress') document.getElementById('in-progress-section').classList.remove('hidden');
