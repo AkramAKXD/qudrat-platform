@@ -9,20 +9,28 @@
         :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; }
+        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; min-height: 450px; }
         
-        /* إخفاء افتراضي لجميع الأقسام وتأثير الانيميشن السلس */
+        /* تعديل أنظمة الأنيماشن لضمان ظهور الانتقال بسلاسة تامة وبدون شاشات بيضاء */
         .app-section {
-            display: none;
+            position: absolute;
+            top: 35px;
+            right: 35px;
+            left: 35px;
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
         }
 
-        /* القسم النشط يظهر بوضوح وبانيميشن جميل */
+        /* القسم النشط والظاهر بوضوح */
         .app-section.active-view {
-            display: block;
+            position: relative;
+            top: auto;
+            right: auto;
+            left: auto;
             opacity: 1;
+            visibility: visible;
             transform: translateY(0);
         }
 
@@ -322,7 +330,6 @@
         let verifiedForgotEmail = '';
         let lastActiveSection = 'quant';
 
-        // فحص الرابط عند تحميل الصفحة لتحديد إذا تم القدوم من admin.html لتخطي الصوت
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('skipSound')) {
@@ -341,9 +348,8 @@
             }
         }
 
-        // دالة التنقل الصحيحة والسلسة
+        // دالة التنقل الفعالة مع تشغيل الأنيماشن بسلاسة
         function switchView(view) {
-            // إزالة فئة النشاط من جميع الأقسام
             document.querySelectorAll('.app-section').forEach(el => {
                 el.classList.remove('active-view');
             });
@@ -382,7 +388,7 @@
                 if (targetEl) {
                     setTimeout(() => {
                         targetEl.classList.add('active-view');
-                    }, 20);
+                    }, 30);
                 }
             }
         }
