@@ -11,7 +11,7 @@
         body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; min-height: 450px; }
         
-        /* أنيماشن نعم، سلس، واحترافي للغاية باستخدام منحنيات الحركة العذبة */
+        /* أنيماشن أبطأ قليلاً، هادئ وبغاية النعومة والرقة */
         .app-section {
             position: absolute;
             top: 35px;
@@ -19,14 +19,14 @@
             left: 35px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(15px) scale(0.98);
-            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-                        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-                        visibility 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(20px) scale(0.97);
+            transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1), 
+                        transform 0.55s cubic-bezier(0.25, 1, 0.5, 1), 
+                        visibility 0.55s cubic-bezier(0.25, 1, 0.5, 1);
             pointer-events: none;
         }
 
-        /* القسم النشط والظاهر بانسياق تام */
+        /* القسم النشط والظاهر بانسياق هادئ */
         .app-section.active-view {
             position: relative;
             top: auto;
@@ -358,9 +358,8 @@
             }
         }
 
-        // دالة التنقل المحسنة بانسيابية تامة
+        // دالة التنقل مع وقت أبطأ قليلاً وحركة هادئة ومتزنة
         function switchView(view) {
-            // إزالة التنشيط عن جميع الأقسام لتتلاشى بنعومة
             document.querySelectorAll('.app-section').forEach(el => {
                 el.classList.remove('active-view');
             });
@@ -396,10 +395,10 @@
             if (targetId) {
                 const targetEl = document.getElementById(targetId);
                 if (targetEl) {
-                    // وقت قصير جداً لضمان تناغم خروج القسم القديم ودخول الجديد بسلاسة مذهلة
+                    // مهلة بسيطة متناسبة مع الأنيماشن الأبطأ لضمان سلاسة التتابع
                     setTimeout(() => {
                         targetEl.classList.add('active-view');
-                    }, 50);
+                    }, 80);
                 }
             }
         }
@@ -507,7 +506,7 @@
             const section = document.getElementById('qSection').value;
             const text = document.getElementById('qText').value;
             const options = { a: document.getElementById('qA').value, b: document.getElementById('qB').value, c: document.getElementById('qC').value, d: document.getElementById('qD').value };
-            const correct = document.ريريت ? document.getElementById('qCorrect').value : document.getElementById('qCorrect').value;
+            const correct = document.getElementById('qCorrect').value;
             const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, text, options, correct }) });
             const data = await res.json();
             if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
