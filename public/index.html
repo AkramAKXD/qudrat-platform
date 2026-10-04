@@ -11,7 +11,6 @@
         body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; min-height: 450px; }
         
-        /* أنيماشن أبطأ بكثير وأكثر هدوءاً ونعومة فائقة (1.5 ثانية) */
         .app-section {
             position: absolute;
             top: 35px;
@@ -26,7 +25,6 @@
             pointer-events: none;
         }
 
-        /* القسم النشط والظاهر ببطء وهدوء شديدين */
         .app-section.active-view {
             position: relative;
             top: auto;
@@ -62,7 +60,6 @@
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
         
-        /* شاشة التحميل الواقعية لمدة ثانيتان */
         .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 24px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { width: 45px; height: 45px; border: 4px solid #e0e7ff; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
@@ -104,6 +101,24 @@
         .admin-btn:hover { opacity: 0.9; transform: translateY(-1px); }
         
         .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; text-align: right; }
+
+        .model-btn {
+            background: #f8fafc;
+            color: #0f172a;
+            border: 2px solid #cbd5e1;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .model-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
 
         @media (max-width: 600px) {
             .features-grid { grid-template-columns: 1fr; }
@@ -268,8 +283,8 @@
                 <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="showInProgress('اختبار محاكي - القسم الكمي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
-                <button onclick="showInProgress('التدريب - القسم الكمي')">⚡ تدرب على بعض الأسئلة</button>
+                <button onclick="openModelsSelection('كمي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('كمي', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
@@ -282,20 +297,44 @@
                 <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="showInProgress('اختبار محاكي - القسم اللفظي')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
-                <button onclick="showInProgress('التدريب - القسم اللفظي')">⚡ تدرب على بعض الأسئلة</button>
+                <button onclick="openModelsSelection('لفظي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('لفظي', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
 
-        <!-- 8. شاشة قيد التنفيذ -->
-        <div id="in-progress-section" class="app-section">
-            <h2 id="progress-title">قسم الاختبار</h2>
-            <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border-radius: 16px; border: 2px dashed #cbd5e1; margin-top: 20px;">
-                <div style="font-size: 50px; margin-bottom: 15px;">🚧</div>
-                <h3 style="color: var(--primary); margin-bottom: 10px;">القسم قيد التنفيذ والتحديث قريباً!</h3>
+        <!-- شاشة اختيار النماذج (1 إلى 10) -->
+        <div id="models-selection-section" class="app-section">
+            <h2 id="models-title" style="color: var(--primary); margin-bottom: 20px; text-align: center;">اختر النموذج</h2>
+            <p style="color: #64748b; margin-bottom: 25px; text-align: center;">اختر أحد النماذج التالية للبدء (من 1 إلى 10):</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; max-width: 600px; margin: 0 auto;">
+                <button onclick="selectModel(1)" class="model-btn">النموذج 1</button>
+                <button onclick="selectModel(2)" class="model-btn">النموذج 2</button>
+                <button onclick="selectModel(3)" class="model-btn">النموذج 3</button>
+                <button onclick="selectModel(4)" class="model-btn">النموذج 4</button>
+                <button onclick="selectModel(5)" class="model-btn">النموذج 5</button>
+                <button onclick="selectModel(6)" class="model-btn">النموذج 6</button>
+                <button onclick="selectModel(7)" class="model-btn">النموذج 7</button>
+                <button onclick="selectModel(8)" class="model-btn">النموذج 8</button>
+                <button onclick="selectModel(9)" class="model-btn">النموذج 9</button>
+                <button onclick="selectModel(10)" class="model-btn">النموذج 10</button>
             </div>
-            <button id="back-to-sec-btn" onclick="switchView('student')" style="background:#64748b; margin-top:25px;">العودة للأقسام الرئيسية</button>
+
+            <div style="text-align: center; margin-top: 35px;">
+                <button onclick="backToSection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للقسم</button>
+            </div>
+        </div>
+
+        <!-- واجهة التدريب / الاختبار التفاعلية للأسئلة -->
+        <div id="training-section" class="app-section">
+            <h2 id="training-main-title" style="color: var(--primary); margin-bottom: 20px; text-align: center;">⚡ التدريب على الأسئلة</h2>
+            <div id="training-container" style="margin-top: 20px; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <!-- سيتم تعبئة الأسئلة برمجياً هنا -->
+            </div>
+            <div style="text-align: center; margin-top: 25px;">
+                <button onclick="backToModelsSelection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة لاختيار النماذج</button>
+            </div>
         </div>
 
         <!-- 9. لوحة تحكم المشرف -->
@@ -317,6 +356,21 @@
                         <select id="qSection">
                             <option value="كمي">القسم الكمي</option>
                             <option value="لفظي">القسم اللفظي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم النموذج (من 1 إلى 10):</label>
+                        <select id="qModel">
+                            <option value="1">النموذج 1</option>
+                            <option value="2">النموذج 2</option>
+                            <option value="3">النموذج 3</option>
+                            <option value="4">النموذج 4</option>
+                            <option value="5">النموذج 5</option>
+                            <option value="6">النموذج 6</option>
+                            <option value="7">النموذج 7</option>
+                            <option value="8">النموذج 8</option>
+                            <option value="9">النموذج 9</option>
+                            <option value="10">النموذج 10</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -353,6 +407,12 @@
         let currentUserRole = 'student';
         let verifiedForgotEmail = '';
         let lastActiveSection = 'quant';
+        
+        let currentSectionType = ''; // 'كمي' أو 'لفظي'
+        let currentActionMode = '';   // 'training' أو 'exam'
+        let selectedModelNum = 1;
+        let currentTrainingQuestions = [];
+        let currentQuestionIndex = 0;
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -372,7 +432,6 @@
             }
         }
 
-        // دالة التنقل بانسيابية هادئة جداً وبطء مقصود (1.5 ثانية)
         function switchView(view) {
             document.querySelectorAll('.app-section').forEach(el => {
                 el.classList.remove('active-view');
@@ -403,7 +462,6 @@
             }
             if (view === 'quant') { lastActiveSection = 'quant'; targetId = 'quant-page'; }
             if (view === 'verbal') { lastActiveSection = 'verbal'; targetId = 'verbal-page'; }
-            if (view === 'in-progress') targetId = 'in-progress-section';
             if (view === 'admin') targetId = 'admin-dashboard';
 
             if (targetId) {
@@ -416,7 +474,122 @@
             }
         }
 
-        // دالة شاشة التحميل الواقعية لمدة ثانيتان
+        function openModelsSelection(sectionType, mode) {
+            currentSectionType = sectionType; // 'كمي' أو 'لفظي'
+            currentActionMode = mode;         // 'training' أو 'exam'
+            
+            let titleText = mode === 'training' ? '⚡ التدريب حسب النماذج' : '🎯 الاختبار المحاكي حسب النماذج';
+            document.getElementById('models-title').innerText = `${titleText} (${sectionType})`;
+            
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('models-selection-section').classList.add('active-view');
+            }, 120);
+        }
+
+        async function selectModel(modelNum) {
+            selectedModelNum = modelNum;
+            
+            try {
+                const res = await fetch('/api/questions');
+                const allQuestions = await res.json();
+                
+                currentTrainingQuestions = allQuestions.filter(q => 
+                    q.section === currentSectionType && Number(q.model) === Number(modelNum)
+                );
+
+                if (currentTrainingQuestions.length === 0) {
+                    alert(`عذراً، لم تتم إضافة أسئلة للنموذج ${modelNum} في قسم (${currentSectionType}) حتى الآن. سنقوم بتعبئتها قريباً!`);
+                    return;
+                }
+
+                currentQuestionIndex = 0;
+                document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+                
+                setTimeout(() => {
+                    document.getElementById('training-section').classList.add('active-view');
+                }, 120);
+                
+                if (currentActionMode === 'training') {
+                    document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType}) - النموذج ${modelNum}`;
+                } else {
+                    document.getElementById('training-main-title').innerText = `اختبر (${currentSectionType}) - النموذج ${modelNum}`;
+                }
+                renderTrainingQuestion();
+
+            } catch (error) {
+                console.error("خطأ في جلب الأسئلة:", error);
+                alert("حدث خطأ أثناء الاتصال بقاعدة البيانات لجلب الأسئلة.");
+            }
+        }
+
+        function renderTrainingQuestion() {
+            const container = document.getElementById('training-container');
+            
+            if (currentQuestionIndex >= currentTrainingQuestions.length) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 16px; color: #065f46;">
+                        <h3 style="margin-bottom: 10px;">🎉 كفو يا بطل! أتممت جميع أسئلة هذا النموذج بنجاح.</h3>
+                        <p>يمكنك العودة لاختيار نموذج آخر أو مراجعة الأقسام.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = currentTrainingQuestions[currentQuestionIndex];
+            container.innerHTML = `
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 16px; text-align: right;">
+                    <span style="color: var(--primary); font-weight: bold;">السؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}</span>
+                    <p style="font-size: 18px; margin: 15px 0; font-weight: 700; color: #0f172a; line-height: 1.6;">${q.text}</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                        <button onclick="checkAnswer('${q.correct}', 'a', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">أ) ${q.options.a}</button>
+                        <button onclick="checkAnswer('${q.correct}', 'b', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ب) ${q.options.b}</button>
+                        <button onclick="checkAnswer('${q.correct}', 'c', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ج) ${q.options.c}</button>
+                        <button onclick="checkAnswer('${q.correct}', 'd', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">د) ${q.options.d}</button>
+                    </div>
+                    <div id="answer-feedback" style="margin-top: 20px; font-weight: bold; text-align: center; font-size: 16px;"></div>
+                </div>
+            `;
+        }
+
+        function checkAnswer(correctOpt, chosenOpt, btnElement) {
+            const feedback = document.getElementById('answer-feedback');
+            const buttons = btnElement.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (chosenOpt === correctOpt) {
+                btnElement.style.background = '#d1fae5';
+                btnElement.style.borderColor = '#10b981';
+                btnElement.style.color = '#065f46';
+                feedback.innerHTML = '<span style="color: #10b981;">إجابة صحيحة، أحسنت! 🌟</span>';
+            } else {
+                btnElement.style.background = '#fee2e2';
+                btnElement.style.borderColor = '#dc2626';
+                btnElement.style.color = '#991b1b';
+                feedback.innerHTML = `<span style="color: #dc2626;">إجابة خاطئة. الإجابة الصحيحة هي الخيار (${correctOpt.toUpperCase()})</span>`;
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                renderTrainingQuestion();
+            }, 1600);
+        }
+
+        function backToModelsSelection() {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('models-selection-section').classList.add('active-view');
+            }, 120);
+        }
+
+        function backToSection() {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            let sectionId = currentSectionType === 'كمي' ? 'quant-page' : 'verbal-page';
+            setTimeout(() => {
+                document.getElementById(sectionId).classList.add('active-view');
+            }, 120);
+        }
+
         function showLoading(text, callback) {
             const overlay = document.getElementById('loadingOverlay');
             document.getElementById('loadingText').innerText = text;
@@ -425,17 +598,11 @@
             setTimeout(() => {
                 overlay.classList.remove('active');
                 if (callback) callback();
-            }, 2000); // مدة ثانيتان
+            }, 2000);
         }
 
         function openSectionPage(sectionType) {
             switchView(sectionType);
-        }
-
-        function showInProgress(titleName) {
-            switchView('in-progress');
-            document.getElementById('progress-title').innerText = titleName;
-            document.getElementById('back-to-sec-btn').setAttribute('onclick', `switchView('${lastActiveSection}')`);
         }
 
         function logout() {
@@ -539,10 +706,12 @@
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const section = document.getElementById('qSection').value;
+            const model = document.getElementById('qModel').value;
             const text = document.getElementById('qText').value;
             const options = { a: document.getElementById('qA').value, b: document.getElementById('qB').value, c: document.getElementById('qC').value, d: document.getElementById('qD').value };
             const correct = document.getElementById('qCorrect').value;
-            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, text, options, correct }) });
+            
+            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, model, text, options, correct }) });
             const data = await res.json();
             if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
             else { showAlert('q', 'حدث خطأ في الحفظ', false); }
@@ -556,7 +725,7 @@
             const data = await res.json();
             const output = document.getElementById('data-output');
             if(data.length === 0) { output.innerHTML = '<p style="color:#64748b; text-align:center;">لا توجد أسئلة مضافة حالياً.</p>'; return; }
-            output.innerHTML = data.map((q, i) => `<div class="question-card"><strong>[${q.section}] س${i+1}:</strong> ${q.text}<br><small style="color:#4f46e5;">أ) ${q.options.a} | ب) ${q.options.b} | ج) ${q.options.c} | د) ${q.options.d}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${q.correct.toUpperCase()}</span></div>`).join('');
+            output.innerHTML = data.map((q, i) => `<div class="question-card"><strong>[${q.section} - نموذج ${q.model || 1}] س${i+1}:</strong> ${q.text}<br><small style="color:#4f46e5;">أ) ${q.options.a} | ب) ${q.options.b} | ج) ${q.options.c} | د) ${q.options.d}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${q.correct.toUpperCase()}</span></div>`).join('');
         }
 
         async function loadUsersList() {
