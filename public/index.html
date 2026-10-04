@@ -94,6 +94,7 @@
         .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: right; }
         .section-detail-box h3 { color: var(--primary); margin-bottom: 10px; font-size: 18px; }
         .section-detail-box p { color: #475569; font-size: 14px; line-height: 1.7; margin-bottom: 10px; }
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
 
         .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 20px; border-radius: 12px; margin-top: 20px; }
         .admin-btn { background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; transition: opacity 0.2s, transform 0.1s; }
@@ -121,7 +122,7 @@
 
         @media (max-width: 600px) {
             .features-grid { grid-template-columns: 1fr; }
-            .hero-buttons { flex-direction: column; }
+            .hero-buttons, .action-buttons-grid { flex-direction: column; }
         }
     </style>
 </head>
@@ -281,22 +282,11 @@
                 <h3>💡 معلومات وشرح القسم:</h3>
                 <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
             </div>
-            
-            <h3 style="color: var(--primary); margin-bottom: 15px; text-align: center;">اختر النموذج (من 1 إلى 10):</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                <button onclick="selectModel('كمي', 1)" class="model-btn">النموذج 1</button>
-                <button onclick="selectModel('كمي', 2)" class="model-btn">النموذج 2</button>
-                <button onclick="selectModel('كمي', 3)" class="model-btn">النموذج 3</button>
-                <button onclick="selectModel('كمي', 4)" class="model-btn">النموذج 4</button>
-                <button onclick="selectModel('كمي', 5)" class="model-btn">النموذج 5</button>
-                <button onclick="selectModel('كمي', 6)" class="model-btn">النموذج 6</button>
-                <button onclick="selectModel('كمي', 7)" class="model-btn">النموذج 7</button>
-                <button onclick="selectModel('كمي', 8)" class="model-btn">النموذج 8</button>
-                <button onclick="selectModel('كمي', 9)" class="model-btn">النموذج 9</button>
-                <button onclick="selectModel('كمي', 10)" class="model-btn">النموذج 10</button>
+            <div class="action-buttons-grid">
+                <button onclick="openModelsSelection('كمي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('كمي', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
-
-            <button onclick="switchView('student')" style="background:#64748b; margin-top:10px;">⬅ العودة للأقسام الرئيسية</button>
+            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
 
         <!-- 7. صفحة القسم اللفظي -->
@@ -306,22 +296,34 @@
                 <h3>💡 معلومات وشرح القسم:</h3>
                 <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
             </div>
+            <div class="action-buttons-grid">
+                <button onclick="openModelsSelection('لفظي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('لفظي', 'training')">⚡ تدرب على بعض الأسئلة</button>
+            </div>
+            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
+        </div>
+
+        <!-- شاشة اختيار النماذج (1 إلى 10) -->
+        <div id="models-selection-section" class="app-section">
+            <h2 id="models-title" style="color: var(--primary); margin-bottom: 20px; text-align: center;">اختر النموذج</h2>
+            <p style="color: #64748b; margin-bottom: 25px; text-align: center;">اختر أحد النماذج التالية للبدء (من 1 إلى 10):</p>
             
-            <h3 style="color: var(--primary); margin-bottom: 15px; text-align: center;">اختر النموذج (من 1 إلى 10):</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                <button onclick="selectModel('لفظي', 1)" class="model-btn">النموذج 1</button>
-                <button onclick="selectModel('لفظي', 2)" class="model-btn">النموذج 2</button>
-                <button onclick="selectModel('لفظي', 3)" class="model-btn">النموذج 3</button>
-                <button onclick="selectModel('لفظي', 4)" class="model-btn">النموذج 4</button>
-                <button onclick="selectModel('لفظي', 5)" class="model-btn">النموذج 5</button>
-                <button onclick="selectModel('لفظي', 6)" class="model-btn">النموذج 6</button>
-                <button onclick="selectModel('لفظي', 7)" class="model-btn">النموذج 7</button>
-                <button onclick="selectModel('لفظي', 8)" class="model-btn">النموذج 8</button>
-                <button onclick="selectModel('لفظي', 9)" class="model-btn">النموذج 9</button>
-                <button onclick="selectModel('لفظي', 10)" class="model-btn">النموذج 10</button>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; max-width: 600px; margin: 0 auto;">
+                <button onclick="selectModel(1)" class="model-btn">النموذج 1</button>
+                <button onclick="selectModel(2)" class="model-btn">النموذج 2</button>
+                <button onclick="selectModel(3)" class="model-btn">النموذج 3</button>
+                <button onclick="selectModel(4)" class="model-btn">النموذج 4</button>
+                <button onclick="selectModel(5)" class="model-btn">النموذج 5</button>
+                <button onclick="selectModel(6)" class="model-btn">النموذج 6</button>
+                <button onclick="selectModel(7)" class="model-btn">النموذج 7</button>
+                <button onclick="selectModel(8)" class="model-btn">النموذج 8</button>
+                <button onclick="selectModel(9)" class="model-btn">النموذج 9</button>
+                <button onclick="selectModel(10)" class="model-btn">النموذج 10</button>
             </div>
 
-            <button onclick="switchView('student')" style="background:#64748b; margin-top:10px;">⬅ العودة للأقسام الرئيسية</button>
+            <div style="text-align: center; margin-top: 35px;">
+                <button onclick="backToSection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للقسم</button>
+            </div>
         </div>
 
         <!-- واجهة "لم تتم إضافة الأسئلة مؤقتاً" -->
@@ -332,7 +334,7 @@
                 <p id="no-q-desc" style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
                     عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. جرب اختيار نموذج آخر!
                 </p>
-                <button onclick="backToSection()" style="background: var(--primary); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة للقسم</button>
+                <button onclick="backToModelsSelection()" style="background: var(--primary); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة لقائمة النماذج</button>
             </div>
         </div>
 
@@ -343,7 +345,7 @@
                 <!-- سيتم تعبئة الأسئلة برمجياً هنا -->
             </div>
             <div style="text-align: center; margin-top: 25px;">
-                <button onclick="backToSection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للقسم</button>
+                <button onclick="backToModelsSelection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة لاختيار النماذج</button>
             </div>
         </div>
 
@@ -419,6 +421,7 @@
         let lastActiveSection = 'quant';
         
         let currentSectionType = ''; // 'كمي' أو 'لفظي'
+        let currentActionMode = '';   // 'training' أو 'exam'
         let selectedModelNum = 1;
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
@@ -483,8 +486,20 @@
             }
         }
 
-        async function selectModel(sectionType, modelNum) {
+        function openModelsSelection(sectionType, mode) {
             currentSectionType = sectionType; // 'كمي' أو 'لفظي'
+            currentActionMode = mode;         // 'training' أو 'exam'
+            
+            let titleText = mode === 'training' ? '⚡ التدريب حسب النماذج' : '🎯 الاختبار المحاكي حسب النماذج';
+            document.getElementById('models-title').innerText = `${titleText} (${sectionType})`;
+            
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('models-selection-section').classList.add('active-view');
+            }, 120);
+        }
+
+        async function selectModel(modelNum) {
             selectedModelNum = modelNum;
             
             try {
@@ -511,7 +526,11 @@
                     document.getElementById('training-section').classList.add('active-view');
                 }, 120);
                 
-                document.getElementById('training-main-title').innerText = `اختبار (${currentSectionType}) - النموذج ${modelNum}`;
+                if (currentActionMode === 'training') {
+                    document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType}) - النموذج ${modelNum}`;
+                } else {
+                    document.getElementById('training-main-title').innerText = `اختبر (${currentSectionType}) - النموذج ${modelNum}`;
+                }
                 renderTrainingQuestion();
 
             } catch (error) {
@@ -570,6 +589,13 @@
                 currentQuestionIndex++;
                 renderTrainingQuestion();
             }, 1600);
+        }
+
+        function backToModelsSelection() {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('models-selection-section').classList.add('active-view');
+            }, 120);
         }
 
         function backToSection() {
