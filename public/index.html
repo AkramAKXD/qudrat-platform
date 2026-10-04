@@ -271,7 +271,6 @@
                     <h3>📚 القسم اللفظي</h3>
                     <p>استكشف مهارات الفهم، التناظر اللفظي، واستيعاب المقروء</p>
                 </div>
-                <!-- الخيار الجديد المطلوب -->
                 <div class="section-big-card" onclick="openQiyasSimulation()" style="border-color: var(--accent); background: #f0fdf4;">
                     <h3 style="color: var(--accent);">⏱️ اختبار محاكي لقياس</h3>
                     <p>اختبار تجريبي شامل يحاكي اختبار القدرات الرسمي (قِياس)</p>
@@ -288,7 +287,7 @@
                 <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('كمي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('كمي', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                 <button onclick="openModelsSelection('كمي', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
@@ -302,7 +301,7 @@
                 <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('لفظي', 'exam')" style="background: var(--accent);">🎯 اختبر (اختبار محاكي)</button>
+                <button onclick="openModelsSelection('لفظي', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                 <button onclick="openModelsSelection('لفظي', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
@@ -521,7 +520,6 @@
             }
         }
 
-        // دالة فتح نماذج اختبار قياس المحاكي (من 1 إلى 5)
         function openQiyasSimulation() {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => {
@@ -564,9 +562,14 @@
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
                 
-                currentTrainingQuestions = allQuestions.filter(q => 
-                    q.section === currentSectionType && Number(q.model) === Number(modelNum)
-                );
+                // التعديل هنا: إذا كان الوضع اختبار محاكي (exam)، لا نعرض أسئلة التدريب بل نجعل القائمة فارغة لإظهار رسالة عدم التوفر
+                if (currentActionMode === 'exam') {
+                    currentTrainingQuestions = [];
+                } else {
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.section === currentSectionType && Number(q.model) === Number(modelNum)
+                    );
+                }
 
                 document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
 
@@ -574,8 +577,14 @@
                     setTimeout(() => {
                         document.getElementById('no-questions-section').classList.add('active-view');
                     }, 120);
-                    document.getElementById('no-q-title').innerText = `النموذج ${modelNum} غير متوفر مؤقتاً`;
-                    document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. جرب اختيار نموذج آخر!`;
+                    
+                    if (currentActionMode === 'exam') {
+                        document.getElementById('no-q-title').innerText = `الاختبار المحاكي للنموذج ${modelNum} غير متوفر مؤقتاً`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج في الاختبار المحاكي مؤقتاً.`;
+                    } else {
+                        document.getElementById('no-q-title').innerText = `النموذج ${modelNum} غير متوفر مؤقتاً للتدريب`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج للتدريب مؤقتاً. جرب اختيار نموذج آخر!`;
+                    }
                     return;
                 }
 
@@ -584,11 +593,7 @@
                     document.getElementById('training-section').classList.add('active-view');
                 }, 120);
                 
-                if (currentActionMode === 'training') {
-                    document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType}) - النموذج ${modelNum}`;
-                } else {
-                    document.getElementById('training-main-title').innerText = `اختبر (${currentSectionType}) - النموذج ${modelNum}`;
-                }
+                document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType}) - النموذج ${modelNum}`;
                 renderTrainingQuestion();
 
             } catch (error) {
