@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة قدرات الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -80,7 +80,7 @@
         .btn-outline:hover { background: #e0e7ff; color: var(--primary-dark); }
 
         .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
-        .student-video-card video { width: 100%; max-height: 320px; border-radius: 12px; background: #000; outline: none; margin-bottom: 12px; }
+        .student-video-card video { width: 100%; max-height: 220px; border-radius: 12px; background: #000; outline: none; margin-bottom: 12px; }
         .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; margin-top: 10px; }
         .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 5px; }
         .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 600; }
@@ -271,6 +271,11 @@
                     <h3>📚 القسم اللفظي</h3>
                     <p>استكشف مهارات الفهم، التناظر اللفظي، واستيعاب المقروء</p>
                 </div>
+                <!-- الخيار الجديد المطلوب -->
+                <div class="section-big-card" onclick="openQiyasSimulation()" style="border-color: var(--accent); background: #f0fdf4;">
+                    <h3 style="color: var(--accent);">⏱️ اختبار محاكي لقياس</h3>
+                    <p>اختبار تجريبي شامل يحاكي اختبار القدرات الرسمي (قِياس)</p>
+                </div>
             </div>
             <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
         </div>
@@ -326,7 +331,37 @@
             </div>
         </div>
 
-        <!-- واجهة "لم تتم إضافة الأسئلة مؤقتاً" -->
+        <!-- واجهة اختيار نماذج اختبار قياس (من 1 إلى 5) -->
+        <div id="qiyas-models-section" class="app-section">
+            <h2 style="color: var(--accent); margin-bottom: 10px; text-align: center;">⏱️ اختبار محاكي لقياس</h2>
+            <p style="color: #64748b; margin-bottom: 25px; text-align: center;">اختر النموذج المطلوب للاختبار (من 1 إلى 5):</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; max-width: 500px; margin: 0 auto;">
+                <button onclick="selectQiyasModel(1)" class="model-btn" style="border-color: var(--accent);">النموذج 1</button>
+                <button onclick="selectQiyasModel(2)" class="model-btn" style="border-color: var(--accent);">النموذج 2</button>
+                <button onclick="selectQiyasModel(3)" class="model-btn" style="border-color: var(--accent);">النموذج 3</button>
+                <button onclick="selectQiyasModel(4)" class="model-btn" style="border-color: var(--accent);">النموذج 4</button>
+                <button onclick="selectQiyasModel(5)" class="model-btn" style="border-color: var(--accent);">النموذج 5</button>
+            </div>
+
+            <div style="text-align: center; margin-top: 35px;">
+                <button onclick="switchView('student')" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للرئيسية</button>
+            </div>
+        </div>
+
+        <!-- واجهة رسالة الاعتذار لاختبار قياس -->
+        <div id="qiyas-no-questions-section" class="app-section">
+            <div style="text-align: center; padding: 30px 10px;">
+                <div style="font-size: 60px; margin-bottom: 15px;">⚠️</div>
+                <h2 id="qiyas-no-q-title" style="color: #d97706; margin-bottom: 15px;">تنبيه مؤقت</h2>
+                <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    عذراً، لم تتم إضافة أسئلة لهذا النموذج في الاختبار المحاكي لقياس مؤقتاً. جرب اختيار نموذج آخر!
+                </p>
+                <button onclick="backToQiyasModels()" style="background: var(--accent); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة لنماذج قياس</button>
+            </div>
+        </div>
+
+        <!-- واجهة "لم تتم إضافة الأسئلة مؤقتاً للأقسام" -->
         <div id="no-questions-section" class="app-section">
             <div style="text-align: center; padding: 30px 10px;">
                 <div style="font-size: 60px; margin-bottom: 15px;">⚠️</div>
@@ -420,8 +455,8 @@
         let verifiedForgotEmail = '';
         let lastActiveSection = 'quant';
         
-        let currentSectionType = ''; // 'كمي' أو 'لفظي'
-        let currentActionMode = '';   // 'training' أو 'exam'
+        let currentSectionType = ''; 
+        let currentActionMode = '';   
         let selectedModelNum = 1;
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
@@ -486,9 +521,32 @@
             }
         }
 
+        // دالة فتح نماذج اختبار قياس المحاكي (من 1 إلى 5)
+        function openQiyasSimulation() {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('qiyas-models-section').classList.add('active-view');
+            }, 120);
+        }
+
+        function selectQiyasModel(modelNum) {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('qiyas-no-questions-section').classList.add('active-view');
+            }, 120);
+            document.getElementById('qiyas-no-q-title').innerText = `النموذج ${modelNum} (اختبار قياس) غير متوفر مؤقتاً`;
+        }
+
+        function backToQiyasModels() {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => {
+                document.getElementById('qiyas-models-section').classList.add('active-view');
+            }, 120);
+        }
+
         function openModelsSelection(sectionType, mode) {
-            currentSectionType = sectionType; // 'كمي' أو 'لفظي'
-            currentActionMode = mode;         // 'training' أو 'exam'
+            currentSectionType = sectionType; 
+            currentActionMode = mode;         
             
             let titleText = mode === 'training' ? '⚡ التدريب حسب النماذج' : '🎯 الاختبار المحاكي حسب النماذج';
             document.getElementById('models-title').innerText = `${titleText} (${sectionType})`;
