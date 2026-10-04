@@ -332,7 +332,7 @@
                 <div style="font-size: 60px; margin-bottom: 15px;">⚠️</div>
                 <h2 id="no-q-title" style="color: #d97706; margin-bottom: 15px;">تنبيه مؤقت</h2>
                 <p id="no-q-desc" style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
-                    عذراً يا أكرم، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. يجدر بك اختيار نموذج آخر أو معاودة المحاولة لاحقاً بعد إضافة الأسئلة من لوحة المشرف!
+                    عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. جرب اختيار نموذج آخر!
                 </p>
                 <button onclick="backToModelsSelection()" style="background: var(--primary); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة لقائمة النماذج</button>
             </div>
@@ -517,7 +517,7 @@
                         document.getElementById('no-questions-section').classList.add('active-view');
                     }, 120);
                     document.getElementById('no-q-title').innerText = `النموذج ${modelNum} غير متوفر مؤقتاً`;
-                    document.getElementById('no-q-desc').innerText = `عذراً يا أكرم، لم تتم إضافة أسئلة للنموذج ${modelNum} في قسم (${currentSectionType}) مؤقتاً. جرب اختيار نموذج آخر أو أضف أسئلة جديدة من لوحة المشرف!`;
+                    document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. جرب اختيار نموذج آخر!`;
                     return;
                 }
 
