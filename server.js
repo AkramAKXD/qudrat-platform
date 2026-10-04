@@ -44,7 +44,7 @@ app.post('/api/register', (req, res) => {
         return res.json({ success: false, message: '⚠ عذراً يا أكرم، اسم المستخدم يجب ألا يقل عن 3 أحرف!' });
     }
     if (!email || !email.includes('@')) {
-        return res.json({ success: false, message: '⚠️️ تنبيه: يجب إدخال بريد إلكتروني صحيح وصالح!' });
+        return res.json({ success: false, message: '⚠ تنبيه: يجب إدخال بريد إلكتروني صحيح وصالح!' });
     }
     if (!pass || pass.length < 6 || pass.length > 18) {
         return res.json({ success: false, message: '⚠ كلمة المرور يجب أن تكون بين 6 إلى 18 حرفاً أو رقماً!' });
@@ -113,11 +113,11 @@ app.post('/api/reset-password', (req, res) => {
     res.json({ success: true, message: '🎉 تم تحديث كلمة المرور بنجاح! يمكنك تسجيل الدخول الآن.' });
 });
 
-// API إضافة الأسئلة
+// API إضافة الأسئلة (مع دعم تحديد رقم النموذج من 1 إلى 10)
 app.post('/api/add-question', (req, res) => {
-    const { section, text, options, correct } = req.body;
+    const { section, model, text, options, correct } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
-    questions.push({ section, text, options, correct });
+    questions.push({ section, model: model || 1, text, options, correct });
     writeJsonFile(QUESTIONS_FILE, questions);
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح في بنك الأسئلة!' });
 });
