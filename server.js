@@ -113,7 +113,7 @@ app.post('/api/reset-password', (req, res) => {
     res.json({ success: true, message: '🎉 تم تحديث كلمة المرور بنجاح! يمكنك تسجيل الدخول الآن.' });
 });
 
-// API إضافة الأسئلة (مع دعم تحديد رقم النموذج من 1 إلى 10)
+// API إضافة الأسئلة
 app.post('/api/add-question', (req, res) => {
     const { section, model, text, options, correct } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
@@ -128,14 +128,14 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// API جلب المستخدمين المتوافق مع الواجهة (GET)
+// API جلب المستخدمين (GET)
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
     const safeUsers = users.map(u => ({ name: u.name, email: u.email, role: u.role }));
     res.json(safeUsers);
 });
 
-// API جلب المستخدمين القديم (محمي كـ POST)
+// API جلب المستخدمين القديم (POST)
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
     if (email && email.toLowerCase() === 'bydakrm767@gmail.com') {
