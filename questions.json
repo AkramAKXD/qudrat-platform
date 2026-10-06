@@ -27,7 +27,7 @@
     "question": "إذا كان قطر الدائرة = 18 سم، احسب مساحة الدائرة؟",
     "options": ["81 ط", "18 ط", "9 ط", "10 ط"],
     "correct_answer": "أ",
-    "image": null
+    "image": "images/q3.png"
   },
   {
     "id": 4,
