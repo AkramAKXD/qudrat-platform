@@ -11,7 +11,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // مسارات ملفات البيانات
 const USERS_FILE = path.join(__dirname, 'users.json');
-const QUESTIONS_FILE = path.join(__dirname, 'public', 'questions.json');
+// مسار ملف الأسئلة في المجلد الرئيسي مباشرة
+const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
 
 function readJsonFile(filePath) {
     try {
@@ -67,7 +68,7 @@ app.post('/api/add-question', (req, res) => {
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.push({ 
         id: questions.length + 1, 
-        section: section || "كمي", 
+        section: section || "quant", 
         type: 'practice', 
         model: Number(model) || 1, 
         question, 
