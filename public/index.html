@@ -287,8 +287,8 @@
                 <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('كمي', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
-                <button onclick="openModelsSelection('كمي', 'training')">⚡ تدرب على بعض الأسئلة</button>
+                <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                <button onclick="openModelsSelection('quant', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
@@ -301,8 +301,8 @@
                 <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
             </div>
             <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('لفظي', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
-                <button onclick="openModelsSelection('لفظي', 'training')">⚡ تدرب على بعض الأسئلة</button>
+                <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                <button onclick="openModelsSelection('verbal', 'training')">⚡ تدرب على بعض الأسئلة</button>
             </div>
             <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
         </div>
@@ -400,8 +400,8 @@
                     <div class="form-group">
                         <label>قسم الاختبار:</label>
                         <select id="qSection">
-                            <option value="كمي">القسم الكمي</option>
-                            <option value="لفظي">القسم اللفظي</option>
+                            <option value="quant">القسم الكمي</option>
+                            <option value="verbal">القسم اللفظي</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -430,10 +430,10 @@
                     <div class="form-group">
                         <label>الإجابة الصحيحة:</label>
                         <select id="qCorrect">
-                            <option value="a">الخيار أ</option>
-                            <option value="b">الخيار ب</option>
-                            <option value="c">الخيار ج</option>
-                            <option value="d">الخيار د</option>
+                            <option value="أ">أ</option>
+                            <option value="ب">ب</option>
+                            <option value="ج">ج</option>
+                            <option value="د">د</option>
                         </select>
                     </div>
                     <button type="submit" style="background: var(--accent);">💾 حفظ وإضافة السؤال</button>
@@ -547,7 +547,7 @@
             currentActionMode = mode;         
             
             let titleText = mode === 'training' ? '⚡ التدريب حسب النماذج' : '🎯 الاختبار المحاكي حسب النماذج';
-            document.getElementById('models-title').innerText = `${titleText} (${sectionType})`;
+            document.getElementById('models-title').innerText = `${titleText} (${sectionType === 'quant' ? 'القسم الكمي' : 'القسم اللفظي'})`;
             
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => {
@@ -562,10 +562,10 @@
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
                 
-                // التعديل هنا: إذا كان الوضع اختبار محاكي (exam)، لا نعرض أسئلة التدريب بل نجعل القائمة فارغة لإظهار رسالة عدم التوفر
                 if (currentActionMode === 'exam') {
                     currentTrainingQuestions = [];
                 } else {
+                    // فلترة دقيقة مطابقة لـ section و model
                     currentTrainingQuestions = allQuestions.filter(q => 
                         q.section === currentSectionType && Number(q.model) === Number(modelNum)
                     );
@@ -593,7 +593,7 @@
                     document.getElementById('training-section').classList.add('active-view');
                 }, 120);
                 
-                document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType}) - النموذج ${modelNum}`;
+                document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType === 'quant' ? 'القسم الكمي' : 'القسم اللفظي'}) - النموذج ${modelNum}`;
                 renderTrainingQuestion();
 
             } catch (error) {
@@ -616,15 +616,28 @@
             }
 
             const q = currentTrainingQuestions[currentQuestionIndex];
+            
+            let imageHtml = '';
+            if (q.image) {
+                imageHtml = `<div style="text-align: center; margin: 15px 0;"><img src="${q.image}" alt="صورة السؤال" style="max-width: 100%; max-height: 250px; border-radius: 10px; border: 1px solid #cbd5e1;"></div>`;
+            }
+
+            let optA = Array.isArray(q.options) ? q.options[0] : (q.options?.a || '');
+            let optB = Array.isArray(q.options) ? q.options[1] : (q.options?.b || '');
+            let optC = Array.isArray(q.options) ? q.options[2] : (q.options?.c || '');
+            let optD = Array.isArray(q.options) ? q.options[3] : (q.options?.d || '');
+            let qText = q.question || q.text;
+
             container.innerHTML = `
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 16px; text-align: right;">
                     <span style="color: var(--primary); font-weight: bold;">السؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}</span>
-                    <p style="font-size: 18px; margin: 15px 0; font-weight: 700; color: #0f172a; line-height: 1.6;">${q.text}</p>
+                    <p style="font-size: 18px; margin: 15px 0; font-weight: 700; color: #0f172a; line-height: 1.6;">${qText}</p>
+                    ${imageHtml}
                     <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-                        <button onclick="checkAnswer('${q.correct}', 'a', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">أ) ${q.options.a}</button>
-                        <button onclick="checkAnswer('${q.correct}', 'b', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ب) ${q.options.b}</button>
-                        <button onclick="checkAnswer('${q.correct}', 'c', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ج) ${q.options.c}</button>
-                        <button onclick="checkAnswer('${q.correct}', 'd', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">د) ${q.options.d}</button>
+                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'أ', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">أ) ${optA}</button>
+                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'ب', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ب) ${optB}</button>
+                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'ج', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ج) ${optC}</button>
+                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'د', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">د) ${optD}</button>
                     </div>
                     <div id="answer-feedback" style="margin-top: 20px; font-weight: bold; text-align: center; font-size: 16px;"></div>
                 </div>
@@ -636,7 +649,9 @@
             const buttons = btnElement.parentElement.querySelectorAll('button');
             buttons.forEach(b => b.disabled = true);
 
-            if (chosenOpt === correctOpt) {
+            let isCorrect = (correctOpt === chosenOpt || correctOpt.trim() === chosenOpt.trim());
+
+            if (isCorrect) {
                 btnElement.style.background = '#d1fae5';
                 btnElement.style.borderColor = '#10b981';
                 btnElement.style.color = '#065f46';
@@ -645,7 +660,7 @@
                 btnElement.style.background = '#fee2e2';
                 btnElement.style.borderColor = '#dc2626';
                 btnElement.style.color = '#991b1b';
-                feedback.innerHTML = `<span style="color: #dc2626;">إجابة خاطئة. الإجابة الصحيحة هي الخيار (${correctOpt.toUpperCase()})</span>`;
+                feedback.innerHTML = `<span style="color: #dc2626;">إجابة خاطئة. الإجابة الصحيحة هي الخيار (${correctOpt})</span>`;
             }
 
             setTimeout(() => {
@@ -663,7 +678,7 @@
 
         function backToSection() {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            let sectionId = currentSectionType === 'كمي' ? 'quant-page' : 'verbal-page';
+            let sectionId = currentSectionType === 'quant' ? 'quant-page' : 'verbal-page';
             setTimeout(() => {
                 document.getElementById(sectionId).classList.add('active-view');
             }, 120);
@@ -786,11 +801,16 @@
             e.preventDefault();
             const section = document.getElementById('qSection').value;
             const model = document.getElementById('qModel').value;
-            const text = document.getElementById('qText').value;
-            const options = { a: document.getElementById('qA').value, b: document.getElementById('qB').value, c: document.getElementById('qC').value, d: document.getElementById('qD').value };
-            const correct = document.getElementById('qCorrect').value;
+            const question = document.getElementById('qText').value;
+            const options = [
+                document.getElementById('qA').value,
+                document.getElementById('qB').value,
+                document.getElementById('qC').value,
+                document.getElementById('qD').value
+            ];
+            const correct_answer = document.getElementById('qCorrect').value;
             
-            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, model, text, options, correct }) });
+            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, model, question, options, correct_answer }) });
             const data = await res.json();
             if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
             else { showAlert('q', 'حدث خطأ في الحفظ', false); }
@@ -804,7 +824,15 @@
             const data = await res.json();
             const output = document.getElementById('data-output');
             if(data.length === 0) { output.innerHTML = '<p style="color:#64748b; text-align:center;">لا توجد أسئلة مضافة حالياً.</p>'; return; }
-            output.innerHTML = data.map((q, i) => `<div class="question-card"><strong>[${q.section} - نموذج ${q.model || 1}] س${i+1}:</strong> ${q.text}<br><small style="color:#4f46e5;">أ) ${q.options.a} | ب) ${q.options.b} | ج) ${q.options.c} | د) ${q.options.d}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${q.correct.toUpperCase()}</span></div>`).join('');
+            output.innerHTML = data.map((q, i) => {
+                let qText = q.question || q.text;
+                let optA = Array.isArray(q.options) ? q.options[0] : (q.options?.a || '');
+                let optB = Array.isArray(q.options) ? q.options[1] : (q.options?.b || '');
+                let optC = Array.isArray(q.options) ? q.options[2] : (q.options?.c || '');
+                let optD = Array.isArray(q.options) ? q.options[3] : (q.options?.d || '');
+                let correctAns = q.correct_answer || q.correct || '';
+                return `<div class="question-card"><strong>[${q.section} - نموذج ${q.model || 1}] س${i+1}:</strong> ${qText}<br><small style="color:#4f46e5;">أ) ${optA} | ب) ${optB} | ج) ${optC} | د) ${optD}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${correctAns}</span></div>`;
+            }).join('');
         }
 
         async function loadUsersList() {
