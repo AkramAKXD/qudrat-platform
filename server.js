@@ -63,13 +63,14 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
+// مسار إضافة سؤال محدث لاستقبال الـ type وتخزينه بشكل صحيح
 app.post('/api/add-question', (req, res) => {
-    const { section, model, question, options, correct_answer, image } = req.body;
+    const { section, type, model, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.push({ 
         id: questions.length + 1, 
         section: section || "quant", 
-        type: 'practice', 
+        type: type || 'practice', 
         model: Number(model) || 1, 
         question, 
         options, 
