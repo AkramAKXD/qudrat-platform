@@ -1,9 +1,9 @@
 [
   {
     "id": 1,
-    "section": "verbal",
-    "type": "practice",
-    "model": 2,
+    "section": "quant",
+    "type": "exam",
+    "model": 5,
     "question": "مزرعة ثلتها عنب ونصفها موز وباقي المزرعة تفاح مساحته 480000 م^2، فما مساحة المزرعة؟",
     "options": ["480000", "4800000", "3600000", "4200"],
     "correct_answer": "ج",
