@@ -158,7 +158,7 @@ app.post('/api/delete-question', (req, res) => {
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
-// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف مع التحقق من الصلاحية
+// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
     const users = readJsonFile(USERS_FILE);
@@ -245,7 +245,7 @@ app.get('/api/admin/models-status', (req, res) => {
     }
 });
 
-// مسار تنشيط أو تعطيل النموذج
+// مسار تنشيط أو تعطيل النموذج (خاص بالمشرف)
 app.post('/api/admin/toggle-model', (req, res) => {
     const { adminEmail, section, modelNumber } = req.body;
     const users = readJsonFile(USERS_FILE);
@@ -262,6 +262,7 @@ app.post('/api/admin/toggle-model', (req, res) => {
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
     const key = `${section}_${modelNumber}`;
     
+    // عكس الحالة الحالية (إذا كان مفعلاً يُعطل، والعكس صحيح)
     const currentActive = modelsStatus[key]?.active ?? true;
     modelsStatus[key] = { active: !currentActive };
     
