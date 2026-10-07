@@ -6,14 +6,14 @@
     <title>منصة قدرات الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; --sidebar-width: 260px; }
+        :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; --sidebar-width: 270px; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: #f4f6f9; color: #0f172a; min-height: 100vh; display: flex; }
+        body { background: #f0f3f8; color: #0f172a; min-height: 100vh; display: flex; }
 
-        /* تصميم القائمة الجانبية */
+        /* القائمة الجانبية بتصميم عصري وأنيق */
         .sidebar {
             width: var(--sidebar-width);
-            background: #ffffff;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
@@ -22,53 +22,57 @@
             bottom: 0;
             right: 0;
             z-index: 100;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.03);
+            box-shadow: -4px 0 15px rgba(0,0,0,0.04);
         }
         .sidebar-header {
-            padding: 25px 20px;
+            padding: 30px 20px;
             text-align: center;
             border-bottom: 1px solid #f1f5f9;
         }
         .sidebar-header h2 {
             color: var(--primary);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
+            letter-spacing: 0.5px;
         }
         .sidebar-menu {
             list-style: none;
             padding: 20px 15px;
             flex-grow: 1;
+            overflow-y: auto;
         }
         .sidebar-menu li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .sidebar-menu a, .sidebar-menu button {
             display: flex;
             align-items: center;
             gap: 12px;
             width: 100%;
-            padding: 12px 15px;
+            padding: 13px 16px;
             background: transparent;
             border: none;
-            border-radius: 10px;
-            color: #475569;
+            border-radius: 12px;
+            color: #64748b;
             font-size: 15px;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             text-align: right;
         }
         .sidebar-menu a:hover, .sidebar-menu button:hover {
-            background: #e0e7ff;
+            background: #eef2ff;
             color: var(--primary);
+            transform: translateX(-3px);
         }
         .sidebar-menu li.active a, .sidebar-menu li.active button {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
-        /* محتوى الصفحة الرئيسي */
+        /* المحتوى الرئيسي */
         .main-content {
             margin-right: var(--sidebar-width);
             flex-grow: 1;
@@ -79,13 +83,13 @@
             min-height: 100vh;
         }
 
-        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 800px; position: relative; min-height: 450px; }
+        .container { background: #fff; padding: 40px; border-radius: 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.06); width: 100%; max-width: 850px; position: relative; min-height: 480px; }
         
         .app-section {
             position: absolute;
-            top: 35px;
-            right: 35px;
-            left: 35px;
+            top: 40px;
+            right: 40px;
+            left: 40px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(15px);
@@ -104,69 +108,75 @@
             pointer-events: auto;
         }
 
-        h1, h2 { color: var(--primary); text-align: center; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 14px; }
+        h1, h2 { color: var(--primary); text-align: center; margin-bottom: 22px; font-weight: 900; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
         
         .password-container { position: relative; width: 100%; }
-        .password-container input { width: 100%; padding: 10px 40px 10px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
-        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; }
+        .password-container input { width: 100%; padding: 12px 45px 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; }
+        .toggle-password { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; }
 
-        input, select, textarea { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafafa; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
         
-        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-        button:hover { background: var(--primary-dark); }
+        button { width: 100%; padding: 13px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        button:hover { background: var(--primary-dark); transform: translateY(-1px); }
         
         .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
         .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
         .hidden { display: none !important; }
-        .alert { padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 700; display: none; font-size: 14px; }
+        .alert { padding: 12px; border-radius: 10px; margin-bottom: 18px; text-align: center; font-weight: 700; display: none; font-size: 14px; }
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
         
-        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 24px; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 28px; opacity: 0; visibility: hidden; transition: 0.3s; }
         .loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { width: 45px; height: 45px; border: 4px solid #e0e7ff; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .hero-section { text-align: center; }
-        .hero-logo { font-size: 65px; margin-bottom: 10px; }
-        .hero-title { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
-        .hero-subtitle { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
-        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; text-align: right; }
-        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; }
-        .feature-box h4 { color: var(--primary); font-size: 14px; margin-bottom: 5px; }
-        .feature-box p { color: #64748b; font-size: 12px; }
-        .hero-buttons { display: flex; gap: 10px; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .hero-logo { font-size: 70px; margin-bottom: 15px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .hero-title { font-size: 30px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
+        .hero-subtitle { color: #64748b; font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; text-align: right; }
+        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 16px; transition: 0.2s; }
+        .feature-box:hover { border-color: var(--primary); background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .feature-box h4 { color: var(--primary); font-size: 15px; margin-bottom: 6px; font-weight: 800; }
+        .feature-box p { color: #64748b; font-size: 13px; }
+        .hero-buttons { display: flex; gap: 12px; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-outline:hover { background: #eef2ff; color: var(--primary); }
 
-        .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
-        .student-video-card video { width: 100%; max-height: 220px; border-radius: 12px; background: #000; margin-bottom: 12px; }
-        .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; text-align: right; }
-        .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 5px; }
-        .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 600; }
+        .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 22px; border-radius: 20px; margin-bottom: 25px; text-align: center; }
+        .student-video-card video { width: 100%; max-height: 220px; border-radius: 14px; background: #000; margin-bottom: 15px; }
+        .motivation-box { background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border: 1px solid #c7d2fe; padding: 18px; border-radius: 14px; text-align: right; }
+        .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 6px; font-weight: 800; }
+        .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 700; }
 
         .sections-stack { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 22px; border-radius: 16px; text-align: center; cursor: pointer; transition: all 0.25s ease; }
-        .section-big-card:hover { border-color: var(--primary); background: #e0e7ff; }
-        .section-big-card h3 { color: var(--primary); font-size: 20px; margin-bottom: 8px; }
+        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 24px; border-radius: 18px; text-align: center; cursor: pointer; transition: all 0.25s ease; }
+        .section-big-card:hover { border-color: var(--primary); background: #eef2ff; transform: translateY(-2px); }
+        .section-big-card h3 { color: var(--primary); font-size: 20px; margin-bottom: 6px; font-weight: 800; }
         .section-big-card p { color: #64748b; font-size: 14px; }
 
-        .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: right; }
-        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 18px; margin-bottom: 22px; text-align: right; }
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 15px; }
 
-        .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 20px; border-radius: 12px; margin-top: 20px; }
-        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 22px; border-radius: 16px; margin-top: 20px; }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 13px; border-radius: 12px; width: 100%; margin-top: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .admin-btn:hover { filter: brightness(0.95); }
         
-        .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; text-align: right; }
-        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 15px 10px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
-        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 14px; margin-top: 15px; text-align: right; }
+        .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; max-width: 600px; margin: 0 auto; }
+        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 16px 10px; border-radius: 14px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.25s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { position: relative; width: 100%; height: auto; border-left: none; border-bottom: 1px solid #e2e8f0; }
             .main-content { margin-right: 0; padding: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -178,12 +188,12 @@
             <h2>🚀 منصة قدرات</h2>
         </div>
         <ul class="sidebar-menu">
-            <li id="menu-landing" class="active"><button onclick="switchView('landing')">🏠 الرئيسية</button></li>
-            <li id="menu-student"><button onclick="switchView('student')">📚 لوحة الطالب والأقسام</button></li>
-            <li id="menu-quant"><button onclick="switchView('quant')">📐 القسم الكمي</button></li>
-            <li id="menu-verbal"><button onclick="switchView('verbal')">📚 القسم اللفظي</button></li>
-            <li id="menu-qiyas"><button onclick="openQiyasSimulation()">⏱️ اختبار قياس</button></li>
-            <li id="menu-admin" class="hidden"><button onclick="switchView('admin')" style="color: var(--admin-color);">👑 لوحة المشرف</button></li>
+            <li id="menu-landing" class="active"><button onclick="navigateTo('landing')">🏠 الرئيسية</button></li>
+            <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
+            <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
+            <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
+            <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
+            <li id="menu-admin" class="hidden"><button onclick="navigateTo('admin')" style="color: var(--admin-color);">👑 لوحة المشرف</button></li>
             <li style="margin-top: auto; padding-top: 20px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
         </ul>
     </nav>
@@ -202,9 +212,9 @@
                 <div class="hero-title">منصة قدرات الاحترافية</div>
                 <p class="hero-subtitle">طريقك الأضمن نحو القمة والدرجات العالية. تتدرب بذكاء، تقيس مستواك، وتصنع مستقبلك بثقة!</p>
                 <div class="features-grid">
-                    <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>أقسام كمية ولفظية.</p></div>
+                    <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>10 نماذج شاملة للأقسام.</p></div>
                     <div class="feature-box"><h4>🔥 تحفيز مستمر</h4><p>بيئة تفاعلية ممتازة.</p></div>
-                    <div class="feature-box"><h4>⚡ سهولة وسرعة</h4><p>واجهة متقدمة.</p></div>
+                    <div class="feature-box"><h4>⚡ سهولة وسرعة</h4><p>واجهة متقدمة وآمنة.</p></div>
                 </div>
                 <div class="hero-buttons">
                     <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
@@ -279,16 +289,16 @@
                     </div>
                 </div>
                 <div class="sections-stack">
-                    <div class="section-big-card" onclick="switchView('quant')"><h3>📐 القسم الكمي</h3><p>اختبر قدراتك الرياضية</p></div>
-                    <div class="section-big-card" onclick="switchView('verbal')"><h3>📚 القسم اللفظي</h3><p>استكشف مهارات الفهم والتناظر</p></div>
-                    <div class="section-big-card" onclick="openQiyasSimulation()" style="border-color: var(--accent); background: #f0fdf4;"><h3 style="color: var(--accent);">⏱️ اختبار قياس</h3><p>اختبار تجريبي شامل</p></div>
+                    <div class="section-big-card" onclick="navigateTo('quant')"><h3>📐 القسم الكمي</h3><p>اختبر قدراتك الرياضية (10 نماذج)</p></div>
+                    <div class="section-big-card" onclick="navigateTo('verbal')"><h3>📚 القسم اللفظي</h3><p>استكشف مهارات الفهم والتناظر (10 نماذج)</p></div>
+                    <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: var(--accent); background: #f0fdf4;"><h3 style="color: var(--accent);">⏱️ اختبار قياس</h3><p>اختبار تجريبي شامل (5 نماذج)</p></div>
                 </div>
             </div>
 
             <!-- 6. صفحة القسم الكمي -->
             <div id="quant-page" class="app-section">
                 <h2>📐 القسم الكمي</h2>
-                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يغطي الجوانب الرياضية والتحليلية...</p></div>
+                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يغطي الجوانب الرياضية والتحليلية مع 10 نماذج تدريبية واختبارات محاكية.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب</button>
@@ -298,40 +308,37 @@
             <!-- 7. صفحة القسم اللفظي -->
             <div id="verbal-page" class="app-section">
                 <h2>📚 القسم اللفظي</h2>
-                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يقيس فهم واستيعاب دلالات الألفاظ...</p></div>
+                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يقيس فهم واستيعاب دلالات الألفاظ مع 10 نماذج تدريبية واختبارات محاكية.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب</button>
                 </div>
             </div>
 
-            <!-- شاشة اختيار النماذج -->
+            <!-- واجهة اختيار النماذج (10 نماذج) -->
             <div id="models-selection-section" class="app-section">
-                <h2 id="models-title">اختر النموذج</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;">
-                    <button onclick="selectModel(1)" class="model-btn">النموذج 1</button>
-                    <button onclick="selectModel(2)" class="model-btn">النموذج 2</button>
-                    <button onclick="selectModel(3)" class="model-btn">النموذج 3</button>
-                    <button onclick="selectModel(4)" class="model-btn">النموذج 4</button>
-                    <button onclick="selectModel(5)" class="model-btn">النموذج 5</button>
-                </div>
+                <h2 id="models-title">اختر النموذج (1 إلى 10)</h2>
+                <div class="model-grid" id="modelsGridContainer"></div>
             </div>
 
-            <!-- واجهة اختبار قياس النماذج -->
+            <!-- واجهة اختبار قياس النماذج (5 نماذج) -->
             <div id="qiyas-models-section" class="app-section">
-                <h2 style="color: var(--accent);">⏱️ اختبار قياس</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 400px; margin: 0 auto;">
+                <h2 style="color: var(--accent);">⏱️ اختبار قياس (5 نماذج محاكية)</h2>
+                <div class="model-grid">
                     <button onclick="selectQiyasModel(1)" class="model-btn" style="border-color: var(--accent);">النموذج 1</button>
                     <button onclick="selectQiyasModel(2)" class="model-btn" style="border-color: var(--accent);">النموذج 2</button>
+                    <button onclick="selectQiyasModel(3)" class="model-btn" style="border-color: var(--accent);">النموذج 3</button>
+                    <button onclick="selectQiyasModel(4)" class="model-btn" style="border-color: var(--accent);">النموذج 4</button>
+                    <button onclick="selectQiyasModel(5)" class="model-btn" style="border-color: var(--accent);">النموذج 5</button>
                 </div>
             </div>
 
             <!-- واجهة الاعتذار عن عدم توفر الأسئلة -->
             <div id="no-questions-section" class="app-section">
-                <div style="text-align: center; padding: 20px;">
+                <div style="text-align: center; padding: 25px;">
                     <h2 id="no-q-title" style="color: #d97706;">تنبيه مؤقت</h2>
                     <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً.</p>
-                    <button onclick="switchView('student')" style="width: auto; padding: 10px 20px;">العودة</button>
+                    <button onclick="navigateTo('student')" style="width: auto; padding: 10px 25px;">العودة</button>
                 </div>
             </div>
 
@@ -349,18 +356,18 @@
                     <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة</button>
                     <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 الحسابات المسجلة</button>
                 </div>
-                <div id="add-question-box" class="hidden" style="margin-top: 15px; background: #f1f5f9; padding: 15px; border-radius: 10px;">
+                <div id="add-question-box" class="hidden" style="margin-top: 15px; background: #f1f5f9; padding: 18px; border-radius: 14px;">
                     <div id="q-alert" class="alert"></div>
                     <form id="questionForm">
                         <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                         <div class="form-group"><label>نوع السؤال (type):</label><select id="qType"><option value="practice">تدريب (practice)</option><option value="simulation">اختبار محاكي (simulation)</option></select></div>
-                        <div class="form-group"><label>النموذج:</label><input type="number" id="qModel" value="1" min="1" max="10"></div>
+                        <div class="form-group"><label>النموذج (1-10):</label><input type="number" id="qModel" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
                         <div class="form-group"><label>أ:</label><input type="text" id="qA" required></div>
                         <div class="form-group"><label>ب:</label><input type="text" id="qB" required></div>
                         <div class="form-group"><label>ج:</label><input type="text" id="qC" required></div>
                         <div class="form-group"><label>د:</label><input type="text" id="qD" required></div>
-                        <div class="form-group"><label>الإجابة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
+                        <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
                         <button type="submit" style="background: var(--accent);">حفظ السؤال 💾</button>
                     </form>
                 </div>
@@ -373,18 +380,28 @@
     </div>
 
     <script>
-        let currentUserRole = 'student';
-        let verifiedForgotEmail = '';
         let currentSectionType = ''; 
         let currentActionMode = '';   
         let selectedModelNum = 1;
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
 
-        function togglePasswordVisibility(fieldId, btnElement) {
-            const passwordInput = document.getElementById(fieldId);
-            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-            btnElement.innerText = passwordInput.type === 'password' ? '👁' : '🙈';
+        // دالة التحقق من تسجيل الدخول ومنع التصفح العشوائي
+        function checkAuth() {
+            const userEmail = localStorage.getItem('userEmail');
+            return !!userEmail;
+        }
+
+        function navigateTo(view) {
+            // الصفحات المتاحة بدون تسجيل دخول هي الرئيسية فقط
+            if (view !== 'landing' && view !== 'login' && view !== 'register' && view !== 'forgot') {
+                if (!checkAuth()) {
+                    alert('يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة! 🔒');
+                    switchView('login');
+                    return;
+                }
+            }
+            switchView(view);
         }
 
         function switchView(view) {
@@ -399,6 +416,11 @@
             else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
+            else if (view === 'qiyas') { 
+                if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
+                targetId = 'qiyas-models-section'; 
+                document.getElementById('menu-qiyas').classList.add('active'); 
+            }
             else if (view === 'admin') { targetId = 'admin-dashboard'; document.getElementById('menu-admin').classList.add('active'); }
 
             if (targetId) {
@@ -406,22 +428,35 @@
             }
         }
 
-        function openQiyasSimulation() {
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
-            document.getElementById('menu-qiyas').classList.add('active');
-            setTimeout(() => document.getElementById('qiyas-models-section').classList.add('active-view'), 100);
+        function togglePasswordVisibility(fieldId, btnElement) {
+            const passwordInput = document.getElementById(fieldId);
+            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+            btnElement.innerText = passwordInput.type === 'password' ? '👁' : '🙈';
         }
 
         function selectQiyasModel(modelNum) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 100);
-            document.getElementById('no-q-title').innerText = `النموذج ${modelNum} (اختبار قياس) غير متوفر`;
+            document.getElementById('no-q-title').innerText = `النموذج ${modelNum} (اختبار قياس) غير متوفر حالياً`;
+            document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج في اختبار قياس التجريبي.`;
         }
 
         function openModelsSelection(sectionType, mode) {
+            if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
             currentSectionType = sectionType; 
             currentActionMode = mode;         
+            
+            // توليد أزرار النماذج العشرة (10 نماذج) ديناميكياً
+            const gridContainer = document.getElementById('modelsGridContainer');
+            gridContainer.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'model-btn';
+                btn.innerText = `النموذج ${i}`;
+                btn.onclick = () => selectModel(i);
+                gridContainer.appendChild(btn);
+            }
+
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => document.getElementById('models-selection-section').classList.add('active-view'), 100);
         }
@@ -432,7 +467,6 @@
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
                 
-                // الفلترة الصحيحة حسب القسم والنموذج ونوع الاختبار (simulation أو practice)
                 currentTrainingQuestions = allQuestions.filter(q => 
                     q.section === currentSectionType && 
                     Number(q.model) === Number(modelNum) && 
@@ -459,22 +493,22 @@
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
-                container.innerHTML = `<div style="text-align: center; padding: 30px; background: #d1fae5; border-radius: 12px; color: #065f46;"><h3>🎉 أحسنت! أتممت الأسئلة بنجاح.</h3></div>`;
+                container.innerHTML = `<div style="text-align: center; padding: 35px; background: #d1fae5; border-radius: 16px; color: #065f46;"><h3>🎉 أحسنت بطلنا أكرم! أتممت أسئلة النموذج بنجاح.</h3><button onclick="navigateTo('student')" style="margin-top:15px; width:auto; padding:10px 20px;">العودة للوحة الطالب</button></div>`;
                 return;
             }
             const q = currentTrainingQuestions[currentQuestionIndex];
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
             
             container.innerHTML = `
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px;">
-                    <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">${q.question}</p>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">أ) ${opts[0]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">ب) ${opts[1]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">ج) ${opts[2]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">د) ${opts[3]}</button>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 22px; border-radius: 16px;">
+                    <p style="font-size: 17px; font-weight: bold; margin-bottom: 18px; color: #1e293b;">سؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}: ${q.question}</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:1px solid #cbd5e1; font-weight:600;">أ) ${opts[0]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:1px solid #cbd5e1; font-weight:600;">ب) ${opts[1]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:1px solid #cbd5e1; font-weight:600;">ج) ${opts[2]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:1px solid #cbd5e1; font-weight:600;">د) ${opts[3]}</button>
                     </div>
-                    <div id="feedback" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+                    <div id="feedback" style="margin-top: 18px; font-weight: bold; text-align: center; font-size: 16px;"></div>
                 </div>
             `;
         }
@@ -484,18 +518,18 @@
             btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
             if(correctOpt.trim() === chosenOpt.trim()) {
                 btn.style.background = '#d1fae5';
-                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة! 🌟</span>';
+                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة وممتازة! 🌟</span>';
             } else {
                 btn.style.background = '#fee2e2';
-                feedback.innerHTML = `<span style="color:#dc2626;">خطأ، الإجابة الصحيحة: (${correctOpt})</span>`;
+                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الإجابة الصحيحة هي: (${correctOpt})</span>`;
             }
-            setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
+            setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1600);
         }
 
         function logout() {
             localStorage.removeItem('userEmail');
             document.getElementById('menu-admin').classList.add('hidden');
-            switchView('landing');
+            navigateTo('landing');
         }
 
         function showAlert(section, text, success) {
@@ -523,9 +557,9 @@
                 localStorage.setItem('userEmail', loginEmail.value);
                 if(data.role === 'admin') {
                     document.getElementById('menu-admin').classList.remove('hidden');
-                    switchView('admin');
+                    navigateTo('admin');
                 } else {
-                    switchView('student');
+                    navigateTo('student');
                 }
             } else { showAlert('login', data.message, false); }
         });
