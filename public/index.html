@@ -19,7 +19,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-gradient); color: #0f172a; min-height: 100vh; display: flex; overflow-x: hidden; }
 
-        /* القائمة الجانبية - مخفية افتراضياً ولا تظهر إلا عند إضافة صنف logged-in لجسم الصفحة */
+        /* القائمة الجانبية - مخفية افتراضياً ولا تظهر إلا بعد إضافة صنف logged-in لجسم الصفحة */
         .sidebar {
             width: var(--sidebar-width);
             background: rgba(255, 255, 255, 0.95);
@@ -551,6 +551,12 @@
             else if (view === 'admin') { targetId = 'admin-dashboard'; document.getElementById('menu-admin').classList.add('active'); }
 
             updateAuthStateUI();
+
+            // تمرير الصفحة تلقائياً إلى الأعلى بسلاسة عند تغيير القسم
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
 
             if (targetId) {
                 setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 100);
