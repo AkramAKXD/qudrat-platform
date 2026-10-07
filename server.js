@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // مسارات ملفات البيانات
 const USERS_FILE = path.join(__dirname, 'users.json');
 const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
-const MODELS_STATUS_FILE = path.join(__dirname, 'models_status.json'); // ملف لحفظ حالة النماذج
+const MODELS_STATUS_FILE = path.join(__dirname, 'models_status.json');
 
 // دوال قراءة وكتابة ملفات JSON مع معالجة الأخطاء
 function readJsonFile(filePath, defaultValue = []) {
@@ -215,7 +215,7 @@ app.post('/api/admin/delete-user', (req, res) => {
 
 // ==================== مسارات إدارة النماذج (تنشيط / تعطيل) ====================
 
-// جلب النماذج المضافة تلقائياً مع حالتها (نشط / معطل) وعدد الأسئلة
+// جلب النماذج المضافة تلقائياً مع حالتها (يُرجع مصفوفة مباشرة ليتوافق مع كود الواجهة الأمامية)
 app.get('/api/models', (req, res) => {
     const questions = readJsonFile(QUESTIONS_FILE);
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
@@ -223,17 +223,21 @@ app.get('/api/models', (req, res) => {
     // استخراج أرقام النماذج الفريدة الموجودة في الأسئلة المضافة
     const uniqueModelIds = [...new Set(questions.map(q => Number(q.model) || 1))];
 
-    // دمج النماذج مع حالتها
-    const modelsList = uniqueModelIds.map(modelId => {
+    // إذا لم تكن هناك أي أسئلة مضافة بعد، نعرض النماذج الافتراضية (من 1 إلى 5 مثلاً) لكي لا تظهر القائمة فارغة
+    const finalModelIds = uniqueModelIds.length > 0 ? uniqueModelIds : [1, 2, 3, 4, 5];
+
+    // بناء مصفوفة النماذج
+    const modelsList = finalModelIds.map(modelId => {
         return {
             modelId: modelId,
-            // إذا لم يتم تحديث حالته صراحة، يكون مفاعلاً افتراضياً (true)
+            model: modelId, // يدعم التسميتين (modelId أو model) حسب ما يطلبه ملف الـ Frontend لديك
             active: modelsStatus[modelId] !== undefined ? modelsStatus[modelId].active : true,
             questionsCount: questions.filter(q => (Number(q.model) || 1) === modelId).length
         };
     });
 
-    res.json({ success: true, models: modelsList });
+    // إرجاع مصفوفة مباشرة (Array) لتجنب أخطاء قراءة البيانات في الـ Frontend
+    res.json(modelsList);
 });
 
 // تنشيط أو تعطيل نموذج معين (خاص بالمشرف)
