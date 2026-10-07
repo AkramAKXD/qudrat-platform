@@ -149,6 +149,14 @@
         .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* تنسيقات تبويبات إدارة النماذج للمشرف */
+        .tab-btn {
+            padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none;
+        }
+        .tab-btn.active-tab {
+            background: var(--primary); color: #fff;
+        }
+
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { position: relative; width: 100%; height: auto; border-left: none; border-bottom: 1px solid #e2e8f0; }
@@ -221,6 +229,7 @@
                 <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
                 <li><button onclick="openAdminTab('add-question-box')">➕ إضافة سؤال جديد</button></li>
                 <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
+                <li><button onclick="openAdminTab('manage-models-box')">📋 إدارة نماذج الاختبارات</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
                 <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
                 <li><button onclick="openAdminTab('registered-accounts-box')">👥 الحسابات المسجلة</button></li>
@@ -380,7 +389,7 @@
             <div id="no-questions-section" class="app-section">
                 <div style="text-align: center; padding: 25px;">
                     <h2 id="no-q-title" style="color: #d97706;">تنبيه مؤقت</h2>
-                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً.</p>
+                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، هذا النموذج غير نشط أو لم تتم إضافة أسئلة له مؤقتاً.</p>
                     <button onclick="navigateTo('student')" style="width: auto; padding: 12px 30px;">العودة للوحة الرئيسية</button>
                 </div>
             </div>
@@ -430,6 +439,19 @@
                         <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qiyasCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
                         <button type="submit" style="background: #0284c7;">حفظ سؤال قياس 💾</button>
                     </form>
+                </div>
+
+                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها (الميزة المطلوبة) -->
+                <div id="manage-models-box" class="admin-tab-content hidden" style="background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
+                        <button type="button" onclick="loadAdminModelsList('quant')" class="tab-btn active-tab" id="btnAdminQuant">القسم الكمي</button>
+                        <button type="button" onclick="loadAdminModelsList('verbal')" class="tab-btn" id="btnAdminVerbal">القسم اللفظي</button>
+                        <button type="button" onclick="loadAdminModelsList('mock')" class="tab-btn" id="btnAdminMock">اختبار محاكي لقياس</button>
+                    </div>
+                    <div id="adminModelsListContent">
+                        <!-- يتم تعبئتها ديناميكياً بالنماذج وحالة تفعيلها -->
+                    </div>
                 </div>
 
                 <!-- صندوق إدارة وتعديل الأسئلة -->
@@ -604,6 +626,79 @@
                 loadAdminQuestionsList();
             } else if(tabId === 'registered-accounts-box') {
                 loadRegisteredAccounts();
+            } else if(tabId === 'manage-models-box') {
+                loadAdminModelsList('quant');
+            }
+        }
+
+        // جلب وعرض النماذج في لوحة التحكم لإدارة التنشيط والتعطيل
+        async function loadAdminModelsList(sectionKey) {
+            ['quant', 'verbal', 'mock'].forEach(s => {
+                const btn = document.getElementById(`btnAdmin${s.charAt(0).toUpperCase() + s.slice(1)}`);
+                if(btn) {
+                    btn.className = s === sectionKey ? 'tab-btn active-tab' : 'tab-btn';
+                }
+            });
+
+            const contentDiv = document.getElementById('adminModelsListContent');
+            contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">جاري جلب النماذج...</p>';
+
+            try {
+                const res = await fetch('/api/admin/models-status');
+                const data = await res.json();
+                
+                if (data.success && data.models) {
+                    const sectionModels = data.models[sectionKey] || {};
+                    const modelKeys = Object.keys(sectionModels);
+
+                    if (modelKeys.length === 0) {
+                        contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج تحتوي على أسئلة في هذا القسم حالياً.</p>';
+                        return;
+                    }
+
+                    contentDiv.innerHTML = modelKeys.map(mKey => {
+                        const model = sectionModels[mKey];
+                        const isActive = model.isActive !== false;
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <strong style="font-size: 16px; color: #1e293b;">النموذج رقم (${model.modelNumber})</strong>
+                                    <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
+                                    <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
+                                        ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <button type="button" onclick="toggleModelStatus('${sectionKey}', ${model.modelNumber})" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
+                                        ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (e) {
+                contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">حدث خطأ أثناء جلب النماذج.</p>';
+            }
+        }
+
+        // إرسال طلب تفعيل أو تعطيل النموذج للسيرفر
+        async function toggleModelStatus(section, modelNumber) {
+            try {
+                const adminEmail = sessionStorage.getItem('sessionUserEmail');
+                const res = await fetch('/api/admin/toggle-model', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ section, modelNumber, adminEmail })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadAdminModelsList(section);
+                } else {
+                    alert(data.message || 'حدث خطأ ما');
+                }
+            } catch (e) {
+                alert('حدث خطأ في الاتصال بالخادم');
             }
         }
 
@@ -644,14 +739,12 @@
             }
         }
 
-        // تأكيد حذف المستخدم
         function confirmDeleteUser(userEmail) {
             showConfirmModal(`هل أنت متأكد من رغبتك في حذف الحساب (${userEmail}) نهائياً؟`, () => {
                 executeDeleteUser(userEmail);
             });
         }
 
-        // إرسال طلب الحذف للسيرفر
         async function executeDeleteUser(userEmail) {
             showLoading('جاري حذف الحساب...', 600, async () => {
                 try {
@@ -663,7 +756,7 @@
                     });
                     const data = await res.json();
                     if(data.success) {
-                        loadRegisteredAccounts(); // تحديث القائمة بعد الحذف بنجاح
+                        loadRegisteredAccounts();
                     } else {
                         alert(data.message || 'حدث خطأ أثناء محاولة الحذف.');
                     }
@@ -800,7 +893,7 @@
                     if (currentTrainingQuestions.length === 0) {
                         setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
                         document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
-                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة مطابقة لهذا التصنيف (النموذج ${modelNum}).`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، هذا النموذج غير نشط أو لم تتم إضافة أسئلة مطابقة له.`;
                         return;
                     }
 
