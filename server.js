@@ -213,39 +213,34 @@ app.post('/api/admin/delete-user', (req, res) => {
     }
 });
 
-// ==================== مسارات إدارة النماذج (تنشيط / تعطيل) ====================
+// ==================== مسارات إدارة النماذج (دعم كافة الاحتمالات لمنع الأخطاء) ====================
 
-// جلب النماذج المضافة تلقائياً مع حالتها (يُرجع مصفوفة مباشرة ليتوافق مع كود الواجهة الأمامية)
-app.get('/api/models', (req, res) => {
+// دالة مشتركة لتوليد قائمة النماذج
+function getModelsData() {
     const questions = readJsonFile(QUESTIONS_FILE);
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
 
-    // استخراج أرقام النماذج الفريدة الموجودة في الأسئلة المضافة
     const uniqueModelIds = [...new Set(questions.map(q => Number(q.model) || 1))];
-
-    // إذا لم تكن هناك أي أسئلة مضافة بعد، نعرض النماذج الافتراضية (من 1 إلى 5 مثلاً) لكي لا تظهر القائمة فارغة
     const finalModelIds = uniqueModelIds.length > 0 ? uniqueModelIds : [1, 2, 3, 4, 5];
 
-    // بناء مصفوفة النماذج
-    const modelsList = finalModelIds.map(modelId => {
-        return {
-            modelId: modelId,
-            model: modelId, // يدعم التسميتين (modelId أو model) حسب ما يطلبه ملف الـ Frontend لديك
-            active: modelsStatus[modelId] !== undefined ? modelsStatus[modelId].active : true,
-            questionsCount: questions.filter(q => (Number(q.model) || 1) === modelId).length
-        };
-    });
+    return finalModelIds.map(modelId => ({
+        modelId: modelId,
+        model: modelId,
+        active: modelsStatus[modelId] !== undefined ? modelsStatus[modelId].active : true,
+        questionsCount: questions.filter(q => (Number(q.model) || 1) === modelId).length
+    }));
+}
 
-    // إرجاع مصفوفة مباشرة (Array) لتجنب أخطاء قراءة البيانات في الـ Frontend
-    res.json(modelsList);
-});
+// تغطية كافة المسارات المحتملة التي قد تطلبها الواجهة الأمامية
+app.get('/api/models', (req, res) => res.json(getModelsData()));
+app.get('/api/get-models', (req, res) => res.json(getModelsData()));
+app.get('/api/exam-models', (req, res) => res.json(getModelsData()));
 
-// تنشيط أو تعطيل نموذج معين (خاص بالمشرف)
-app.post('/api/admin/toggle-model', (req, res) => {
+// تنشيط أو تعطيل نموذج معين (مع تغطية المسارين الشائعين)
+const handleToggleModel = (req, res) => {
     const { adminEmail, modelId, active } = req.body;
     const users = readJsonFile(USERS_FILE);
 
-    // التحقق من صلاحيات المشرف
     const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
     if (!adminUser) {
         return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
@@ -256,17 +251,15 @@ app.post('/api/admin/toggle-model', (req, res) => {
     }
 
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    
-    // تحديث حالة النموذج
-    modelsStatus[modelId] = {
-        active: Boolean(active)
-    };
-
+    modelsStatus[modelId] = { active: Boolean(active) };
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
     
     const statusText = active ? 'تنشيط' : 'تعطيل';
     res.json({ success: true, message: `✅ تم ${statusText} النموذج رقم ${modelId} بنجاح!` });
-});
+};
+
+app.post('/api/admin/toggle-model', handleToggleModel);
+app.post('/api/toggle-model', handleToggleModel);
 
 // تشغيل الخادم
 app.listen(PORT, () => {
