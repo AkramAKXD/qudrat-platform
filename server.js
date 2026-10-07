@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -13,38 +13,61 @@ app.use(express.static(path.join(__dirname, 'public')));
 const USERS_FILE = path.join(__dirname, 'users.json');
 const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
 
+// دوال قراءة وكتابة ملفات JSON
 function readJsonFile(filePath) {
     try {
         if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify([]));
+            fs.writeFileSync(filePath, JSON.stringify([], null, 2), 'utf8');
         }
         const data = fs.readFileSync(filePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
+        console.error(`Error reading ${filePath}:`, error.message);
         return [];
     }
 }
 
 function writeJsonFile(filePath, data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+        console.error(`Error writing ${filePath}:`, error.message);
+    }
 }
 
-// تهيئة حساب المشرف الأساسي والملفات إذا لم تكن موجودة
-if (!fs.existsSync(USERS_FILE)) writeJsonFile(USERS_FILE, [
-    { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
-]);
-if (!fs.existsSync(QUESTIONS_FILE)) writeJsonFile(QUESTIONS_FILE, []);
+// تهيئة الملفات وحساب المشرف الأساسي عند بدء التشغيل
+if (!fs.existsSync(USERS_FILE)) {
+    writeJsonFile(USERS_FILE, [
+        { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
+    ]);
+}
+if (!fs.existsSync(QUESTIONS_FILE)) {
+    writeJsonFile(QUESTIONS_FILE, []);
+}
 
-// مسارات الـ API
+// ==================== مسارات الـ API ====================
 
 // تسجيل حساب جديد
 app.post('/api/register', (req, res) => {
     const { name, email, pass } = req.body;
+    if (!name || !email || !pass) {
+        return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول المطلوبة!' });
+    }
+
     const users = readJsonFile(USERS_FILE);
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (users.find(u => u.email.toLowerCase() === normalizedEmail)) {
         return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقاً!' });
     }
-    users.push({ name: name.trim(), email: email.trim().toLowerCase(), pass, role: 'student' });
+
+    users.push({ 
+        name: name.trim(), 
+        email: normalizedEmail, 
+        pass, 
+        role: 'student' 
+    });
+    
     writeJsonFile(USERS_FILE, users);
     res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
 });
@@ -52,19 +75,34 @@ app.post('/api/register', (req, res) => {
 // تسجيل الدخول
 app.post('/api/login', (req, res) => {
     const { email, pass } = req.body;
+    if (!email || !pass) {
+        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور!' });
+    }
+
     const users = readJsonFile(USERS_FILE);
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
+    const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.pass === pass);
+    
     if (!user) {
         return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
     }
-    res.json({ success: true, name: user.name, role: user.role, email: user.email });
+    
+    res.json({ 
+        success: true, 
+        name: user.name, 
+        role: user.role, 
+        email: user.email 
+    });
 });
 
 // استعادة / تحديث كلمة المرور
 app.post('/api/reset-password', (req, res) => {
     const { email, newPass } = req.body;
+    if (!email || !newPass) {
+        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور الجديدة!' });
+    }
+
     const users = readJsonFile(USERS_FILE);
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
     
     if (userIndex === -1) {
         return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
@@ -85,8 +123,9 @@ app.get('/api/questions', (req, res) => {
 app.post('/api/add-question', (req, res) => {
     const { section, type, model, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
+    
     questions.push({ 
-        id: questions.length + 1, 
+        id: questions.length > 0 ? questions[questions.length - 1].id + 1 : 1, 
         section: section || "quant", 
         type: type || 'practice', 
         model: Number(model) || 1, 
@@ -95,6 +134,7 @@ app.post('/api/add-question', (req, res) => {
         correct_answer, 
         image: image || null 
     });
+    
     writeJsonFile(QUESTIONS_FILE, questions);
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
 });
@@ -102,9 +142,9 @@ app.post('/api/add-question', (req, res) => {
 // حذف سؤال بواسطة الـ Index
 app.post('/api/delete-question', (req, res) => {
     const { index } = req.body;
-    let questions = readJsonFile(QUESTIONS_FILE);
+    const questions = readJsonFile(QUESTIONS_FILE);
     
-    if (index >= 0 && index < questions.length) {
+    if (index !== undefined && index >= 0 && index < questions.length) {
         questions.splice(index, 1);
         writeJsonFile(QUESTIONS_FILE, questions);
         return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
@@ -112,19 +152,18 @@ app.post('/api/delete-question', (req, res) => {
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
-// جلب قائمة المستخدمين العادية
+// جلب قائمة المستخدمين العامة (بدون كلمات المرور)
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
     res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
 });
 
-// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف (admin.html) مع التحقق من الصلاحية
+// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف مع التحقق من الصلاحية
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
     const users = readJsonFile(USERS_FILE);
     
-    // التحقق من أن المستخدم مسجل ولديه صلاحية مشرف
-    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').toLowerCase() && u.role === 'admin');
+    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').trim().toLowerCase() && u.role === 'admin');
     
     if (!adminUser) {
         return res.json({ 
@@ -133,7 +172,6 @@ app.post('/api/admin/users', (req, res) => {
         });
     }
     
-    // إرجاع البيانات كاملة لملف admin.html
     res.json({ 
         success: true, 
         users: users.map(u => ({ 
@@ -143,6 +181,33 @@ app.post('/api/admin/users', (req, res) => {
             role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
         })) 
     });
+});
+
+// ==================== مسار حذف الحساب الجديد ====================
+app.post('/api/admin/delete-user', (req, res) => {
+    const { adminEmail, userEmailToDelete } = req.body;
+    const users = readJsonFile(USERS_FILE);
+
+    // التحقق من صلاحيات المشرف المرسل للطلب
+    const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
+    if (!adminUser) {
+        return res.json({ success: false, message: '⛔ ليس لديك صلاحية إجراء الحذف!' });
+    }
+
+    // منع المشرف من حذف حسابه الشخصي بالخطأ
+    if (adminEmail.trim().toLowerCase() === userEmailToDelete.trim().toLowerCase()) {
+        return res.json({ success: false, message: '⚠️ لا يمكنك حذف حساب المشرف الخاص بك!' });
+    }
+
+    const initialLength = users.length;
+    const filteredUsers = users.filter(u => u.email.toLowerCase() !== userEmailToDelete.trim().toLowerCase());
+
+    if (filteredUsers.length < initialLength) {
+        writeJsonFile(USERS_FILE, filteredUsers);
+        return res.json({ success: true, message: '🗑️ تم حذف الحساب بنجاح من النظام!' });
+    } else {
+        return res.json({ success: false, message: '❌ لم يتم العثور على الحساب المراد حذفه.' });
+    }
 });
 
 app.listen(PORT, () => {
