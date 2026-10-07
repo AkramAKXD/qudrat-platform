@@ -11,7 +11,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // مسارات ملفات البيانات
 const USERS_FILE = path.join(__dirname, 'users.json');
-// مسار ملف الأسئلة في المجلد الرئيسي مباشرة
 const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
 
 function readJsonFile(filePath) {
@@ -30,13 +29,15 @@ function writeJsonFile(filePath, data) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// تهيئة حساب المشرف الأساسي إذا لم يكن موجوداً
+// تهيئة حساب المشرف الأساسي والملفات إذا لم تكن موجودة
 if (!fs.existsSync(USERS_FILE)) writeJsonFile(USERS_FILE, [
     { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
 ]);
 if (!fs.existsSync(QUESTIONS_FILE)) writeJsonFile(QUESTIONS_FILE, []);
 
 // مسارات الـ API
+
+// تسجيل حساب جديد
 app.post('/api/register', (req, res) => {
     const { name, email, pass } = req.body;
     const users = readJsonFile(USERS_FILE);
@@ -48,6 +49,7 @@ app.post('/api/register', (req, res) => {
     res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
 });
 
+// تسجيل الدخول
 app.post('/api/login', (req, res) => {
     const { email, pass } = req.body;
     const users = readJsonFile(USERS_FILE);
@@ -58,12 +60,28 @@ app.post('/api/login', (req, res) => {
     res.json({ success: true, name: user.name, role: user.role, email: user.email });
 });
 
+// استعادة / تحديث كلمة المرور
+app.post('/api/reset-password', (req, res) => {
+    const { email, newPass } = req.body;
+    const users = readJsonFile(USERS_FILE);
+    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (userIndex === -1) {
+        return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
+    }
+    
+    users[userIndex].pass = newPass;
+    writeJsonFile(USERS_FILE, users);
+    res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+});
+
+// جلب جميع الأسئلة
 app.get('/api/questions', (req, res) => {
     const questions = readJsonFile(QUESTIONS_FILE);
     res.json(questions);
 });
 
-// مسار إضافة سؤال محدث لاستقبال الـ type وتخزينه بشكل صحيح
+// إضافة سؤال جديد
 app.post('/api/add-question', (req, res) => {
     const { section, type, model, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
@@ -81,6 +99,20 @@ app.post('/api/add-question', (req, res) => {
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
 });
 
+// حذف سؤال بواسطة الـ Index
+app.post('/api/delete-question', (req, res) => {
+    const { index } = req.body;
+    let questions = readJsonFile(QUESTIONS_FILE);
+    
+    if (index >= 0 && index < questions.length) {
+        questions.splice(index, 1);
+        writeJsonFile(QUESTIONS_FILE, questions);
+        return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
+    }
+    res.json({ success: false, message: '❌ السؤال غير موجود!' });
+});
+
+// جلب قائمة المستخدمين
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
     res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
