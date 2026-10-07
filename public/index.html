@@ -18,6 +18,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-gradient); color: #0f172a; min-height: 100vh; display: flex; overflow-x: hidden; }
 
+        /* شاشة التحميل العامة (Overlay) */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px);
@@ -33,6 +34,7 @@
         .loading-text { color: #fff; font-size: 16px; font-weight: 700; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* نافذة التأكيد أو التعديل التفاعلية (Modal) */
         .custom-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -51,6 +53,7 @@
         .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
         .modal-actions button { margin-top: 0; flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px; }
 
+        /* القائمة الجانبية */
         .sidebar {
             width: var(--sidebar-width); background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid rgba(226, 232, 240, 0.8); display: none; flex-direction: column;
@@ -73,6 +76,7 @@
         .admin-sidebar-group { background: #fffbeb; border: 1px dashed var(--admin-color); border-radius: 14px; padding: 10px; margin-top: 10px; margin-bottom: 10px; }
         .admin-sidebar-title { font-size: 13px; font-weight: 900; color: #d97706; text-align: center; margin-bottom: 8px; }
 
+        /* المحتوى الرئيسي */
         .main-content { margin-right: 0; flex-grow: 1; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: margin-right 0.3s ease; }
         body.logged-in .main-content { margin-right: var(--sidebar-width); }
 
@@ -96,6 +100,7 @@
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
         
+        /* تصميم حقل كلمة المرور وتحسين زر الإظهار والإخفاء */
         .password-container { position: relative; width: 100%; }
         .password-container input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; }
         .password-container input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
@@ -117,378 +122,1015 @@
         .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
         .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
         .hidden { display: none !important; }
+        .alert { padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: 700; display: none; font-size: 14px; }
+        .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
 
-        .table-container { overflow-x: auto; margin-top: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; text-align: right; background: #fff; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background: #f8fafc; color: #334155; font-weight: 900; }
-        tr:last-child td { border-bottom: none; }
+        .hero-section { text-align: center; }
+        .hero-badge { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 800; margin-bottom: 15px; }
+        .hero-logo { font-size: 75px; margin-bottom: 15px; }
+        .hero-title { font-size: 34px; font-weight: 900; color: var(--primary); margin-bottom: 12px; }
+        .hero-subtitle { color: #64748b; font-size: 16px; margin-bottom: 35px; font-weight: 600; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 35px; text-align: right; }
+        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 20px; }
+        .hero-buttons { display: flex; gap: 15px; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+
+        .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 24px; border-radius: 24px; margin-bottom: 25px; text-align: center; }
+        .student-video-card video { width: 100%; max-height: 220px; border-radius: 16px; background: #000; margin-bottom: 18px; }
+        .motivation-box { background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border: 1px solid #c7d2fe; padding: 20px; border-radius: 16px; text-align: right; }
         
-        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important; width: auto; padding: 6px 12px; font-size: 12px; margin-top: 0; }
+        .sections-stack { display: flex; flex-direction: column; gap: 18px; margin-top: 20px; }
+        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 26px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .section-big-card:hover { border-color: var(--primary); background: #eef2ff; transform: translateY(-3px); }
+        .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 24px; border-radius: 20px; margin-bottom: 25px; text-align: right; }
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
+
+        .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; max-width: 650px; margin: 0 auto; }
+        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { position: relative; width: 100%; height: auto; border-left: none; border-bottom: 1px solid #e2e8f0; }
+            body.logged-in .main-content { margin-right: 0; }
+            .main-content { padding: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
-<body>
+<body id="appBody">
 
+    <!-- شاشة التحميل العامة -->
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <div class="loading-text" id="loading-text">جاري المعالجة...</div>
+        <div class="loading-text" id="loadingMessage">جاري المعالجة...</div>
     </div>
 
-    <div class="custom-modal" id="app-modal">
+    <!-- نافذة التأكيد للتنبيهات -->
+    <div id="custom-confirm-modal" class="custom-modal">
+        <div class="modal-box" style="max-width: 400px; text-align: center;">
+            <h3>⚠️ تنبيه</h3>
+            <p id="confirmModalText" style="color: #64748b; margin-bottom: 25px; font-weight: 600;"></p>
+            <div class="modal-actions">
+                <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeConfirmModal()">إلغاء</button>
+                <button type="button" style="background: #ef4444;" id="confirmActionBtn">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل السؤال الكبيرة للمشرف -->
+    <div id="edit-question-modal" class="custom-modal">
         <div class="modal-box">
-            <h3 id="modal-title">تنبيه</h3>
-            <p id="modal-message" style="color: #475569; font-size: 15px; line-height: 1.6;"></p>
-            <div class="modal-actions" id="modal-actions">
-                <button onclick="closeModal()" style="background: #cbd5e1; color: #1e293b;">إغلاق</button>
-            </div>
+            <h3>✏️ تعديل تفاصيل السؤال</h3>
+            <form id="editQuestionForm">
+                <input type="hidden" id="editQIndex">
+                <div class="form-group"><label>القسم:</label><select id="editQSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="editQType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option><option value="qiyas_simulation">اختبار قياس المحاكي</option></select></div>
+                <div class="form-group"><label>رقم النموذج:</label><input type="number" id="editQModel" min="1" max="10"></div>
+                <div class="form-group"><label>عدد الدرجات:</label><input type="number" id="editQScore" min="1" max="10" value="1"></div>
+                <div class="form-group"><label>نص السؤال:</label><textarea id="editQText" rows="2" required></textarea></div>
+                <div class="form-group"><label>الخيار أ:</label><input type="text" id="editQA" required></div>
+                <div class="form-group"><label>الخيار ب:</label><input type="text" id="editQB" required></div>
+                <div class="form-group"><label>الخيار ج:</label><input type="text" id="editQC" required></div>
+                <div class="form-group"><label>الخيار د:</label><input type="text" id="editQD" required></div>
+                <div class="form-group"><label>الإجابة الصحيحة:</label><select id="editQCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
+                <div class="modal-actions">
+                    <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeEditModal()">إلغاء</button>
+                    <button type="submit" style="background: var(--accent);">حفظ التعديلات ✅</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <nav class="sidebar" id="app-sidebar">
+    <!-- القائمة الجانبية -->
+    <nav class="sidebar" id="appSidebar">
         <div class="sidebar-header">
-            <h2>منصة قدرات</h2>
+            <h2>🚀 منصة قدرات</h2>
         </div>
-        <ul class="sidebar-menu" id="sidebar-menu-list">
-            <li class="active" data-target="view-dashboard"><button>🏠 الرئيسية والملخص</button></li>
-            <li data-target="view-exams"><button>📝 الاختبارات والتدريبات</button></li>
-            
-            <div id="admin-menu-section" class="admin-sidebar-group hidden">
-                <div class="admin-sidebar-title">لوحة المشرف</div>
-                <li data-target="view-admin-users" style="margin-bottom: 6px;"><button style="background: #fef3c7; color: #b45309;">👥 إدارة الحسابات</button></li>
-                <li data-target="view-admin-questions"><button style="background: #fef3c7; color: #b45309;">⚙️ إدارة الأسئلة</button></li>
+        <ul class="sidebar-menu">
+            <div id="student-sidebar-group">
+                <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
+                <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
+                <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
+                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
             </div>
             
-            <li style="margin-top: auto;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
+            <!-- خيارات المشرف -->
+            <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
+                <div class="admin-sidebar-title">👑 لوحة المشرف</div>
+                <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
+                <li><button onclick="openAdminTab('add-question-box')">➕ إضافة سؤال جديد</button></li>
+                <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
+                <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
+                <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
+                
+                <!-- الإضافات الجديدة المطلوبة -->
+                <li><button onclick="openAdminTab('registered-accounts-box')">👥 الحسابات المسجلة</button></li>
+                <li><button onclick="window.open('https://qudrat-platform-trii.onrender.com/admin.html', '_blank')">🔗 صفحة النظام الأساسية (API)</button></li>
+            </div>
+
+            <li style="margin-top: auto; padding-top: 15px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
         </ul>
     </nav>
 
-    <main class="main-content">
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
         <div class="container">
+            <!-- 1. واجهة البداية -->
+            <div id="landing-section" class="app-section hero-section active-view">
+                <div class="hero-badge">🌟 بوابتك الموثوقة نحو التفوق والتميز</div>
+                <div class="hero-logo">🎯</div>
+                <div class="hero-title">منصة قدرات الاحترافية</div>
+                <p class="hero-subtitle">"اصنع طموحك اليوم، واحصد درجاتك العالية غداً."</p>
+                <div class="features-grid">
+                    <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>نماذج شاملة للأقسام بعناية فائقة.</p></div>
+                    <div class="feature-box"><h4>🔥 تحفيز مستمر</h4><p>بيئة تفاعلية ممتازة تشعل حماسك.</p></div>
+                    <div class="feature-box"><h4>⚡ سرعة وسهولة</h4><p>واجهة متقدمة وآمنة.</p></div>
+                </div>
+                <div class="hero-buttons">
+                    <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
+                    <button class="btn-outline" onclick="switchView('register')">إنشاء حساب جديد ✨</button>
+                </div>
+            </div>
 
-            <section id="view-login" class="app-section active-view">
-                <h2>تسجيل الدخول</h2>
-                <form id="form-login" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label>البريد الإلكتروني</label>
-                        <input type="email" id="login-email" required placeholder="example@domain.com">
-                    </div>
-                    <div class="form-group">
-                        <label>كلمة المرور</label>
+            <!-- 2. شاشة تسجيل الدخول -->
+            <div id="login-section" class="app-section">
+                <h1>🎯 مرحباً بك مجدداً!</h1>
+                <div id="login-alert" class="alert"></div>
+                <form id="loginForm">
+                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="loginEmail" required placeholder="أدخل بريدك الإلكتروني"></div>
+                    <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
-                            <input type="password" id="login-pass" required placeholder="••••••••">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-pass', this)">👁️</button>
+                            <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
                         </div>
                     </div>
-                    <button type="submit">دخول</button>
+                    <button type="submit">دخول للمنصة 🚀</button>
                 </form>
-                <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('view-register')">أنشئ حساباً جديداً</span></div>
-            </section>
+                <div class="switch-link"><span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span></div>
+                <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً</span></div>
+                <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
+            </div>
 
-            <section id="view-register" class="app-section">
-                <h2>حساب جديد</h2>
-                <form id="form-register" onsubmit="handleRegister(event)">
-                    <div class="form-group">
-                        <label>الاسم الكامل</label>
-                        <input type="text" id="reg-name" required placeholder="أدخل اسمك الكامل">
-                    </div>
-                    <div class="form-group">
-                        <label>البريد الإلكتروني</label>
-                        <input type="email" id="reg-email" required placeholder="example@domain.com">
-                    </div>
-                    <div class="form-group">
-                        <label>كلمة المرور</label>
+            <!-- 3. شاشة استعادة كلمة المرور -->
+            <div id="forgot-section" class="app-section">
+                <h1>🔑 استعادة كلمة المرور</h1>
+                <div id="forgot-alert" class="alert"></div>
+                <div id="forgot-step-1">
+                    <div class="form-group"><label>البريد المسجل:</label><input type="email" id="forgotEmail" placeholder="student@gmail.com"></div>
+                    <button type="button" onclick="verifyForgotEmail()">تحقق 🔍</button>
+                </div>
+                <div id="forgot-step-2" class="hidden" style="margin-top: 15px;">
+                    <div class="form-group"><label>كلمة المرور الجديدة:</label>
                         <div class="password-container">
-                            <input type="password" id="reg-pass" required placeholder="••••••••">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('reg-pass', this)">👁️</button>
+                            <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
                         </div>
                     </div>
-                    <button type="submit">تسجيل وحفظ</button>
-                </form>
-                <div class="switch-link">لديك حساب بالفعل؟ <span onclick="switchView('view-login')">سجل دخولك</span></div>
-            </section>
-
-            <section id="view-dashboard" class="app-section">
-                <h2>أهلاً بك في منصة قدرات</h2>
-                <p style="text-align: center; color: #475569; margin-bottom: 20px;">منصتك الأمثل للتدرب واجتياز اختبارات القدرات العامة بكفاءة عالية.</p>
-                <div style="background: #eef2ff; padding: 25px; border-radius: 20px; text-align: center;">
-                    <h3 style="color: var(--primary); margin-bottom: 10px;">استعد للتميز</h3>
-                    <p style="color: #334155; font-size: 14px;">اختر قسم الاختبارات من القائمة الجانبية للبدء في حل الأسئلة واختبار قدراتك اللفظية والكمية.</p>
+                    <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
                 </div>
-            </section>
+                <div class="switch-link"><span onclick="switchView('login')">العودة لتسجيل الدخول</span></div>
+            </div>
 
-            <section id="view-exams" class="app-section">
-                <h2>قسم الاختبارات والتدريبات</h2>
-                <div id="exams-container">
-                    <p style="text-align: center; color: #64748b;">جاري تحميل الأسئلة المتاحة...</p>
-                </div>
-            </section>
-
-            <section id="view-admin-users" class="app-section">
-                <h2>إدارة الحسابات المسجلة</h2>
-                <p style="text-align: center; color: #64748b; font-size: 14px; margin-bottom: 15px;">يمكنك متابعة المستخدمين وحذف أي حساب بشكل مباشر عند الحاجة.</p>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>الاسم</th>
-                                <th>البريد الإلكتروني</th>
-                                <th>الصلاحية</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-users-table-body">
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section id="view-admin-questions" class="app-section">
-                <h2>إدارة الأسئلة</h2>
-                <form id="form-add-question" onsubmit="handleAddQuestion(event)">
-                    <div class="form-group">
-                        <label>نص السؤال</label>
-                        <textarea id="q-text" rows="2" required placeholder="أدخل نص السؤال هنا..."></textarea>
+            <!-- 4. شاشة تسجيل حساب جديد -->
+            <div id="register-section" class="app-section">
+                <h1>✨ انضم إلى نخبة المتفوقين</h1>
+                <div id="reg-alert" class="alert"></div>
+                <form id="registerForm">
+                    <div class="form-group"><label>الاسم الكامل:</label><input type="text" id="regName" required placeholder="أدخل اسمك الكريم"></div>
+                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="regEmail" required placeholder="email@gmail.com"></div>
+                    <div class="form-group"><label>كلمة المرور:</label>
+                        <div class="password-container">
+                            <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>الخيار الصحيح</label>
-                        <input type="text" id="q-correct" required placeholder="الإجابة الصحيحة">
-                    </div>
-                    <button type="submit">إضافة السؤال للقاعدة</button>
+                    <button type="submit">إنشاء حساب 🔥</button>
                 </form>
-            </section>
+                <div class="switch-link">لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span></div>
+                <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
+            </div>
 
+            <!-- 5. لوحة تحكم الطالب -->
+            <div id="student-dashboard" class="app-section">
+                <h1 id="student-welcome">أهلاً بك يا بطل القمة! 🌟</h1>
+                <div class="student-video-card">
+                    <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
+                    <div class="motivation-box">
+                        <h4>💡 إشراقة اليوم:</h4>
+                        <p>"الجهد المبذول اليوم هو درجات الفرح غدًا."</p>
+                    </div>
+                </div>
+                <div class="sections-stack">
+                    <div class="section-big-card" onclick="navigateTo('quant')">
+                        <h3>📐 القسم الكمي</h3>
+                        <p>اصقل مهاراتك الرياضية والتحليلية</p>
+                    </div>
+                    <div class="section-big-card" onclick="navigateTo('verbal')">
+                        <h3>📚 القسم اللفظي</h3>
+                        <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء</p>
+                    </div>
+                    <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: var(--accent); background: #f0fdf4;">
+                        <h3 style="color: var(--accent);">⏱️ اختبار قياس التجريبي</h3>
+                        <p>عش أجواء اختبار قياس الحقيقي</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. صفحة القسم الكمي -->
+            <div id="quant-page" class="app-section">
+                <h2>📐 القسم الكمي</h2>
+                <div class="section-detail-box">
+                    <h3>💡 دليل القسم:</h3>
+                    <p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء.</p>
+                </div>
+                <div class="action-buttons-grid">
+                    <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                    <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب مكثف</button>
+                </div>
+                <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
+            </div>
+
+            <!-- 7. صفحة القسم اللفظي -->
+            <div id="verbal-page" class="app-section">
+                <h2>📚 القسم اللفظي</h2>
+                <div class="section-detail-box">
+                    <h3>💡 دليل القسم:</h3>
+                    <p>يركز على استيعاب المقروء، التناظر اللفظي، والخطأ السياقي.</p>
+                </div>
+                <div class="action-buttons-grid">
+                    <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                    <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب مكثف</button>
+                </div>
+                <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
+            </div>
+
+            <!-- واجهة اختيار النماذج -->
+            <div id="models-selection-section" class="app-section">
+                <h2 id="models-title">اختر نموذج التدريب</h2>
+                <div class="model-grid" id="modelsGridContainer"></div>
+                <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
+            </div>
+
+            <!-- واجهة اختبار قياس -->
+            <div id="qiyas-models-section" class="app-section">
+                <h2 style="color: var(--accent);">⏱️ اختبار قياس (5 نماذج محاكية)</h2>
+                <div class="model-grid" id="qiyasModelsGrid"></div>
+                <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
+            </div>
+
+            <!-- واجهة عدم توفر الأسئلة -->
+            <div id="no-questions-section" class="app-section">
+                <div style="text-align: center; padding: 25px;">
+                    <h2 id="no-q-title" style="color: #d97706;">تنبيه مؤقت</h2>
+                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً.</p>
+                    <button onclick="navigateTo('student')" style="width: auto; padding: 12px 30px;">العودة للوحة الرئيسية</button>
+                </div>
+            </div>
+
+            <!-- واجهة الأسئلة -->
+            <div id="training-section" class="app-section">
+                <h2 id="training-main-title">⚡ تحدي التدريب الذكي</h2>
+                <div id="training-container"></div>
+            </div>
+
+            <!-- لوحة تحكم المشرف -->
+            <div id="admin-dashboard" class="app-section">
+                <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
+                
+                <!-- صندوق إضافة سؤال جديد -->
+                <div id="add-question-box" class="admin-tab-content" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">➕ إضافة سؤال جديد للمنصة</h3>
+                    <div id="q-alert" class="alert"></div>
+                    <form id="questionForm">
+                        <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                        <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="qType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option></select></div>
+                        <div class="form-group"><label>النموذج (1-10):</label><input type="number" id="qModel" value="1" min="1" max="10"></div>
+                        <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qScore" value="1" min="1" max="10"></div>
+                        <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
+                        <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
+                        <div class="form-group"><label>الخيار ب:</label><input type="text" id="qB" required></div>
+                        <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required></div>
+                        <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required></div>
+                        <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
+                        <button type="submit" style="background: var(--accent);">حفظ السؤال 💾</button>
+                    </form>
+                </div>
+
+                <!-- صندوق إضافة أسئلة اختبار قياس المحاكي -->
+                <div id="qiyas-question-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
+                    <h3 style="color: #0284c7; margin-bottom: 15px;">⏱️ إضافة أسئلة لاختبار قياس المحاكي</h3>
+                    <div id="qiyas-q-alert" class="alert"></div>
+                    <form id="qiyasQuestionForm">
+                        <div class="form-group"><label>القسم:</label><select id="qiyasSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                        <div class="form-group"><label>نموذج قياس (1-5):</label><input type="number" id="qiyasModelNum" value="1" min="1" max="5"></div>
+                        <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qiyasScore" value="1" min="1" max="10"></div>
+                        <div class="form-group"><label>نص السؤال:</label><textarea id="qiyasText" rows="2" required></textarea></div>
+                        <div class="form-group"><label>الخيار أ:</label><input type="text" id="qiyasA" required></div>
+                        <div class="form-group"><label>الخيار ب:</label><input type="text" id="qiyasB" required></div>
+                        <div class="form-group"><label>الخيار ج:</label><input type="text" id="qiyasC" required></div>
+                        <div class="form-group"><label>الخيار د:</label><input type="text" id="qiyasD" required></div>
+                        <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qiyasCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
+                        <button type="submit" style="background: #0284c7;">حفظ سؤال قياس 💾</button>
+                    </form>
+                </div>
+
+                <!-- صندوق إدارة وتعديل الأسئلة -->
+                <div id="manage-questions-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: #0d9488; margin: 0;">🛠️ إدارة وتعديل وحذف جميع الأسئلة</h3>
+                        <span id="totalQuestionsBadge" style="background: #ccfbf1; color: #0f766e; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px;">0 سؤال</span>
+                    </div>
+                    <p style="color: #475569; font-size: 14px; margin-bottom: 20px;">يمكنك استعراض كافة الأسئلة في المنصة، وتعديل بياناتها، درجاتها، أو حذفها مباشرة بضغط زر.</p>
+                    
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                        <input type="text" id="adminSearchInput" placeholder="ابحث في نص الأسئلة..." onkeyup="filterAdminQuestions()" style="flex: 1;">
+                        <select id="adminFilterType" onchange="filterAdminQuestions()" style="width: 180px;">
+                            <option value="all">جميع الأنواع</option>
+                            <option value="practice">تدريب</option>
+                            <option value="simulation">اختبار محاكي</option>
+                            <option value="qiyas_simulation">قياس محاكي</option>
+                        </select>
+                    </div>
+
+                    <div id="adminQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
+                </div>
+
+                <!-- صندوق إحصائيات المنصة -->
+                <div id="platform-stats-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px; text-align: center;">
+                    <h3 style="color: #7c3aed; margin-bottom: 15px;">📊 إحصائيات عامة</h3>
+                    <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
+                </div>
+
+                <!-- صندوق الحسابات المسجلة -->
+                <div id="registered-accounts-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">👥 إدارة الحسابات المسجلة</h3>
+                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة:</p>
+                    <div id="accountsListContainer" style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; min-height: 150px;">
+                        <p style="text-align: center; color: #64748b;">جاري تحميل الحسابات المسجلة...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        const API_URL = '';
+        let currentSectionType = ''; 
+        let currentActionMode = '';   
+        let selectedModelNum = 1;
+        let currentTrainingQuestions = [];
+        let currentQuestionIndex = 0;
+        let verifiedForgotEmail = '';
+        let globalQuestionsCache = [];
 
-        function showLoading(text = 'جاري المعالجة...') {
-            document.getElementById('loading-text').innerText = text;
+        function showLoading(message = 'جاري المعالجة...', duration = 1200, callback) {
+            document.getElementById('loadingMessage').innerText = message;
             document.getElementById('loading-overlay').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('loading-overlay').classList.remove('active');
+                if (callback) callback();
+            }, duration);
         }
 
-        function hideLoading() {
-            document.getElementById('loading-overlay').classList.remove('active');
+        function showConfirmModal(text, onConfirmCallback) {
+            document.getElementById('confirmModalText').innerText = text;
+            const modal = document.getElementById('custom-confirm-modal');
+            modal.classList.add('active');
+
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+            newConfirmBtn.addEventListener('click', () => {
+                closeConfirmModal();
+                if (onConfirmCallback) onConfirmCallback();
+            });
         }
 
-        function showModal(title, message, customActions = null) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            const actionsContainer = document.getElementById('modal-actions');
-            if (customActions) {
-                actionsContainer.innerHTML = customActions;
+        function closeConfirmModal() {
+            document.getElementById('custom-confirm-modal').classList.remove('active');
+        }
+
+        function checkAuth() {
+            return !!sessionStorage.getItem('sessionUserEmail');
+        }
+
+        function updateAuthStateUI() {
+            const isAuth = checkAuth();
+            const body = document.getElementById('appBody');
+            const adminSidebarSec = document.getElementById('admin-sidebar-section');
+            const studentSidebarGroup = document.getElementById('student-sidebar-group');
+
+            if (isAuth) {
+                body.classList.add('logged-in');
+                const userRole = sessionStorage.getItem('sessionUserRole');
+                if (userRole === 'admin') {
+                    adminSidebarSec.classList.remove('hidden');
+                    studentSidebarGroup.classList.add('hidden');
+                } else {
+                    adminSidebarSec.classList.add('hidden');
+                    studentSidebarGroup.classList.remove('hidden');
+                }
             } else {
-                actionsContainer.innerHTML = '<button onclick="closeModal()" style="background: var(--primary); color: #fff;">إغلاق</button>';
+                body.classList.remove('logged-in');
+                adminSidebarSec.classList.add('hidden');
+                studentSidebarGroup.classList.remove('hidden');
             }
-            document.getElementById('app-modal').classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('app-modal').classList.remove('active');
+        function hideAlerts() {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.style.display = 'none';
+                el.innerText = '';
+            });
         }
 
-        function togglePasswordVisibility(fieldId, btn) {
-            const input = document.getElementById(fieldId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.innerText = '🔒';
+        function navigateTo(view) {
+            const publicPages = ['landing', 'login', 'register', 'forgot'];
+            if (!publicPages.includes(view)) {
+                if (!checkAuth()) {
+                    alert('يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة! 🔒');
+                    switchView('login');
+                    return;
+                }
+            }
+            if (view === 'student-preview') {
+                switchView('student');
+                return;
+            }
+            switchView(view);
+        }
+
+        function switchView(view) {
+            sessionStorage.setItem('currentView', view);
+            hideAlerts();
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+
+            let targetId = '';
+            if (view === 'landing') { targetId = 'landing-section'; }
+            else if (view === 'login') { targetId = 'login-section'; }
+            else if (view === 'register') { targetId = 'register-section'; }
+            else if (view === 'forgot') { 
+                targetId = 'forgot-section'; 
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
+                document.getElementById('forgotEmail').value = '';
+            }
+            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
+            else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
+            else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
+            else if (view === 'qiyas') { 
+                if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
+                targetId = 'qiyas-models-section'; 
+                document.getElementById('menu-qiyas').classList.add('active'); 
+                renderQiyasModelsGrid();
+            }
+            else if (view === 'admin') { 
+                targetId = 'admin-dashboard'; 
+                loadAdminStats();
+            }
+
+            updateAuthStateUI();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (targetId) {
+                setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 50);
+            }
+        }
+
+        function openAdminTab(tabId) {
+            navigateTo('admin');
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            if(tabId === 'manage-questions-box') {
+                loadAdminQuestionsList();
+            } else if(tabId === 'registered-accounts-box') {
+                loadRegisteredAccounts();
+            }
+        }
+
+        async function loadRegisteredAccounts() {
+            const container = document.getElementById('accountsListContainer');
+            container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
+            try {
+                const res = await fetch('/api/users'); // استبدل بالمسار الصحيح لجلب الحسابات إذا كان مختلفاً
+                const users = await res.json();
+                if(users && users.length > 0) {
+                    container.innerHTML = users.map(u => `
+                        <div style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #1e293b;">${u.name || 'مستخدم'}</strong>
+                                <span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span>
+                            </div>
+                            <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">${u.role || 'student'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة أو تعذر جلبها.</p>';
+                }
+            } catch (e) {
+                container.innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر الاتصال بالخادم لجلب الحسابات.</p>';
+            }
+        }
+
+        function togglePasswordVisibility(fieldId, btnElement) {
+            const passwordInput = document.getElementById(fieldId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                btnElement.innerText = '🙈';
             } else {
-                input.type = 'password';
-                btn.innerText = '👁️';
+                passwordInput.type = 'password';
+                btnElement.innerText = '👁️';
             }
         }
 
-        function switchView(viewId) {
-            document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active-view'));
-            document.getElementById(viewId).classList.add('active-view');
+        async function verifyForgotEmail() {
+            const email = document.getElementById('forgotEmail').value;
+            if(!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني', false); return; }
+            showLoading('جاري التحقق من البريد...', 1000, () => {
+                verifiedForgotEmail = email;
+                document.getElementById('forgot-step-1').classList.add('hidden');
+                document.getElementById('forgot-step-2').classList.remove('hidden');
+                showAlert('forgot', 'تم التحقق بنجاح. أدخل كلمة المرور الجديدة', true);
+            });
         }
 
-        document.querySelectorAll('.sidebar-menu li[data-target]').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                const target = this.getAttribute('data-target');
-                switchView(target);
-                if (target === 'view-admin-users') {
-                    loadAdminUsers();
-                } else if (target === 'view-exams') {
-                    loadExams();
+        async function submitNewPassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            if(!newPass || newPass.length < 6) {
+                showAlert('forgot', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', false);
+                return;
+            }
+            showLoading('جاري تحديث كلمة المرور...', 1200, async () => {
+                try {
+                    const res = await fetch('/api/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! سجّل دخولك', true);
+                        setTimeout(() => switchView('login'), 1200);
+                    } else {
+                        showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
+                    }
+                } catch (err) {
+                    showAlert('forgot', 'حدث خطأ في الاتصال بالخادم', false);
+                }
+            });
+        }
+
+        function renderQiyasModelsGrid() {
+            const grid = document.getElementById('qiyasModelsGrid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'model-btn';
+                btn.style.borderColor = 'var(--accent)';
+                btn.innerText = `نموذج قياس ${i}`;
+                btn.onclick = () => selectQiyasModel(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        async function selectQiyasModel(modelNum) {
+            showLoading('جاري جلب أسئلة قياس...', 400, async () => {
+                try {
+                    const res = await fetch('/api/questions');
+                    const allQuestions = await res.json();
+                    
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.type === 'qiyas_simulation' && 
+                        Number(q.model) === Number(modelNum)
+                    );
+
+                    document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+
+                    if (currentTrainingQuestions.length === 0) {
+                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
+                        document.getElementById('no-q-title').innerText = `نموذج قياس ${modelNum} فارغ حالياً`;
+                        document.getElementById('no-q-desc').innerText = `لم تتم إضافة أسئلة لهذا النموذج من قِبل المشرف بعد.`;
+                        return;
+                    }
+
+                    currentQuestionIndex = 0;
+                    setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 50);
+                    renderTrainingQuestion();
+                } catch (error) {
+                    alert("حدث خطأ في جلب الأسئلة.");
+                }
+            });
+        }
+
+        function openModelsSelection(sectionType, mode) {
+            if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
+            currentSectionType = sectionType; 
+            currentActionMode = mode;         
+            
+            const gridContainer = document.getElementById('modelsGridContainer');
+            gridContainer.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'model-btn';
+                btn.innerText = `النموذج ${i}`;
+                btn.onclick = () => selectModel(i);
+                gridContainer.appendChild(btn);
+            }
+
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            setTimeout(() => document.getElementById('models-selection-section').classList.add('active-view'), 50);
+        }
+
+        async function selectModel(modelNum) {
+            selectedModelNum = modelNum;
+            showLoading('جاري تحميل الأسئلة...', 400, async () => {
+                try {
+                    const res = await fetch('/api/questions');
+                    const allQuestions = await res.json();
+                    
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.section === currentSectionType && 
+                        Number(q.model) === Number(modelNum) && 
+                        q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
+                    );
+
+                    document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+
+                    if (currentTrainingQuestions.length === 0) {
+                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
+                        document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة مطابقة لهذا التصنيف (النموذج ${modelNum}).`;
+                        return;
+                    }
+
+                    currentQuestionIndex = 0;
+                    setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 50);
+                    renderTrainingQuestion();
+                } catch (error) {
+                    alert("حدث خطأ في جلب الأسئلة.");
+                }
+            });
+        }
+
+        function renderTrainingQuestion() {
+            const container = document.getElementById('training-container');
+            if (currentQuestionIndex >= currentTrainingQuestions.length) {
+                container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 كفو يا بطل! أتممت أسئلة النموذج بنجاح تام وتألق.</h3><button onclick="navigateTo('student')" style="margin-top:20px; width:auto; padding:12px 25px;">العودة لوحة الطالب</button></div>`;
+                return;
+            }
+            const q = currentTrainingQuestions[currentQuestionIndex];
+            let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+            
+            container.innerHTML = `
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #64748b; font-size: 14px;">
+                        <span>السؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}</span>
+                        <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;">الدرجات: ${q.score || 1}</span>
+                    </div>
+                    <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b;">${q.question}</p>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">أ) ${opts[0]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">ب) ${opts[1]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">ج) ${opts[2]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">د) ${opts[3]}</button>
+                    </div>
+                    <div id="feedback" style="margin-top: 20px; font-weight: bold; text-align: center; font-size: 17px;"></div>
+                </div>
+            `;
+        }
+
+        function checkAnswer(correctOpt, chosenOpt, btn) {
+            const feedback = document.getElementById('feedback');
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+            if(correctOpt.trim() === chosenOpt.trim()) {
+                btn.style.background = '#d1fae5';
+                btn.style.borderColor = '#34d399';
+                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة وممتازة! كفو عليك 🌟</span>';
+            } else {
+                btn.style.background = '#fee2e2';
+                btn.style.borderColor = '#f87171';
+                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الإجابة الصحيحة هي: (${correctOpt}) 💪</span>`;
+            }
+            setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
+        }
+
+        function logout() {
+            showLoading('جاري تسجيل الخروج...', 1200, () => {
+                sessionStorage.removeItem('sessionUserEmail');
+                sessionStorage.removeItem('sessionUserRole');
+                sessionStorage.removeItem('currentView');
+                updateAuthStateUI();
+                navigateTo('landing');
+            });
+        }
+
+        function showAlert(section, text, success) {
+            const el = document.getElementById(section + '-alert');
+            if(!el) return;
+            el.innerText = text;
+            el.className = 'alert ' + (success ? 'alert-success' : 'alert-error');
+            el.style.display = 'block';
+        }
+
+        async function loadAdminStats() {
+            try {
+                const res = await fetch('/api/questions');
+                const questions = await res.json();
+                globalQuestionsCache = questions;
+                document.getElementById('statsText').innerText = `إجمالي عدد الأسئلة المسجلة في المنصة: ${questions.length} سؤالاً`;
+            } catch (e) {
+                document.getElementById('statsText').innerText = 'تعذر جلب إحصائيات النظام.';
+            }
+        }
+
+        async function loadAdminQuestionsList() {
+            showLoading('جاري تحميل سجل الأسئلة...', 400, async () => {
+                try {
+                    const res = await fetch('/api/questions');
+                    globalQuestionsCache = await res.json();
+                    renderQuestionsTable(globalQuestionsCache);
+                } catch (e) {
+                    alert('تعذر جلب الأسئلة.');
+                }
+            });
+        }
+
+        function renderQuestionsTable(questions) {
+            const listContainer = document.getElementById('adminQuestionsList');
+            document.getElementById('totalQuestionsBadge').innerText = `${questions.length} سؤال`;
+
+            if (questions.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">لا توجد أسئلة مطابقة للبحث أو مضافة بعد.</p>';
+                return;
+            }
+
+            let typeNames = {
+                'practice': 'تدريب',
+                'simulation': 'اختبار محاكي',
+                'qiyas_simulation': 'قياس محاكي'
+            };
+
+            let sectionNames = {
+                'quant': 'كمي',
+                'verbal': 'لفظي'
+            };
+
+            listContainer.innerHTML = questions.map((q, realIdx) => {
+                const originalIndex = globalQuestionsCache.findIndex(item => item === q);
+                let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+
+                return `
+                    <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${sectionNames[q.section] || q.section}</span>
+                                <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${typeNames[q.type] || q.type} (نموذج ${q.model})</span>
+                                <span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">⭐ ${q.score || 1} درجة</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button onclick="openEditModal(${originalIndex})" style="background:#0284c7; width:auto; padding:6px 14px; margin:0; font-size:13px;">تعديل</button>
+                                <button onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
+                            </div>
+                        </div>
+                        <p style="font-weight:700; color:#1e293b; font-size:15px; margin:4px 0;">${q.question}</p>
+                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; color:#475569; background:#f8fafc; padding:10px; border-radius:8px;">
+                            <div>أ) ${opts[0]}</div>
+                            <div>ب) ${opts[1]}</div>
+                            <div>ج) ${opts[2]}</div>
+                            <div>د) ${opts[3]}</div>
+                        </div>
+                        <div style="font-size:13px; color:#059669; font-weight:bold;">الإجابة الصحيحة: (${q.correct_answer})</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterAdminQuestions() {
+            const query = document.getElementById('adminSearchInput').value.toLowerCase();
+            const filterType = document.getElementById('adminFilterType').value;
+
+            const filtered = globalQuestionsCache.filter(q => {
+                const matchesQuery = q.question.toLowerCase().includes(query);
+                const matchesType = (filterType === 'all' || q.type === filterType);
+                return matchesQuery && matchesType;
+            });
+
+            renderQuestionsTable(filtered);
+        }
+
+        function openEditModal(index) {
+            const q = globalQuestionsCache[index];
+            document.getElementById('editQIndex').value = index;
+            document.getElementById('editQSection').value = q.section || 'quant';
+            document.getElementById('editQType').value = q.type || 'practice';
+            document.getElementById('editQModel').value = q.model || 1;
+            document.getElementById('editQScore').value = q.score || 1;
+            document.getElementById('editQText').value = q.question || '';
+            
+            let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+            document.getElementById('editQA').value = opts[0] || '';
+            document.getElementById('editQB').value = opts[1] || '';
+            document.getElementById('editQC').value = opts[2] || '';
+            document.getElementById('editQD').value = opts[3] || '';
+            document.getElementById('editQCorrect').value = q.correct_answer || 'أ';
+
+            document.getElementById('edit-question-modal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-question-modal').classList.remove('active');
+        }
+
+        function confirmDeleteQuestion(index) {
+            showConfirmModal('هل أنت متأكد من رغبتك في حذف هذا السؤال نهائياً من المنصة؟', () => {
+                deleteQuestion(index);
+            });
+        }
+
+        async function deleteQuestion(index) {
+            showLoading('جاري حذف السؤال...', 500, async () => {
+                try {
+                    const res = await fetch('/api/delete-question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ index: index })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        loadAdminQuestionsList();
+                        loadAdminStats();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء الحذف');
+                    }
+                } catch (e) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlerts();
+            showLoading('جاري إنشاء الحساب...', 1200, async () => {
+                try {
+                    const res = await fetch('/api/register', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) { 
+                        showAlert('reg', data.message, true); 
+                        setTimeout(() => switchView('login'), 1200); 
+                    } else { 
+                        showAlert('reg', data.message, false); 
+                    }
+                } catch (err) {
+                    showAlert('reg', 'حدث خطأ في الاتصال بالخادم', false);
                 }
             });
         });
 
-        async function handleRegister(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            showLoading('جاري إنشاء الحساب...');
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-
-            try {
-                const res = await fetch(`${API_URL}/api/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, pass })
-                });
-                const data = await res.json();
-                hideLoading();
-                if (data.success) {
-                    showModal('نجاح', data.message);
-                    switchView('view-login');
-                } else {
-                    showModal('تنبيه', data.message);
-                }
-            } catch (err) {
-                hideLoading();
-                showModal('خطأ', 'تعذر الاتصال بالخادم، تأكد من تشغيل الخادم.');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            showLoading('جاري تسجيل الدخول...');
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-
-            try {
-                const res = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, pass })
-                });
-                const data = await res.json();
-                hideLoading();
-                if (data.success) {
-                    document.body.classList.add('logged-in');
-                    if (data.role === 'admin') {
-                        document.getElementById('admin-menu-section').classList.remove('hidden');
-                    } else {
-                        document.getElementById('admin-menu-section').classList.add('hidden');
+            hideAlerts();
+            showLoading('جاري تسجيل الدخول...', 1200, async () => {
+                try {
+                    const res = await fetch('/api/login', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        sessionStorage.setItem('sessionUserEmail', loginEmail.value);
+                        sessionStorage.setItem('sessionUserRole', data.role);
+                        updateAuthStateUI();
+                        if(data.role === 'admin') {
+                            openAdminTab('add-question-box');
+                        } else {
+                            navigateTo('student');
+                        }
+                    } else { 
+                        showAlert('login', data.message, false); 
                     }
-                    switchView('view-dashboard');
-                } else {
-                    showModal('خطأ في الدخول', data.message);
+                } catch (err) {
+                    showAlert('login', 'حدث خطأ في الاتصال بالخادم', false);
                 }
-            } catch (err) {
-                hideLoading();
-                showModal('خطأ', 'حدث خطأ أثناء الاتصال بالخادم.');
-            }
-        }
+            });
+        });
 
-        function logout() {
-            document.body.classList.remove('logged-in');
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-pass').value = '';
-            switchView('view-login');
-        }
-
-        async function loadAdminUsers() {
-            showLoading('جاري تحميل الحسابات...');
-            try {
-                const res = await fetch(`${API_URL}/api/users`);
-                const users = await res.json();
-                hideLoading();
-                const tbody = document.getElementById('admin-users-table-body');
-                tbody.innerHTML = '';
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة حالياً.</td></tr>';
-                    return;
-                }
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.name}</td>
-                        <td>${user.email}</td>
-                        <td><span style="padding: 4px 8px; border-radius: 6px; font-size: 12px; background: ${user.role === 'admin' ? '#fef3c7; color: #d97706;' : '#e0e7ff; color: #4338ca;'}">${user.role === 'admin' ? 'مشرف' : 'طالب'}</span></td>
-                        <td>
-                            ${user.role !== 'admin' ? `<button class="btn-danger" onclick="confirmDeleteUser('${user.email}')">حذف</button>` : '<span style="color: #94a3b8; font-size: 12px;">محمي</span>'}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                hideLoading();
-                showModal('خطأ', 'فشل في جلب قائمة المستخدمين.');
-            }
-        }
-
-        function confirmDeleteUser(email) {
-            const message = `هل أنت متأكد من رغبتك في حذف الحساب المرتبط بالبريد (${email}) بشكل نهائي؟`;
-            const customActions = `
-                <button onclick="deleteUser('${email}')" style="background: #ef4444; color: #fff;">تأكيد الحذف</button>
-                <button onclick="closeModal()" style="background: #cbd5e1; color: #1e293b;">إلغاء</button>
-            `;
-            showModal('تأكيد الحذف', message, customActions);
-        }
-
-        async function deleteUser(email) {
-            closeModal();
-            showLoading('جاري حذف الحساب...');
-            try {
-                const res = await fetch(`${API_URL}/api/delete-user`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                hideLoading();
-                if (data.success) {
-                    showModal('نجاح', data.message);
-                    loadAdminUsers();
-                } else {
-                    showModal('تنبيه', data.message);
-                }
-            } catch (err) {
-                hideLoading();
-                showModal('خطأ', 'حدث خطأ أثناء محاولة الحذف.');
-            }
-        }
-
-        async function loadExams() {
-            try {
-                const res = await fetch(`${API_URL}/api/questions`);
-                const questions = await res.json();
-                const container = document.getElementById('exams-container');
-                if (questions.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد أسئلة مضافة حالياً من قبل المشرف.</p>';
-                    return;
-                }
-                let html = '';
-                questions.forEach((q, idx) => {
-                    html += `<div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
-                        <p style="font-weight: 700; margin-bottom: 8px;">السؤال ${idx + 1}: ${q.text}</p>
-                        <p style="color: var(--accent); font-size: 13px;">الإجابة الصحيحة: ${q.correct}</p>
-                    </div>`;
-                });
-                container.innerHTML = html;
-            } catch (err) {
-                document.getElementById('exams-container').innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر تحميل الأسئلة.</p>';
-            }
-        }
-
-        async function handleAddQuestion(e) {
+        document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            showLoading('جاري حفظ السؤال...');
-            const text = document.getElementById('q-text').value;
-            const correct = document.getElementById('q-correct').value;
-            try {
-                const res = await fetch(`${API_URL}/api/add-question`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text, correct })
-                });
-                const data = await res.json();
-                hideLoading();
-                if (data.success) {
-                    showModal('نجاح', data.message);
-                    document.getElementById('form-add-question').reset();
+            showLoading('جاري حفظ السؤال...', 500, async () => {
+                try {
+                    const res = await fetch('/api/add-question', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ 
+                            section: qSection.value, 
+                            type: qType.value, 
+                            model: qModel.value,
+                            score: qScore.value,
+                            question: qText.value, 
+                            options: [qA.value, qB.value, qC.value, qD.value], 
+                            correct_answer: qCorrect.value 
+                        }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) { 
+                        showAlert('q', data.message, true); 
+                        questionForm.reset(); 
+                        loadAdminStats();
+                    } else {
+                        showAlert('q', data.message || 'حدث خطأ أثناء حفظ السؤال', false);
+                    }
+                } catch (err) {
+                    showAlert('q', 'حدث خطأ أثناء حفظ السؤال', false);
                 }
-            } catch (err) {
-                hideLoading();
-                showModal('خطأ', 'تعذر حفظ السؤال.');
-            }
-        }
+            });
+        });
+
+        document.getElementById('qiyasQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading('جاري حفظ سؤال قياس...', 500, async () => {
+                try {
+                    const res = await fetch('/api/add-question', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ 
+                            section: qiyasSection.value, 
+                            type: 'qiyas_simulation', 
+                            model: qiyasModelNum.value,
+                            score: qiyasScore.value,
+                            question: qiyasText.value, 
+                            options: [qiyasA.value, qiyasB.value, qiyasC.value, qiyasD.value], 
+                            correct_answer: qiyasCorrect.value 
+                        }) 
+                    });
+                    const data = await res.json();
+                    if(data.success) { 
+                        showAlert('qiyas-q', 'تم حفظ سؤال قياس المحاكي بنجاح! 🎯', true); 
+                        qiyasQuestionForm.reset(); 
+                        loadAdminStats();
+                    } else {
+                        showAlert('qiyas-q', data.message || 'حدث خطأ أثناء الحفظ', false);
+                    }
+                } catch (err) {
+                    showAlert('qiyas-q', 'حدث خطأ في الاتصال بالخادم', false);
+                }
+            });
+        });
+
+        document.getElementById('editQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const index = document.getElementById('editQIndex').value;
+            const updatedData = {
+                index: Number(index),
+                section: document.getElementById('editQSection').value,
+                type: document.getElementById('editQType').value,
+                model: document.getElementById('editQModel').value,
+                score: document.getElementById('editQScore').value,
+                question: document.getElementById('editQText').value,
+                options: [
+                    document.getElementById('editQA').value,
+                    document.getElementById('editQB').value,
+                    document.getElementById('editQC').value,
+                    document.getElementById('editQD').value
+                ],
+                correct_answer: document.getElementById('editQCorrect').value
+            };
+
+            showLoading('جاري تحديث السؤال...', 500, async () => {
+                try {
+                    const res = await fetch('/api/edit-question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        closeEditModal();
+                        loadAdminQuestionsList();
+                        loadAdminStats();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء التعديل');
+                    }
+                } catch (err) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthStateUI();
+            const isAuth = checkAuth();
+            const lastView = sessionStorage.getItem('currentView') || (isAuth ? 'student' : 'landing');
+            switchView(lastView);
+        });
     </script>
 </body>
 </html>
