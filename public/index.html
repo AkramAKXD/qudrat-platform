@@ -224,6 +224,10 @@
                 <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
                 <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
+                
+                <!-- الإضافات الجديدة المطلوبة -->
+                <li><button onclick="openAdminTab('registered-accounts-box')">👥 الحسابات المسجلة</button></li>
+                <li><button onclick="window.open('https://qudrat-platform-trii.onrender.com/admin.html', '_blank')">🔗 صفحة النظام الأساسية (API)</button></li>
             </div>
 
             <li style="margin-top: auto; padding-top: 15px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
@@ -458,6 +462,15 @@
                     <h3 style="color: #7c3aed; margin-bottom: 15px;">📊 إحصائيات عامة</h3>
                     <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
                 </div>
+
+                <!-- صندوق الحسابات المسجلة -->
+                <div id="registered-accounts-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">👥 إدارة الحسابات المسجلة</h3>
+                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة:</p>
+                    <div id="accountsListContainer" style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; min-height: 150px;">
+                        <p style="text-align: center; color: #64748b;">جاري تحميل الحسابات المسجلة...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -593,6 +606,32 @@
             document.getElementById(tabId).classList.remove('hidden');
             if(tabId === 'manage-questions-box') {
                 loadAdminQuestionsList();
+            } else if(tabId === 'registered-accounts-box') {
+                loadRegisteredAccounts();
+            }
+        }
+
+        async function loadRegisteredAccounts() {
+            const container = document.getElementById('accountsListContainer');
+            container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
+            try {
+                const res = await fetch('/api/users'); // استبدل بالمسار الصحيح لجلب الحسابات إذا كان مختلفاً
+                const users = await res.json();
+                if(users && users.length > 0) {
+                    container.innerHTML = users.map(u => `
+                        <div style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="color: #1e293b;">${u.name || 'مستخدم'}</strong>
+                                <span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span>
+                            </div>
+                            <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">${u.role || 'student'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة أو تعذر جلبها.</p>';
+                }
+            } catch (e) {
+                container.innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر الاتصال بالخادم لجلب الحسابات.</p>';
             }
         }
 
@@ -1055,7 +1094,7 @@
                 type: document.getElementById('editQType').value,
                 model: document.getElementById('editQModel').value,
                 score: document.getElementById('editQScore').value,
-                question: document.getElementById('editQText5' || 'editQText').value, // Fallback safe
+                question: document.getElementById('editQText').value,
                 options: [
                     document.getElementById('editQA').value,
                     document.getElementById('editQB').value,
@@ -1064,9 +1103,6 @@
                 ],
                 correct_answer: document.getElementById('editQCorrect').value
             };
-            
-            // Correction for text element ID
-            updatedData.question = document.getElementById('editQText').value;
 
             showLoading('جاري تحديث السؤال...', 500, async () => {
                 try {
