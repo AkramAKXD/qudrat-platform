@@ -18,6 +18,44 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-gradient); color: #0f172a; min-height: 100vh; display: flex; overflow-x: hidden; }
 
+        /* شاشة التحميل العامة (Overlay) */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px;
+        }
+        .loading-text {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* القائمة الجانبية - بتصميم أنيق وملون */
         .sidebar {
             width: var(--sidebar-width);
@@ -212,6 +250,12 @@
     </style>
 </head>
 <body id="appBody">
+
+    <!-- شاشة التحميل التفاعلية -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingMessage">جاري المعالجة، يرجى الانتظار...</div>
+    </div>
 
     <!-- القائمة الجانبية -->
     <nav class="sidebar" id="appSidebar">
@@ -435,9 +479,18 @@
         let currentQuestionIndex = 0;
         let verifiedForgotEmail = '';
 
-        // التحقق الحقيقي من الجلسة (التحقق من وجود المستخدم عبر الخادم أو التخزين الآمن)
+        // دوال التحكم بشاشة التحميل (Loading Overlay)
+        function showLoading(message = 'جاري المعالجة، يرجى الانتظار...') {
+            document.getElementById('loadingMessage').innerText = message;
+            document.getElementById('loading-overlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+
         function checkAuth() {
-            const userEmail = sessionStorage.getItem('sessionUserEmail'); // استخدام sessionStorage لإنهاء الجلسة عند إغلاق المتصفح
+            const userEmail = sessionStorage.getItem('sessionUserEmail');
             return !!userEmail;
         }
 
@@ -471,7 +524,7 @@
         }
 
         function switchView(view) {
-            hideAlerts(); // إخفاء أي تنبيهات سابقة عند تبديل الصفحات لمنع بقاء رسائل الخطأ القديمة
+            hideAlerts();
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
@@ -496,7 +549,6 @@
             else if (view === 'admin') { targetId = 'admin-dashboard'; document.getElementById('menu-admin').classList.add('active'); }
 
             updateAuthStateUI();
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (targetId) {
@@ -519,11 +571,14 @@
             const email = document.getElementById('forgotEmail').value;
             if(!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني', false); return; }
             
-            // تحقق مبدئي من وجود المستخدم (أو استدعاء API التحقق)
-            verifiedForgotEmail = email;
-            document.getElementById('forgot-step-1').classList.add('hidden');
-            document.getElementById('forgot-step-2').classList.remove('hidden');
-            showAlert('forgot', 'تم التحقق من البريد. أدخل كلمة المرور الجديدة', true);
+            showLoading('جاري التحقق من البريد الإلكتروني...');
+            setTimeout(() => {
+                hideLoading();
+                verifiedForgotEmail = email;
+                document.getElementById('forgot-step-1').classList.add('hidden');
+                document.getElementById('forgot-step-2').classList.remove('hidden');
+                showAlert('forgot', 'تم التحقق بنجاح. أدخل كلمة المرور الجديدة', true);
+            }, 800);
         }
 
         async function submitNewPassword() {
@@ -533,17 +588,24 @@
                 return;
             }
             
-            const res = await fetch('/api/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
-            });
-            const data = await res.json();
-            if(data.success) {
-                showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! قم بتسجيل الدخول الآن', true);
-                setTimeout(() => switchView('login'), 2000);
-            } else {
-                showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
+            showLoading('جاري تحديث كلمة المرور...');
+            try {
+                const res = await fetch('/api/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
+                });
+                const data = await res.json();
+                hideLoading();
+                if(data.success) {
+                    showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! قم بتسجيل الدخول الآن', true);
+                    setTimeout(() => switchView('login'), 2000);
+                } else {
+                    showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
+                }
+            } catch (err) {
+                hideLoading();
+                showAlert('forgot', 'حدث خطأ في الاتصال بالخادم', false);
             }
         }
 
@@ -575,9 +637,11 @@
 
         async function selectModel(modelNum) {
             selectedModelNum = modelNum;
+            showLoading('جاري تحميل الأسئلة...');
             try {
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
+                hideLoading();
                 
                 currentTrainingQuestions = allQuestions.filter(q => 
                     q.section === currentSectionType && 
@@ -598,6 +662,7 @@
                 setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 100);
                 renderTrainingQuestion();
             } catch (error) {
+                hideLoading();
                 alert("حدث خطأ في جلب الأسئلة.");
             }
         }
@@ -641,10 +706,14 @@
         }
 
         function logout() {
-            sessionStorage.removeItem('sessionUserEmail');
-            document.getElementById('menu-admin').classList.add('hidden');
-            updateAuthStateUI();
-            navigateTo('landing');
+            showLoading('جاري تسجيل الخروج...');
+            setTimeout(() => {
+                sessionStorage.removeItem('sessionUserEmail');
+                document.getElementById('menu-admin').classList.add('hidden');
+                updateAuthStateUI();
+                navigateTo('landing');
+                hideLoading();
+            }, 600);
         }
 
         function showAlert(section, text, success) {
@@ -660,61 +729,99 @@
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
-            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) });
-            const data = await res.json();
-            if(data.success) { showAlert('reg', data.message, true); setTimeout(() => switchView('login'), 1500); } else { showAlert('reg', data.message, false); }
+            showLoading('جاري إنشاء الحساب...');
+            try {
+                const res = await fetch('/api/register', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) 
+                });
+                const data = await res.json();
+                hideLoading();
+                if(data.success) { 
+                    showAlert('reg', data.message, true); 
+                    setTimeout(() => switchView('login'), 1500); 
+                } else { 
+                    showAlert('reg', data.message, false); 
+                }
+            } catch (err) {
+                hideLoading();
+                showAlert('reg', 'حدث خطأ في الاتصال بالخادم', false);
+            }
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
-            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) });
-            const data = await res.json();
-            if(data.success) {
-                sessionStorage.setItem('sessionUserEmail', loginEmail.value);
-                updateAuthStateUI();
-                if(data.role === 'admin') {
-                    document.getElementById('menu-admin').classList.remove('hidden');
-                    navigateTo('admin');
-                } else {
-                    navigateTo('student');
+            showLoading('جاري التحقق وتسجيل الدخول...');
+            try {
+                const res = await fetch('/api/login', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) 
+                });
+                const data = await res.json();
+                hideLoading();
+                if(data.success) {
+                    sessionStorage.setItem('sessionUserEmail', loginEmail.value);
+                    updateAuthStateUI();
+                    if(data.role === 'admin') {
+                        document.getElementById('menu-admin').classList.remove('hidden');
+                        navigateTo('admin');
+                    } else {
+                        navigateTo('student');
+                    }
+                } else { 
+                    showAlert('login', data.message, false); 
                 }
-            } else { 
-                showAlert('login', data.message, false); 
+            } catch (err) {
+                hideLoading();
+                showAlert('login', 'حدث خطأ في الاتصال بالخادم', false);
             }
         });
 
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const res = await fetch('/api/add-question', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ 
-                    section: qSection.value, 
-                    type: qType.value, 
-                    model: qModel.value, 
-                    question: qText.value, 
-                    options: [qA.value, qB.value, qC.value, qD.value], 
-                    correct_answer: qCorrect.value 
-                }) 
-            });
-            const data = await res.json();
-            if(data.success) { showAlert('q', data.message, true); questionForm.reset(); }
+            showLoading('جاري حفظ السؤال...');
+            try {
+                const res = await fetch('/api/add-question', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ 
+                        section: qSection.value, 
+                        type: qType.value, 
+                        model: qModel.value, 
+                        question: qText.value, 
+                        options: [qA.value, qB.value, qC.value, qD.value], 
+                        correct_answer: qCorrect.value 
+                    }) 
+                });
+                const data = await res.json();
+                hideLoading();
+                if(data.success) { showAlert('q', data.message, true); questionForm.reset(); }
+            } catch (err) {
+                hideLoading();
+                showAlert('q', 'حدث خطأ أثناء حفظ السؤال', false);
+            }
         });
 
         async function loadQuestionsList() {
+            showLoading('جاري جلب الأسئلة...');
             document.getElementById('data-list-container').classList.remove('hidden');
             const res = await fetch('/api/questions');
             const data = await res.json();
+            hideLoading();
             document.getElementById('data-output').innerHTML = data.map((q, i) => `
                 <div class="question-card"><strong>[${q.section} - ${q.type} - نموذج ${q.model}] س${i+1}:</strong> ${q.question}<br><span style="color:#10b981;">الإجابة: ${q.correct_answer}</span></div>
             `).join('');
         }
 
         async function loadUsersList() {
+            showLoading('جاري جلب المستخدمين...');
             document.getElementById('data-list-container').classList.remove('hidden');
             const res = await fetch('/api/users');
             const data = await res.json();
+            hideLoading();
             document.getElementById('data-output').innerHTML = data.map((u, i) => `
                 <div class="user-card"><strong>${i+1}. ${u.name}</strong> (${u.email}) - <span style="color:var(--primary);">${u.role}</span></div>
             `).join('');
