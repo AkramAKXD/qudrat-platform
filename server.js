@@ -208,9 +208,9 @@ app.post('/api/admin/delete-user', (req, res) => {
     }
 });
 
-// ==================== مسارات إدارة النماذج المتوافقة مع الواجهة ====================
+// ==================== مسارات إدارة النماذج (للمشرف) ====================
 
-// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي
+// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي للمشرف
 app.get('/api/admin/models-status', (req, res) => {
     try {
         const questions = readJsonFile(QUESTIONS_FILE);
@@ -268,6 +268,64 @@ app.post('/api/admin/toggle-model', (req, res) => {
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
     
     res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
+});
+
+// ==================== مسارات خاصة بالطلاب (للتحقق من النماذج النشطة فقط) ====================
+
+// جلب النماذج النشطة فقط التي يسمح للطالب رؤيتها
+app.get('/api/student/active-models', (req, res) => {
+    try {
+        const questions = readJsonFile(QUESTIONS_FILE);
+        const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+
+        const activeModels = {
+            quant: {},
+            verbal: {},
+            mock: {}
+        };
+
+        questions.forEach(q => {
+            let sec = q.section === 'verbal' ? 'verbal' : 'quant';
+            if (q.type === 'qiyas_simulation') sec = 'mock';
+            
+            const mNum = Number(q.model) || 1;
+            const key = `${sec}_${mNum}`;
+            
+            const isActive = modelsStatus[key]?.active ?? true;
+
+            if (isActive) {
+                if (!activeModels[sec][mNum]) {
+                    activeModels[sec][mNum] = { modelNumber: mNum, questionCount: 0 };
+                }
+                activeModels[sec][mNum].questionCount++;
+            }
+        });
+
+        res.json({ success: true, models: activeModels });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء جلب النماذج النشطة' });
+    }
+});
+
+// جلب أسئلة نموذج معين بشرط ألا يكون معطلاً
+app.post('/api/get-model-questions', (req, res) => {
+    const { section, modelNumber } = req.body;
+    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+    const key = `${section}_${modelNumber}`;
+    
+    const isActive = modelsStatus[key]?.active ?? true;
+    if (!isActive) {
+        return res.json({ success: false, message: '⛔ عذراً، هذا النموذج معطّل حالياً من قبل الإدارة.' });
+    }
+
+    const questions = readJsonFile(QUESTIONS_FILE);
+    const filteredQuestions = questions.filter(q => {
+        let sec = q.section === 'verbal' ? 'verbal' : 'quant';
+        if (q.type === 'qiyas_simulation') sec = 'mock';
+        return sec === section && Number(q.model) === Number(modelNumber);
+    });
+
+    res.json({ success: true, questions: filteredQuestions });
 });
 
 // تشغيل الخادم
