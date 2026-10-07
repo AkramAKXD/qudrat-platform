@@ -56,7 +56,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* القائمة الجانبية - بتصميم أنيق وملون */
+        /* القائمة الجانبية */
         .sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -70,9 +70,7 @@
             z-index: 100;
             box-shadow: -5px 0 25px rgba(0,0,0,0.05);
         }
-        body.logged-in .sidebar {
-            display: flex;
-        }
+        body.logged-in .sidebar { display: flex; }
         
         .sidebar-header {
             padding: 30px 20px;
@@ -95,9 +93,7 @@
             flex-grow: 1;
             overflow-y: auto;
         }
-        .sidebar-menu li {
-            margin-bottom: 12px;
-        }
+        .sidebar-menu li { margin-bottom: 12px; }
         .sidebar-menu button {
             display: flex;
             align-items: center;
@@ -136,9 +132,7 @@
             min-height: 100vh;
             transition: margin-right 0.3s ease;
         }
-        body.logged-in .main-content {
-            margin-right: var(--sidebar-width);
-        }
+        body.logged-in .main-content { margin-right: var(--sidebar-width); }
 
         .container { 
             background: rgba(255, 255, 255, 0.95); 
@@ -233,7 +227,7 @@
         .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
 
         .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 25px; border-radius: 20px; margin-top: 20px; }
-        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; margin-top: 12px; font-weight: bold; cursor: pointer; }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; margin-top: 12px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; text-align: center; }
         
         .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 22px; border-radius: 16px; margin-top: 15px; text-align: right; }
         .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; max-width: 650px; margin: 0 auto; }
@@ -443,9 +437,8 @@
             <div id="admin-dashboard" class="app-section">
                 <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
                 <div class="admin-panel">
-                    <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد للمنصة</button>
-                    <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة المضافة</button>
-                    <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 الحسابات المسجلة</button>
+                    <button class="admin-btn" onclick="toggleBox('add-question-box')" style="background: var(--admin-color);">➕ إضافة سؤال جديد للمنصة</button>
+                    <a href="/admin.html" target="_blank" class="admin-btn" style="background:#0284c7;">📂 الاطلاع على الحسابات (API المسجل)</a>
                 </div>
                 <div id="add-question-box" class="hidden" style="margin-top: 20px; background: #f1f5f9; padding: 22px; border-radius: 18px;">
                     <div id="q-alert" class="alert"></div>
@@ -462,10 +455,6 @@
                         <button type="submit" style="background: var(--accent);">حفظ السؤال 💾</button>
                     </form>
                 </div>
-                <div id="data-list-container" class="hidden" style="margin-top: 20px;">
-                    <h4 id="list-title" style="margin-bottom: 10px; color: var(--primary);">البيانات المسجلة:</h4>
-                    <div id="data-output"></div>
-                </div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← الانتقال لوحة الطالب</span></div>
             </div>
         </div>
@@ -479,7 +468,7 @@
         let currentQuestionIndex = 0;
         let verifiedForgotEmail = '';
 
-        // دوال التحكم بشاشة التحميل (Loading Overlay)
+        // دوال التحكم بشاشة التحميل (Loading Overlay) لمدة 4 ثوانٍ
         function showLoading(message = 'جاري المعالجة، يرجى الانتظار...') {
             document.getElementById('loadingMessage').innerText = message;
             document.getElementById('loading-overlay').classList.add('active');
@@ -487,6 +476,11 @@
 
         function hideLoading() {
             document.getElementById('loading-overlay').classList.remove('active');
+        }
+
+        // دالة مساعدة لتنفيذ تأخير لمدة 4 ثوانٍ (4000 ميللي ثانية)
+        function delay4Seconds(callback) {
+            setTimeout(callback, 4000);
         }
 
         function checkAuth() {
@@ -572,13 +566,13 @@
             if(!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني', false); return; }
             
             showLoading('جاري التحقق من البريد الإلكتروني...');
-            setTimeout(() => {
+            delay4Seconds(() => {
                 hideLoading();
                 verifiedForgotEmail = email;
                 document.getElementById('forgot-step-1').classList.add('hidden');
                 document.getElementById('forgot-step-2').classList.remove('hidden');
                 showAlert('forgot', 'تم التحقق بنجاح. أدخل كلمة المرور الجديدة', true);
-            }, 800);
+            });
         }
 
         async function submitNewPassword() {
@@ -596,13 +590,15 @@
                     body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
                 });
                 const data = await res.json();
-                hideLoading();
-                if(data.success) {
-                    showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! قم بتسجيل الدخول الآن', true);
-                    setTimeout(() => switchView('login'), 2000);
-                } else {
-                    showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
-                }
+                delay4Seconds(() => {
+                    hideLoading();
+                    if(data.success) {
+                        showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! قم بتسجيل الدخول الآن', true);
+                        setTimeout(() => switchView('login'), 2000);
+                    } else {
+                        showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
+                    }
+                });
             } catch (err) {
                 hideLoading();
                 showAlert('forgot', 'حدث خطأ في الاتصال بالخادم', false);
@@ -641,26 +637,28 @@
             try {
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
-                hideLoading();
-                
-                currentTrainingQuestions = allQuestions.filter(q => 
-                    q.section === currentSectionType && 
-                    Number(q.model) === Number(modelNum) && 
-                    q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
-                );
+                delay4Seconds(() => {
+                    hideLoading();
+                    
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.section === currentSectionType && 
+                        Number(q.model) === Number(modelNum) && 
+                        q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
+                    );
 
-                document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+                    document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
 
-                if (currentTrainingQuestions.length === 0) {
-                    setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 100);
-                    document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
-                    document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة مطابقة لهذا التصنيف (النموذج ${modelNum}).`;
-                    return;
-                }
+                    if (currentTrainingQuestions.length === 0) {
+                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 100);
+                        document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة مطابقة لهذا التصنيف (النموذج ${modelNum}).`;
+                        return;
+                    }
 
-                currentQuestionIndex = 0;
-                setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 100);
-                renderTrainingQuestion();
+                    currentQuestionIndex = 0;
+                    setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 100);
+                    renderTrainingQuestion();
+                });
             } catch (error) {
                 hideLoading();
                 alert("حدث خطأ في جلب الأسئلة.");
@@ -705,15 +703,16 @@
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1800);
         }
 
+        // تسجيل الخروج مع شاشة تحميل لمدة 4 ثوانٍ
         function logout() {
             showLoading('جاري تسجيل الخروج...');
-            setTimeout(() => {
+            delay4Seconds(() => {
                 sessionStorage.removeItem('sessionUserEmail');
                 document.getElementById('menu-admin').classList.add('hidden');
                 updateAuthStateUI();
                 navigateTo('landing');
                 hideLoading();
-            }, 600);
+            });
         }
 
         function showAlert(section, text, success) {
@@ -726,6 +725,7 @@
 
         function toggleBox(boxId) { document.getElementById(boxId).classList.toggle('hidden'); }
 
+        // إنشاء حساب جديد مع شاشة تحميل لمدة 4 ثوانٍ
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
@@ -737,19 +737,22 @@
                     body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) 
                 });
                 const data = await res.json();
-                hideLoading();
-                if(data.success) { 
-                    showAlert('reg', data.message, true); 
-                    setTimeout(() => switchView('login'), 1500); 
-                } else { 
-                    showAlert('reg', data.message, false); 
-                }
+                delay4Seconds(() => {
+                    hideLoading();
+                    if(data.success) { 
+                        showAlert('reg', data.message, true); 
+                        setTimeout(() => switchView('login'), 1500); 
+                    } else { 
+                        showAlert('reg', data.message, false); 
+                    }
+                });
             } catch (err) {
                 hideLoading();
                 showAlert('reg', 'حدث خطأ في الاتصال بالخادم', false);
             }
         });
 
+        // تسجيل الدخول مع شاشة تحميل لمدة 4 ثوانٍ
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
@@ -761,19 +764,21 @@
                     body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) 
                 });
                 const data = await res.json();
-                hideLoading();
-                if(data.success) {
-                    sessionStorage.setItem('sessionUserEmail', loginEmail.value);
-                    updateAuthStateUI();
-                    if(data.role === 'admin') {
-                        document.getElementById('menu-admin').classList.remove('hidden');
-                        navigateTo('admin');
-                    } else {
-                        navigateTo('student');
+                delay4Seconds(() => {
+                    hideLoading();
+                    if(data.success) {
+                        sessionStorage.setItem('sessionUserEmail', loginEmail.value);
+                        updateAuthStateUI();
+                        if(data.role === 'admin') {
+                            document.getElementById('menu-admin').classList.remove('hidden');
+                            navigateTo('admin');
+                        } else {
+                            navigateTo('student');
+                        }
+                    } else { 
+                        showAlert('login', data.message, false); 
                     }
-                } else { 
-                    showAlert('login', data.message, false); 
-                }
+                });
             } catch (err) {
                 hideLoading();
                 showAlert('login', 'حدث خطأ في الاتصال بالخادم', false);
@@ -797,35 +802,15 @@
                     }) 
                 });
                 const data = await res.json();
-                hideLoading();
-                if(data.success) { showAlert('q', data.message, true); questionForm.reset(); }
+                delay4Seconds(() => {
+                    hideLoading();
+                    if(data.success) { showAlert('q', data.message, true); questionForm.reset(); }
+                });
             } catch (err) {
                 hideLoading();
                 showAlert('q', 'حدث خطأ أثناء حفظ السؤال', false);
             }
         });
-
-        async function loadQuestionsList() {
-            showLoading('جاري جلب الأسئلة...');
-            document.getElementById('data-list-container').classList.remove('hidden');
-            const res = await fetch('/api/questions');
-            const data = await res.json();
-            hideLoading();
-            document.getElementById('data-output').innerHTML = data.map((q, i) => `
-                <div class="question-card"><strong>[${q.section} - ${q.type} - نموذج ${q.model}] س${i+1}:</strong> ${q.question}<br><span style="color:#10b981;">الإجابة: ${q.correct_answer}</span></div>
-            `).join('');
-        }
-
-        async function loadUsersList() {
-            showLoading('جاري جلب المستخدمين...');
-            document.getElementById('data-list-container').classList.remove('hidden');
-            const res = await fetch('/api/users');
-            const data = await res.json();
-            hideLoading();
-            document.getElementById('data-output').innerHTML = data.map((u, i) => `
-                <div class="user-card"><strong>${i+1}. ${u.name}</strong> (${u.email}) - <span style="color:var(--primary);">${u.role}</span></div>
-            `).join('');
-        }
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
