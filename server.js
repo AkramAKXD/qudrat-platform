@@ -1,150 +1,124 @@
 const express = require('express');
-const path = require('path');
 const fs = require('fs');
-
+const path = require('path');
 const app = express();
-const PORT = 3000;
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); // تأكد أن ملف الhtml في مجلد public أو عدله حسب رغبتك
 
-// مسارات ملفات البيانات
-const USERS_FILE = path.join(__dirname, 'users.json');
-const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
+// ملفات تخزين البيانات الوهمية (يمكن استبدالها بقاعدة بيانات حقيقية)
+const USERS_FILE = './users.json';
+const QUESTIONS_FILE = './questions.json';
 
-function readJsonFile(filePath) {
+// دوال مساعدة لقراءة والكتابة
+function readJSON(file) {
+    if (!fs.existsSync(file)) return [];
     try {
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify([]));
-        }
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (e) {
         return [];
     }
 }
 
-function writeJsonFile(filePath, data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+function writeJSON(file, data) {
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// تهيئة حساب المشرف الأساسي والملفات إذا لم تكن موجودة
-if (!fs.existsSync(USERS_FILE)) writeJsonFile(USERS_FILE, [
-    { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
-]);
-if (!fs.existsSync(QUESTIONS_FILE)) writeJsonFile(QUESTIONS_FILE, []);
-
-// مسارات الـ API
-
-// تسجيل حساب جديد
+// 1. مسارات المستخدمين والتحقق
 app.post('/api/register', (req, res) => {
     const { name, email, pass } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقاً!' });
+    let users = readJSON(USERS_FILE);
+    if (users.find(u => u.email === email)) {
+        return res.json({ success: false, message: 'البريد الإلكتروني مسجل مسبقاً!' });
     }
-    users.push({ name: name.trim(), email: email.trim().toLowerCase(), pass, role: 'student' });
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
+    const role = email === 'admin@qudrat.com' ? 'admin' : 'student';
+    users.push({ name, email, pass, role });
+    writeJSON(USERS_FILE, users);
+    res.json({ success: true, message: 'تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول.' });
 });
 
-// تسجيل الدخول
 app.post('/api/login', (req, res) => {
     const { email, pass } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
-    if (!user) {
-        return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
+    let users = readJSON(USERS_FILE);
+    const user = users.find(u => u.email === email && u.pass === pass);
+    if (user) {
+        res.json({ success: true, role: user.role || 'student' });
+    } else {
+        res.json({ success: false, message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة!' });
     }
-    res.json({ success: true, name: user.name, role: user.role, email: user.email });
 });
 
-// استعادة / تحديث كلمة المرور
+// مسار جلب الحسابات المسجلة للمشرف
+app.get('/api/users', (req, res) => {
+    let users = readJSON(USERS_FILE);
+    // إخفاء كلمات المرور عند إرسالها للواجهة لأسباب أمنية
+    const safeUsers = users.map(u => ({ name: u.name, email: u.email, role: u.role || 'student' }));
+    res.json(safeUsers);
+});
+
+// مسار حذف المستخدمين للمشرف
+app.post('/api/delete-user', (req, res) => {
+    const { email } = req.body;
+    let users = readJSON(USERS_FILE);
+    const initialLength = users.length;
+    users = users.filter(u => u.email !== email);
+    
+    if (users.length < initialLength) {
+        writeJSON(USERS_FILE, users);
+        res.json({ success: true, message: 'تم حذف الحساب بنجاح' });
+    } else {
+        res.json({ success: false, message: 'المستخدم غير موجود' });
+    }
+});
+
 app.post('/api/reset-password', (req, res) => {
     const { email, newPass } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (userIndex === -1) {
-        return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
+    let users = readJSON(USERS_FILE);
+    const user = users.find(u => u.email === email);
+    if (user) {
+        user.pass = newPass;
+        writeJSON(USERS_FILE, users);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: 'المستخدم غير موجود' });
     }
-    
-    users[userIndex].pass = newPass;
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
 });
 
-// جلب جميع الأسئلة
+// 2. مسارات الأسئلة
 app.get('/api/questions', (req, res) => {
-    const questions = readJsonFile(QUESTIONS_FILE);
-    res.json(questions);
+    res.json(readJSON(QUESTIONS_FILE));
 });
 
-// إضافة سؤال جديد
 app.post('/api/add-question', (req, res) => {
-    const { section, type, model, question, options, correct_answer, image } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
-    questions.push({ 
-        id: questions.length + 1, 
-        section: section || "quant", 
-        type: type || 'practice', 
-        model: Number(model) || 1, 
-        question, 
-        options, 
-        correct_answer, 
-        image: image || null 
-    });
-    writeJsonFile(QUESTIONS_FILE, questions);
-    res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
+    let questions = readJSON(QUESTIONS_FILE);
+    questions.push(req.body);
+    writeJSON(QUESTIONS_FILE, questions);
+    res.json({ success: true, message: 'تم حفظ السؤال بنجاح!' });
 });
 
-// حذف سؤال بواسطة الـ Index
+app.post('/api/edit-question', (req, res) => {
+    const { index, ...updatedData } = req.body;
+    let questions = readJSON(QUESTIONS_FILE);
+    if (questions[index]) {
+        questions[index] = updatedData;
+        writeJSON(QUESTIONS_FILE, questions);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: 'السؤال غير موجود' });
+    }
+});
+
 app.post('/api/delete-question', (req, res) => {
     const { index } = req.body;
-    let questions = readJsonFile(QUESTIONS_FILE);
-    
+    let questions = readJSON(QUESTIONS_FILE);
     if (index >= 0 && index < questions.length) {
         questions.splice(index, 1);
-        writeJsonFile(QUESTIONS_FILE, questions);
-        return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
+        writeJSON(QUESTIONS_FILE, questions);
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, message: 'السؤال غير موجود' });
     }
-    res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
-// جلب قائمة المستخدمين العادية
-app.get('/api/users', (req, res) => {
-    const users = readJsonFile(USERS_FILE);
-    res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
-});
-
-// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف (admin.html) مع التحقق من الصلاحية
-app.post('/api/admin/users', (req, res) => {
-    const { email } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    
-    // التحقق من أن المستخدم مسجل ولديه صلاحية مشرف
-    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').toLowerCase() && u.role === 'admin');
-    
-    if (!adminUser) {
-        return res.json({ 
-            success: false, 
-            message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' 
-        });
-    }
-    
-    // إرجاع البيانات كاملة لملف admin.html
-    res.json({ 
-        success: true, 
-        users: users.map(u => ({ 
-            name: u.name, 
-            email: u.email, 
-            pass: u.pass, 
-            role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
-        })) 
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 السيرفر يعمل على الرابط: http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
