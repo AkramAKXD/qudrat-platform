@@ -1,15 +1,85 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة قدرات الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; }
+        :root { --primary: #4f46e5; --primary-dark: #3730a3; --accent: #10b981; --admin-color: #f59e0b; --sidebar-width: 260px; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: #0f172a; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); width: 100%; max-width: 750px; overflow: hidden; position: relative; min-height: 450px; }
+        body { background: #f4f6f9; color: #0f172a; min-height: 100vh; display: flex; }
+
+        /* تصميم القائمة الجانبية */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.03);
+        }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .sidebar-header h2 {
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 15px;
+            flex-grow: 1;
+        }
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+        .sidebar-menu a, .sidebar-menu button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: #475569;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: right;
+        }
+        .sidebar-menu a:hover, .sidebar-menu button:hover {
+            background: #e0e7ff;
+            color: var(--primary);
+        }
+        .sidebar-menu li.active a, .sidebar-menu li.active button {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* محتوى الصفحة الرئيسي */
+        .main-content {
+            margin-right: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { background: #fff; padding: 35px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 800px; position: relative; min-height: 450px; }
         
         .app-section {
             position: absolute;
@@ -18,10 +88,8 @@
             left: 35px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(25px) scale(0.95);
-            transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1), 
-                        transform 1.5s cubic-bezier(0.25, 1, 0.5, 1), 
-                        visibility 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
             pointer-events: none;
         }
 
@@ -32,7 +100,7 @@
             left: auto;
             opacity: 1;
             visibility: visible;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
             pointer-events: auto;
         }
 
@@ -41,17 +109,14 @@
         label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 14px; }
         
         .password-container { position: relative; width: 100%; }
-        .password-container input { width: 100%; padding: 10px 40px 10px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
-        .password-container input:focus { border-color: var(--primary); }
-        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; width: auto; margin: 0; padding: 0; }
+        .password-container input { width: 100%; padding: 10px 40px 10px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; }
+        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; }
 
         input, select, textarea { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); }
         
-        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s, transform 0.1s; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
         button:hover { background: var(--primary-dark); }
-        button:active { transform: scale(0.99); }
-        button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
         
         .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
         .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
@@ -60,10 +125,9 @@
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
         
-        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 24px; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.92); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 24px; opacity: 0; visibility: hidden; transition: 0.3s; }
         .loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { width: 45px; height: 45px; border: 4px solid #e0e7ff; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
-        .loading-text { color: var(--primary); font-weight: 700; font-size: 16px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .hero-section { text-align: center; }
@@ -71,638 +135,366 @@
         .hero-title { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 10px; }
         .hero-subtitle { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
         .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; text-align: right; }
-        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; transition: transform 0.2s, border-color 0.2s; }
-        .feature-box:hover { border-color: var(--primary); transform: translateY(-2px); }
-        .feature-box h4 { color: var(--primary); font-size: 14px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; }
+        .feature-box h4 { color: var(--primary); font-size: 14px; margin-bottom: 5px; }
         .feature-box p { color: #64748b; font-size: 12px; }
         .hero-buttons { display: flex; gap: 10px; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background: #e0e7ff; color: var(--primary-dark); }
 
         .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; }
-        .student-video-card video { width: 100%; max-height: 220px; border-radius: 12px; background: #000; outline: none; margin-bottom: 12px; }
-        .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; margin-top: 10px; }
+        .student-video-card video { width: 100%; max-height: 220px; border-radius: 12px; background: #000; margin-bottom: 12px; }
+        .motivation-box { background: #e0e7ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; text-align: right; }
         .motivation-box h4 { color: var(--primary-dark); font-size: 16px; margin-bottom: 5px; }
         .motivation-box p { color: #4338ca; font-size: 13px; line-height: 1.6; font-weight: 600; }
 
         .sections-stack { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 22px; border-radius: 16px; text-align: center; cursor: pointer; transition: all 0.25s ease; }
-        .section-big-card:hover { border-color: var(--primary); background: #e0e7ff; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.1); }
+        .section-big-card:hover { border-color: var(--primary); background: #e0e7ff; }
         .section-big-card h3 { color: var(--primary); font-size: 20px; margin-bottom: 8px; }
         .section-big-card p { color: #64748b; font-size: 14px; }
 
         .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: right; }
-        .section-detail-box h3 { color: var(--primary); margin-bottom: 10px; font-size: 18px; }
-        .section-detail-box p { color: #475569; font-size: 14px; line-height: 1.7; margin-bottom: 10px; }
         .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
 
         .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 20px; border-radius: 12px; margin-top: 20px; }
-        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; transition: opacity 0.2s, transform 0.1s; }
-        .admin-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
         
         .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; margin-top: 15px; text-align: right; }
+        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 15px 10px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .model-btn {
-            background: #f8fafc;
-            color: #0f172a;
-            border: 2px solid #cbd5e1;
-            padding: 15px 10px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .model-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 600px) {
-            .features-grid { grid-template-columns: 1fr; }
-            .hero-buttons, .action-buttons-grid { flex-direction: column; }
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { position: relative; width: 100%; height: auto; border-left: none; border-bottom: 1px solid #e2e8f0; }
+            .main-content { margin-right: 0; padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- طبقة جارِ التحميل العامة -->
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="spinner"></div>
-            <div id="loadingText" class="loading-text">جارِ التحميل، يرجى الانتظار...</div>
-        </div>
 
-        <!-- 1. واجهة البداية -->
-        <div id="landing-section" class="app-section hero-section active-view">
-            <div class="hero-logo">🚀</div>
-            <div class="hero-title">منصة قدرات الاحترافية</div>
-            <p class="hero-subtitle">طريقك الأضمن نحو القمة والدرجات العالية. تتدرب بذكاء، تقيس مستواك، وتصنع مستقبلك بثقة!</p>
-            
-            <div class="features-grid">
-                <div class="feature-box">
-                    <h4>🎯 تدريب ذكي</h4>
-                    <p>أقسام كمية ولفظية مصممة خصيصاً لتطوير مهاراتك.</p>
+    <!-- القائمة الجانبية (Sidebar) -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>🚀 منصة قدرات</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li id="menu-landing" class="active"><button onclick="switchView('landing')">🏠 الرئيسية</button></li>
+            <li id="menu-student"><button onclick="switchView('student')">📚 لوحة الطالب والأقسام</button></li>
+            <li id="menu-quant"><button onclick="switchView('quant')">📐 القسم الكمي</button></li>
+            <li id="menu-verbal"><button onclick="switchView('verbal')">📚 القسم اللفظي</button></li>
+            <li id="menu-qiyas"><button onclick="openQiyasSimulation()">⏱️ اختبار قياس</button></li>
+            <li id="menu-admin" class="hidden"><button onclick="switchView('admin')" style="color: var(--admin-color);">👑 لوحة المشرف</button></li>
+            <li style="margin-top: auto; padding-top: 20px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
+        </ul>
+    </nav>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <div class="container">
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <div id="loadingText" class="loading-text">جارِ التحميل، يرجى الانتظار...</div>
+            </div>
+
+            <!-- 1. واجهة البداية -->
+            <div id="landing-section" class="app-section hero-section active-view">
+                <div class="hero-logo">🚀</div>
+                <div class="hero-title">منصة قدرات الاحترافية</div>
+                <p class="hero-subtitle">طريقك الأضمن نحو القمة والدرجات العالية. تتدرب بذكاء، تقيس مستواك، وتصنع مستقبلك بثقة!</p>
+                <div class="features-grid">
+                    <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>أقسام كمية ولفظية.</p></div>
+                    <div class="feature-box"><h4>🔥 تحفيز مستمر</h4><p>بيئة تفاعلية ممتازة.</p></div>
+                    <div class="feature-box"><h4>⚡ سهولة وسرعة</h4><p>واجهة متقدمة.</p></div>
                 </div>
-                <div class="feature-box">
-                    <h4>🔥 تحفيز مستمر</h4>
-                    <p>بيئة تفاعلية تدفعك لتحطيم أرقامك القياسية.</p>
-                </div>
-                <div class="feature-box">
-                    <h4>⚡ سهولة وسرعة</h4>
-                    <p>واجهة سلسة وسريعة متوافقة مع كافة الأجهزة.</p>
+                <div class="hero-buttons">
+                    <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
+                    <button class="btn-outline" onclick="switchView('register')">إنشاء حساب جديد ✨</button>
                 </div>
             </div>
 
-            <div class="hero-buttons">
-                <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
-                <button class="btn-outline" onclick="switchView('register')">إنشاء حساب جديد ✨</button>
-            </div>
-        </div>
-
-        <!-- 2. شاشة تسجيل الدخول -->
-        <div id="login-section" class="app-section">
-            <h1>🎯 تسجيل الدخول لمنصة قدرات</h1>
-            <div id="login-alert" class="alert"></div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>البريد الإلكتروني:</label>
-                    <input type="email" id="loginEmail" required placeholder="أدخل بريدك الإلكتروني">
-                </div>
-                <div class="form-group">
-                    <label>كلمة المرور (من 6 إلى 18 حرفاً):</label>
-                    <div class="password-container">
-                        <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="أدخل كلمة المرور">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁</button>
+            <!-- 2. شاشة تسجيل الدخول -->
+            <div id="login-section" class="app-section">
+                <h1>🎯 تسجيل الدخول</h1>
+                <div id="login-alert" class="alert"></div>
+                <form id="loginForm">
+                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="loginEmail" required placeholder="أدخل بريدك"></div>
+                    <div class="form-group"><label>كلمة المرور:</label>
+                        <div class="password-container">
+                            <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁</button>
+                        </div>
                     </div>
-                </div>
-                <button type="submit" id="loginSubmitBtn">دخول للمنصة 🚀</button>
-            </form>
-            <div class="switch-link" style="margin-top: 12px;">
-                <span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span>
-            </div>
-            <div class="switch-link">
-                ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً كطالب</span>
-            </div>
-            <div class="switch-link" style="margin-top: 10px;">
-                <span onclick="switchView('landing')" style="color: #64748b;">⬅ العودة للرئيسية</span>
-            </div>
-        </div>
-
-        <!-- 3. شاشة نسيت كلمة المرور -->
-        <div id="forgot-section" class="app-section">
-            <h1>🔑 استعادة كلمة المرور</h1>
-            <div id="forgot-alert" class="alert"></div>
-            <div id="forgot-step-1">
-                <div class="form-group">
-                    <label>أدخل بريدك الإلكتروني المسجل:</label>
-                    <input type="email" id="forgotEmail" placeholder="student@gmail.com">
-                </div>
-                <button type="button" onclick="verifyForgotEmail()">تحقق من البريد 🔍</button>
-            </div>
-            <div id="forgot-step-2" class="hidden" style="margin-top: 15px;">
-                <div class="form-group">
-                    <label>كلمة المرور الجديدة (من 6 إلى 18 حرفاً أو رقماً):</label>
-                    <div class="password-container">
-                        <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="أدخل كلمة المرور الجديدة">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁</button>
-                    </div>
-                </div>
-                <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
-            </div>
-            <div class="switch-link">
-                تذكرت كلمة المرور؟ <span onclick="switchView('login')">تسجيل الدخول</span>
-            </div>
-        </div>
-
-        <!-- 4. شاشة تسجيل حساب جديد -->
-        <div id="register-section" class="app-section">
-            <h1>✨ انضم إلى نخبة المتدربين</h1>
-            <div id="reg-alert" class="alert"></div>
-            <form id="registerForm">
-                <div class="form-group">
-                    <label>الاسم الكامل (3 أحرف على الأقل):</label>
-                    <input type="text" id="regName" required placeholder="اسمك الكريم">
-                </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني:</label>
-                    <input type="email" id="regEmail" required placeholder="student@gmail.com">
-                </div>
-                <div class="form-group">
-                    <label>كلمة المرور (من 6 إلى 18 حرفاً أو رقماً):</label>
-                    <div class="password-container">
-                        <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور القوية">
-                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
-                    </div>
-                </div>
-                <button type="submit" id="regSubmitBtn">إنشاء حساب وابدأ التحدي 🔥</button>
-            </form>
-            <div class="switch-link">
-                لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span>
-            </div>
-            <div class="switch-link" style="margin-top: 10px;">
-                <span onclick="switchView('landing')" style="color: #64748b;">⬅ العودة للرئيسية</span>
-            </div>
-        </div>
-
-        <!-- 5. لوحة تحكم الطالب -->
-        <div id="student-dashboard" class="app-section">
-            <h1 id="student-welcome">أهلاً بك يا بطل!</h1>
-            <p style="text-align:center; color:#64748b; margin-bottom:15px;">اختر أحد الأقسام أدناه لتبدأ رحلة التدريب نحو القمة:</p>
-            
-            <div class="student-video-card">
-                <video id="studentVideo" controls>
-                    <source src="intro-qudrat.mp4" type="video/mp4">
-                    متصفحك لا يدعم تشغيل الفيديو.
-                </video>
-                <div class="motivation-box">
-                    <h4>🌟 رسالتك اليوم للتفوق:</h4>
-                    <p>اختبار القدرات العامة ليس مجرد اختبار تقليدي، بل هو بوابتك الذهبية لتطوير مهارات التفكير، حل المشكلات، والوصول إلى مستقبلك الجامعي بثقة تامة! ابدأ بالتدريب تدريجياً، ولا تنسَ أن الاستمرار هو سر النجاح.</p>
-                </div>
-            </div>
-
-            <div class="sections-stack">
-                <div class="section-big-card" onclick="openSectionPage('quant')">
-                    <h3>📐 القسم الكمي</h3>
-                    <p>اختبر قدراتك الرياضية، الجبرية، والمهارات التحليلية</p>
-                </div>
-                <div class="section-big-card" onclick="openSectionPage('verbal')">
-                    <h3>📚 القسم اللفظي</h3>
-                    <p>استكشف مهارات الفهم، التناظر اللفظي، واستيعاب المقروء</p>
-                </div>
-                <div class="section-big-card" onclick="openQiyasSimulation()" style="border-color: var(--accent); background: #f0fdf4;">
-                    <h3 style="color: var(--accent);">⏱️ اختبار محاكي لقياس</h3>
-                    <p>اختبار تجريبي شامل يحاكي اختبار القدرات الرسمي (قِياس)</p>
-                </div>
-            </div>
-            <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
-        </div>
-
-        <!-- 6. صفحة القسم الكمي -->
-        <div id="quant-page" class="app-section">
-            <h2>📐 القسم الكمي</h2>
-            <div class="section-detail-box">
-                <h3>💡 معلومات وشرح القسم:</h3>
-                <p>يغطي القسم الكمي في اختبار القدرات العامة الجوانب الرياضية والتحليلية الأساسية...</p>
-            </div>
-            <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
-                <button onclick="openModelsSelection('quant', 'training')">⚡ تدرب على بعض الأسئلة</button>
-            </div>
-            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
-        </div>
-
-        <!-- 7. صفحة القسم اللفظي -->
-        <div id="verbal-page" class="app-section">
-            <h2>📚 القسم اللفظي</h2>
-            <div class="section-detail-box">
-                <h3>💡 معلومات وشرح القسم:</h3>
-                <p>يقيس القسم اللفظي قدرة الطالب على فهم واستيعاب دلالات الألفاظ...</p>
-            </div>
-            <div class="action-buttons-grid">
-                <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
-                <button onclick="openModelsSelection('verbal', 'training')">⚡ تدرب على بعض الأسئلة</button>
-            </div>
-            <button onclick="switchView('student')" style="background:#64748b; margin-top:20px;">⬅ العودة للأقسام الرئيسية</button>
-        </div>
-
-        <!-- شاشة اختيار النماذج (1 إلى 10) -->
-        <div id="models-selection-section" class="app-section">
-            <h2 id="models-title" style="color: var(--primary); margin-bottom: 20px; text-align: center;">اختر النموذج</h2>
-            <p style="color: #64748b; margin-bottom: 25px; text-align: center;">اختر أحد النماذج التالية للبدء (من 1 إلى 10):</p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; max-width: 600px; margin: 0 auto;">
-                <button onclick="selectModel(1)" class="model-btn">النموذج 1</button>
-                <button onclick="selectModel(2)" class="model-btn">النموذج 2</button>
-                <button onclick="selectModel(3)" class="model-btn">النموذج 3</button>
-                <button onclick="selectModel(4)" class="model-btn">النموذج 4</button>
-                <button onclick="selectModel(5)" class="model-btn">النموذج 5</button>
-                <button onclick="selectModel(6)" class="model-btn">النموذج 6</button>
-                <button onclick="selectModel(7)" class="model-btn">النموذج 7</button>
-                <button onclick="selectModel(8)" class="model-btn">النموذج 8</button>
-                <button onclick="selectModel(9)" class="model-btn">النموذج 9</button>
-                <button onclick="selectModel(10)" class="model-btn">النموذج 10</button>
-            </div>
-
-            <div style="text-align: center; margin-top: 35px;">
-                <button onclick="backToSection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للقسم</button>
-            </div>
-        </div>
-
-        <!-- واجهة اختيار نماذج اختبار قياس (من 1 إلى 5) -->
-        <div id="qiyas-models-section" class="app-section">
-            <h2 style="color: var(--accent); margin-bottom: 10px; text-align: center;">⏱️ اختبار محاكي لقياس</h2>
-            <p style="color: #64748b; margin-bottom: 25px; text-align: center;">اختر النموذج المطلوب للاختبار (من 1 إلى 5):</p>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; max-width: 500px; margin: 0 auto;">
-                <button onclick="selectQiyasModel(1)" class="model-btn" style="border-color: var(--accent);">النموذج 1</button>
-                <button onclick="selectQiyasModel(2)" class="model-btn" style="border-color: var(--accent);">النموذج 2</button>
-                <button onclick="selectQiyasModel(3)" class="model-btn" style="border-color: var(--accent);">النموذج 3</button>
-                <button onclick="selectQiyasModel(4)" class="model-btn" style="border-color: var(--accent);">النموذج 4</button>
-                <button onclick="selectQiyasModel(5)" class="model-btn" style="border-color: var(--accent);">النموذج 5</button>
-            </div>
-
-            <div style="text-align: center; margin-top: 35px;">
-                <button onclick="switchView('student')" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة للرئيسية</button>
-            </div>
-        </div>
-
-        <!-- واجهة رسالة الاعتذار لاختبار قياس -->
-        <div id="qiyas-no-questions-section" class="app-section">
-            <div style="text-align: center; padding: 30px 10px;">
-                <div style="font-size: 60px; margin-bottom: 15px;">⚠️</div>
-                <h2 id="qiyas-no-q-title" style="color: #d97706; margin-bottom: 15px;">تنبيه مؤقت</h2>
-                <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
-                    عذراً، لم تتم إضافة أسئلة لهذا النموذج في الاختبار المحاكي لقياس مؤقتاً. جرب اختيار نموذج آخر!
-                </p>
-                <button onclick="backToQiyasModels()" style="background: var(--accent); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة لنماذج قياس</button>
-            </div>
-        </div>
-
-        <!-- واجهة "لم تتم إضافة الأسئلة مؤقتاً للأقسام" -->
-        <div id="no-questions-section" class="app-section">
-            <div style="text-align: center; padding: 30px 10px;">
-                <div style="font-size: 60px; margin-bottom: 15px;">⚠️</div>
-                <h2 id="no-q-title" style="color: #d97706; margin-bottom: 15px;">تنبيه مؤقت</h2>
-                <p id="no-q-desc" style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
-                    عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. جرب اختيار نموذج آخر!
-                </p>
-                <button onclick="backToModelsSelection()" style="background: var(--primary); padding: 12px 30px; width: auto; display: inline-block; border-radius: 10px; color: white; border: none; cursor: pointer; font-weight: bold;">⬅ العودة لقائمة النماذج</button>
-            </div>
-        </div>
-
-        <!-- واجهة التدريب / الاختبار التفاعلية للأسئلة -->
-        <div id="training-section" class="app-section">
-            <h2 id="training-main-title" style="color: var(--primary); margin-bottom: 20px; text-align: center;">⚡ التدريب على الأسئلة</h2>
-            <div id="training-container" style="margin-top: 20px; max-width: 700px; margin-left: auto; margin-right: auto;">
-                <!-- سيتم تعبئة الأسئلة برمجياً هنا -->
-            </div>
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="backToModelsSelection()" style="background:#64748b; padding: 10px 25px; color: white; border: none; border-radius: 8px; cursor: pointer; width: auto;">⬅ العودة لاختيار النماذج</button>
-            </div>
-        </div>
-
-        <!-- 9. لوحة تحكم المشرف -->
-        <div id="admin-dashboard" class="app-section">
-            <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
-            <div class="admin-panel">
-                <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد لقدرات</button>
-                <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة المضافة</button>
-                <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 استعراض الحسابات المسجلة</button>
-                <button class="admin-btn" style="background:#8b5cf6;" onclick="goToAdminAccountsPage()">🔗 📁 فتح صفحة إدارة الحسابات الكاملة (admin.html)</button>
-            </div>
-
-            <div id="add-question-box" class="hidden" style="margin-top: 20px; background: #f1f5f9; padding: 15px; border-radius: 12px;">
-                <h4 style="margin-bottom: 10px; color: var(--primary);">إضافة سؤال جديد لقاعدة البيانات</h4>
-                <div id="q-alert" class="alert"></div>
-                <form id="questionForm">
-                    <div class="form-group">
-                        <label>قسم الاختبار:</label>
-                        <select id="qSection">
-                            <option value="quant">القسم الكمي</option>
-                            <option value="verbal">القسم اللفظي</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>رقم النموذج (من 1 إلى 10):</label>
-                        <select id="qModel">
-                            <option value="1">النموذج 1</option>
-                            <option value="2">النموذج 2</option>
-                            <option value="3">النموذج 3</option>
-                            <option value="4">النموذج 4</option>
-                            <option value="5">النموذج 5</option>
-                            <option value="6">النموذج 6</option>
-                            <option value="7">النموذج 7</option>
-                            <option value="8">النموذج 8</option>
-                            <option value="9">النموذج 9</option>
-                            <option value="10">النموذج 10</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>نص السؤال:</label>
-                        <textarea id="qText" rows="3" required placeholder="اكتب نص السؤال هنا..."></textarea>
-                    </div>
-                    <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
-                    <div class="form-group"><label>الخيار ب:</label><input type="text" id="qB" required></div>
-                    <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required></div>
-                    <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required></div>
-                    <div class="form-group">
-                        <label>الإجابة الصحيحة:</label>
-                        <select id="qCorrect">
-                            <option value="أ">أ</option>
-                            <option value="ب">ب</option>
-                            <option value="ج">ج</option>
-                            <option value="د">د</option>
-                        </select>
-                    </div>
-                    <button type="submit" style="background: var(--accent);">💾 حفظ وإضافة السؤال</button>
+                    <button type="submit">دخول للمنصة 🚀</button>
                 </form>
+                <div class="switch-link"><span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span></div>
+                <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً</span></div>
             </div>
 
-            <div id="data-list-container" class="hidden" style="margin-top: 20px;">
-                <h4 id="list-title" style="margin-bottom: 10px;">البيانات المسجلة:</h4>
-                <div id="data-output"></div>
+            <!-- 3. شاشة نسيت كلمة المرور -->
+            <div id="forgot-section" class="app-section">
+                <h1>🔑 استعادة كلمة المرور</h1>
+                <div id="forgot-alert" class="alert"></div>
+                <div id="forgot-step-1">
+                    <div class="form-group"><label>البريد المسجل:</label><input type="email" id="forgotEmail" placeholder="student@gmail.com"></div>
+                    <button type="button" onclick="verifyForgotEmail()">تحقق 🔍</button>
+                </div>
+                <div id="forgot-step-2" class="hidden" style="margin-top: 15px;">
+                    <div class="form-group"><label>كلمة المرور الجديدة:</label>
+                        <div class="password-container">
+                            <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="الجديدة">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث ✅</button>
+                </div>
+                <div class="switch-link"><span onclick="switchView('login')">تسجيل الدخول</span></div>
             </div>
-            
-            <button onclick="logout()" style="background:#ef4444; margin-top:25px;">تسجيل الخروج</button>
+
+            <!-- 4. شاشة تسجيل حساب جديد -->
+            <div id="register-section" class="app-section">
+                <h1>✨ حساب جديد</h1>
+                <div id="reg-alert" class="alert"></div>
+                <form id="registerForm">
+                    <div class="form-group"><label>الاسم الكامل:</label><input type="text" id="regName" required placeholder="اسمك"></div>
+                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="regEmail" required placeholder="email@gmail.com"></div>
+                    <div class="form-group"><label>كلمة المرور:</label>
+                        <div class="password-container">
+                            <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit">إنشاء حساب 🔥</button>
+                </form>
+                <div class="switch-link">لديك حساب؟ <span onclick="switchView('login')">سجل دخولك</span></div>
+            </div>
+
+            <!-- 5. لوحة تحكم الطالب -->
+            <div id="student-dashboard" class="app-section">
+                <h1 id="student-welcome">أهلاً بك يا بطل!</h1>
+                <div class="student-video-card">
+                    <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
+                    <div class="motivation-box">
+                        <h4>🌟 رسالتك اليوم:</h4>
+                        <p>اختبار القدرات بوابتك للقمة. ابدأ بالتدريب تدريجياً ولا تتردد!</p>
+                    </div>
+                </div>
+                <div class="sections-stack">
+                    <div class="section-big-card" onclick="switchView('quant')"><h3>📐 القسم الكمي</h3><p>اختبر قدراتك الرياضية</p></div>
+                    <div class="section-big-card" onclick="switchView('verbal')"><h3>📚 القسم اللفظي</h3><p>استكشف مهارات الفهم والتناظر</p></div>
+                    <div class="section-big-card" onclick="openQiyasSimulation()" style="border-color: var(--accent); background: #f0fdf4;"><h3 style="color: var(--accent);">⏱️ اختبار قياس</h3><p>اختبار تجريبي شامل</p></div>
+                </div>
+            </div>
+
+            <!-- 6. صفحة القسم الكمي -->
+            <div id="quant-page" class="app-section">
+                <h2>📐 القسم الكمي</h2>
+                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يغطي الجوانب الرياضية والتحليلية...</p></div>
+                <div class="action-buttons-grid">
+                    <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                    <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب</button>
+                </div>
+            </div>
+
+            <!-- 7. صفحة القسم اللفظي -->
+            <div id="verbal-page" class="app-section">
+                <h2>📚 القسم اللفظي</h2>
+                <div class="section-detail-box"><h3>💡 الشرح:</h3><p>يقيس فهم واستيعاب دلالات الألفاظ...</p></div>
+                <div class="action-buttons-grid">
+                    <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
+                    <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب</button>
+                </div>
+            </div>
+
+            <!-- شاشة اختيار النماذج -->
+            <div id="models-selection-section" class="app-section">
+                <h2 id="models-title">اختر النموذج</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 500px; margin: 0 auto;">
+                    <button onclick="selectModel(1)" class="model-btn">النموذج 1</button>
+                    <button onclick="selectModel(2)" class="model-btn">النموذج 2</button>
+                    <button onclick="selectModel(3)" class="model-btn">النموذج 3</button>
+                    <button onclick="selectModel(4)" class="model-btn">النموذج 4</button>
+                    <button onclick="selectModel(5)" class="model-btn">النموذج 5</button>
+                </div>
+            </div>
+
+            <!-- واجهة اختبار قياس النماذج -->
+            <div id="qiyas-models-section" class="app-section">
+                <h2 style="color: var(--accent);">⏱️ اختبار قياس</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-width: 400px; margin: 0 auto;">
+                    <button onclick="selectQiyasModel(1)" class="model-btn" style="border-color: var(--accent);">النموذج 1</button>
+                    <button onclick="selectQiyasModel(2)" class="model-btn" style="border-color: var(--accent);">النموذج 2</button>
+                </div>
+            </div>
+
+            <!-- واجهة الاعتذار عن عدم توفر الأسئلة -->
+            <div id="no-questions-section" class="app-section">
+                <div style="text-align: center; padding: 20px;">
+                    <h2 id="no-q-title" style="color: #d97706;">تنبيه مؤقت</h2>
+                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً.</p>
+                    <button onclick="switchView('student')" style="width: auto; padding: 10px 20px;">العودة</button>
+                </div>
+            </div>
+
+            <!-- واجهة الأسئلة التفاعلية -->
+            <div id="training-section" class="app-section">
+                <h2 id="training-main-title">⚡ تدريب</h2>
+                <div id="training-container"></div>
+            </div>
+
+            <!-- 9. لوحة تحكم المشرف -->
+            <div id="admin-dashboard" class="app-section">
+                <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
+                <div class="admin-panel">
+                    <button class="admin-btn" onclick="toggleBox('add-question-box')">➕ إضافة سؤال جديد</button>
+                    <button class="admin-btn" style="background:#0284c7;" onclick="loadQuestionsList()">👥 استعراض الأسئلة</button>
+                    <button class="admin-btn" style="background:#10b981;" onclick="loadUsersList()">📂 الحسابات المسجلة</button>
+                </div>
+                <div id="add-question-box" class="hidden" style="margin-top: 15px; background: #f1f5f9; padding: 15px; border-radius: 10px;">
+                    <div id="q-alert" class="alert"></div>
+                    <form id="questionForm">
+                        <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                        <div class="form-group"><label>نوع السؤال (type):</label><select id="qType"><option value="practice">تدريب (practice)</option><option value="simulation">اختبار محاكي (simulation)</option></select></div>
+                        <div class="form-group"><label>النموذج:</label><input type="number" id="qModel" value="1" min="1" max="10"></div>
+                        <div class="form-group"><label>السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
+                        <div class="form-group"><label>أ:</label><input type="text" id="qA" required></div>
+                        <div class="form-group"><label>ب:</label><input type="text" id="qB" required></div>
+                        <div class="form-group"><label>ج:</label><input type="text" id="qC" required></div>
+                        <div class="form-group"><label>د:</label><input type="text" id="qD" required></div>
+                        <div class="form-group"><label>الإجابة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
+                        <button type="submit" style="background: var(--accent);">حفظ السؤال 💾</button>
+                    </form>
+                </div>
+                <div id="data-list-container" class="hidden" style="margin-top: 20px;">
+                    <h4 id="list-title">البيانات:</h4>
+                    <div id="data-output"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let currentUserRole = 'student';
         let verifiedForgotEmail = '';
-        let lastActiveSection = 'quant';
-        
         let currentSectionType = ''; 
         let currentActionMode = '';   
         let selectedModelNum = 1;
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('skipSound')) {
-                switchView('student');
-            }
-        });
-
         function togglePasswordVisibility(fieldId, btnElement) {
             const passwordInput = document.getElementById(fieldId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                btnElement.innerText = '🙈';
-            } else {
-                passwordInput.type = 'password';
-                btnElement.innerText = '👁️';
-            }
+            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+            btnElement.innerText = passwordInput.type === 'password' ? '👁' : '🙈';
         }
 
         function switchView(view) {
-            document.querySelectorAll('.app-section').forEach(el => {
-                el.classList.remove('active-view');
-            });
-
-            document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
             let targetId = '';
-            if (view === 'landing') targetId = 'landing-section';
-            if (view === 'login') targetId = 'login-section';
-            if (view === 'register') targetId = 'register-section';
-            if (view === 'forgot') {
-                targetId = 'forgot-section';
-                document.getElementById('forgot-step-1').classList.remove('hidden');
-                document.getElementById('forgot-step-2').classList.add('hidden');
-                document.getElementById('forgotEmail').value = '';
-                document.getElementById('newPasswordInput').value = '';
-            }
-            if (view === 'student') {
-                targetId = 'student-dashboard';
-                const urlParams = new URLSearchParams(window.location.search);
-                const skipSound = urlParams.get('skipSound');
-                const studentVideo = document.getElementById('studentVideo');
-                
-                if (!skipSound && studentVideo) {
-                    studentVideo.play().catch(e => console.log("تم حظر التشغيل التلقائي بواسطة المتصفح"));
-                }
-            }
-            if (view === 'quant') { lastActiveSection = 'quant'; targetId = 'quant-page'; }
-            if (view === 'verbal') { lastActiveSection = 'verbal'; targetId = 'verbal-page'; }
-            if (view === 'admin') targetId = 'admin-dashboard';
+            if (view === 'landing') { targetId = 'landing-section'; document.getElementById('menu-landing').classList.add('active'); }
+            else if (view === 'login') { targetId = 'login-section'; }
+            else if (view === 'register') { targetId = 'register-section'; }
+            else if (view === 'forgot') { targetId = 'forgot-section'; }
+            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
+            else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
+            else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
+            else if (view === 'admin') { targetId = 'admin-dashboard'; document.getElementById('menu-admin').classList.add('active'); }
 
             if (targetId) {
-                const targetEl = document.getElementById(targetId);
-                if (targetEl) {
-                    setTimeout(() => {
-                        targetEl.classList.add('active-view');
-                    }, 120);
-                }
+                setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 100);
             }
         }
 
         function openQiyasSimulation() {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            setTimeout(() => {
-                document.getElementById('qiyas-models-section').classList.add('active-view');
-            }, 120);
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            document.getElementById('menu-qiyas').classList.add('active');
+            setTimeout(() => document.getElementById('qiyas-models-section').classList.add('active-view'), 100);
         }
 
         function selectQiyasModel(modelNum) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            setTimeout(() => {
-                document.getElementById('qiyas-no-questions-section').classList.add('active-view');
-            }, 120);
-            document.getElementById('qiyas-no-q-title').innerText = `النموذج ${modelNum} (اختبار قياس) غير متوفر مؤقتاً`;
-        }
-
-        function backToQiyasModels() {
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            setTimeout(() => {
-                document.getElementById('qiyas-models-section').classList.add('active-view');
-            }, 120);
+            setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 100);
+            document.getElementById('no-q-title').innerText = `النموذج ${modelNum} (اختبار قياس) غير متوفر`;
         }
 
         function openModelsSelection(sectionType, mode) {
             currentSectionType = sectionType; 
             currentActionMode = mode;         
-            
-            let titleText = mode === 'training' ? '⚡ التدريب حسب النماذج' : '🎯 الاختبار المحاكي حسب النماذج';
-            document.getElementById('models-title').innerText = `${titleText} (${sectionType === 'quant' ? 'القسم الكمي' : 'القسم اللفظي'})`;
-            
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            setTimeout(() => {
-                document.getElementById('models-selection-section').classList.add('active-view');
-            }, 120);
+            setTimeout(() => document.getElementById('models-selection-section').classList.add('active-view'), 100);
         }
 
         async function selectModel(modelNum) {
             selectedModelNum = modelNum;
-            
             try {
                 const res = await fetch('/api/questions');
                 const allQuestions = await res.json();
                 
-                if (currentActionMode === 'exam') {
-                    currentTrainingQuestions = [];
-                } else {
-                    // فلترة دقيقة مطابقة لـ section و model
-                    currentTrainingQuestions = allQuestions.filter(q => 
-                        q.section === currentSectionType && Number(q.model) === Number(modelNum)
-                    );
-                }
+                // الفلترة الصحيحة حسب القسم والنموذج ونوع الاختبار (simulation أو practice)
+                currentTrainingQuestions = allQuestions.filter(q => 
+                    q.section === currentSectionType && 
+                    Number(q.model) === Number(modelNum) && 
+                    q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
+                );
 
                 document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
 
                 if (currentTrainingQuestions.length === 0) {
-                    setTimeout(() => {
-                        document.getElementById('no-questions-section').classList.add('active-view');
-                    }, 120);
-                    
-                    if (currentActionMode === 'exam') {
-                        document.getElementById('no-q-title').innerText = `الاختبار المحاكي للنموذج ${modelNum} غير متوفر مؤقتاً`;
-                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج في الاختبار المحاكي مؤقتاً.`;
-                    } else {
-                        document.getElementById('no-q-title').innerText = `النموذج ${modelNum} غير متوفر مؤقتاً للتدريب`;
-                        document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة لهذا النموذج للتدريب مؤقتاً. جرب اختيار نموذج آخر!`;
-                    }
+                    setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 100);
+                    document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
+                    document.getElementById('no-q-desc').innerText = `عذراً، لم تتم إضافة أسئلة مطابقة لهذا التصنيف (النموذج ${modelNum}).`;
                     return;
                 }
 
                 currentQuestionIndex = 0;
-                setTimeout(() => {
-                    document.getElementById('training-section').classList.add('active-view');
-                }, 120);
-                
-                document.getElementById('training-main-title').innerText = `تدريب (${currentSectionType === 'quant' ? 'القسم الكمي' : 'القسم اللفظي'}) - النموذج ${modelNum}`;
+                setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 100);
                 renderTrainingQuestion();
-
             } catch (error) {
-                console.error("خطأ في جلب الأسئلة:", error);
-                alert("حدث خطأ أثناء الاتصال بقاعدة البيانات لجلب الأسئلة.");
+                alert("حدث خطأ في جلب الأسئلة.");
             }
         }
 
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
-            
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 16px; color: #065f46;">
-                        <h3 style="margin-bottom: 10px;">🎉 كفو يا بطل! أتممت جميع أسئلة هذا النموذج بنجاح.</h3>
-                        <p>يمكنك العودة لاختيار نموذج آخر أو مراجعة الأقسام.</p>
-                    </div>
-                `;
+                container.innerHTML = `<div style="text-align: center; padding: 30px; background: #d1fae5; border-radius: 12px; color: #065f46;"><h3>🎉 أحسنت! أتممت الأسئلة بنجاح.</h3></div>`;
                 return;
             }
-
             const q = currentTrainingQuestions[currentQuestionIndex];
+            let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
             
-            let imageHtml = '';
-            if (q.image) {
-                imageHtml = `<div style="text-align: center; margin: 15px 0;"><img src="${q.image}" alt="صورة السؤال" style="max-width: 100%; max-height: 250px; border-radius: 10px; border: 1px solid #cbd5e1;"></div>`;
-            }
-
-            let optA = Array.isArray(q.options) ? q.options[0] : (q.options?.a || '');
-            let optB = Array.isArray(q.options) ? q.options[1] : (q.options?.b || '');
-            let optC = Array.isArray(q.options) ? q.options[2] : (q.options?.c || '');
-            let optD = Array.isArray(q.options) ? q.options[3] : (q.options?.d || '');
-            let qText = q.question || q.text;
-
             container.innerHTML = `
-                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 16px; text-align: right;">
-                    <span style="color: var(--primary); font-weight: bold;">السؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}</span>
-                    <p style="font-size: 18px; margin: 15px 0; font-weight: 700; color: #0f172a; line-height: 1.6;">${qText}</p>
-                    ${imageHtml}
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'أ', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">أ) ${optA}</button>
-                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'ب', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ب) ${optB}</button>
-                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'ج', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">ج) ${optC}</button>
-                        <button onclick="checkAnswer('${q.correct_answer || q.correct}', 'د', this)" style="background: #ffffff; color: #0f172a; text-align: right; border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-size: 15px; width: 100%;">د) ${optD}</button>
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px;">
+                    <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">${q.question}</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">أ) ${opts[0]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">ب) ${opts[1]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">ج) ${opts[2]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#000; text-align:right; border:1px solid #ccc;">د) ${opts[3]}</button>
                     </div>
-                    <div id="answer-feedback" style="margin-top: 20px; font-weight: bold; text-align: center; font-size: 16px;"></div>
+                    <div id="feedback" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
                 </div>
             `;
         }
 
-        function checkAnswer(correctOpt, chosenOpt, btnElement) {
-            const feedback = document.getElementById('answer-feedback');
-            const buttons = btnElement.parentElement.querySelectorAll('button');
-            buttons.forEach(b => b.disabled = true);
-
-            let isCorrect = (correctOpt === chosenOpt || correctOpt.trim() === chosenOpt.trim());
-
-            if (isCorrect) {
-                btnElement.style.background = '#d1fae5';
-                btnElement.style.borderColor = '#10b981';
-                btnElement.style.color = '#065f46';
-                feedback.innerHTML = '<span style="color: #10b981;">إجابة صحيحة، أحسنت! 🌟</span>';
+        function checkAnswer(correctOpt, chosenOpt, btn) {
+            const feedback = document.getElementById('feedback');
+            btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+            if(correctOpt.trim() === chosenOpt.trim()) {
+                btn.style.background = '#d1fae5';
+                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة! 🌟</span>';
             } else {
-                btnElement.style.background = '#fee2e2';
-                btnElement.style.borderColor = '#dc2626';
-                btnElement.style.color = '#991b1b';
-                feedback.innerHTML = `<span style="color: #dc2626;">إجابة خاطئة. الإجابة الصحيحة هي الخيار (${correctOpt})</span>`;
+                btn.style.background = '#fee2e2';
+                feedback.innerHTML = `<span style="color:#dc2626;">خطأ، الإجابة الصحيحة: (${correctOpt})</span>`;
             }
-
-            setTimeout(() => {
-                currentQuestionIndex++;
-                renderTrainingQuestion();
-            }, 1600);
-        }
-
-        function backToModelsSelection() {
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            setTimeout(() => {
-                document.getElementById('models-selection-section').classList.add('active-view');
-            }, 120);
-        }
-
-        function backToSection() {
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-            let sectionId = currentSectionType === 'quant' ? 'quant-page' : 'verbal-page';
-            setTimeout(() => {
-                document.getElementById(sectionId).classList.add('active-view');
-            }, 120);
-        }
-
-        function showLoading(text, callback) {
-            const overlay = document.getElementById('loadingOverlay');
-            document.getElementById('loadingText').innerText = text;
-            overlay.classList.add('active');
-            
-            setTimeout(() => {
-                overlay.classList.remove('active');
-                if (callback) callback();
-            }, 2000);
-        }
-
-        function openSectionPage(sectionType) {
-            switchView(sectionType);
+            setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
         }
 
         function logout() {
-            currentUserRole = 'student';
             localStorage.removeItem('userEmail');
-            document.getElementById('loginForm').reset();
+            document.getElementById('menu-admin').classList.add('hidden');
             switchView('landing');
         }
 
@@ -714,155 +506,64 @@
             el.style.display = 'block';
         }
 
-        function toggleBox(boxId) {
-            document.getElementById(boxId).classList.toggle('hidden');
-            document.getElementById('data-list-container').classList.add('hidden');
-        }
-
-        function goToAdminAccountsPage() {
-            window.location.href = 'admin.html';
-        }
+        function toggleBox(boxId) { document.getElementById(boxId).classList.toggle('hidden'); }
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            
-            showLoading('جاري إنشاء الحساب وإعداد سجلك...', async () => {
-                const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, pass }) });
-                const data = await res.json();
-                if(data.success) { 
-                    showAlert('reg', data.message, true); 
-                    setTimeout(() => switchView('login'), 1500); 
-                } else { 
-                    showAlert('reg', data.message, false); 
-                }
-            });
+            const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) });
+            const data = await res.json();
+            if(data.success) { showAlert('reg', data.message, true); setTimeout(() => switchView('login'), 1500); } else { showAlert('reg', data.message, false); }
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            
-            showLoading('جارِ التحقق من بيانات الدخول...', async () => {
-                const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, pass }) });
-                const data = await res.json();
-                
-                if(data.success) {
-                    localStorage.setItem('userEmail', email);
-
-                    currentUserRole = data.role;
-                    if(data.role === 'admin') {
-                        document.getElementById('admin-welcome').innerText = 'أهلاً بك، ' + data.name + ' (مشرف النظام 👑)';
-                        switchView('admin');
-                    } else {
-                        document.getElementById('student-welcome').innerText = 'أهلاً بك يا بطل، ' + data.name + ' 👋 جاهز للتفوق؟';
-                        switchView('student');
-                    }
-                } else { 
-                    showAlert('login', data.message, false); 
+            const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) });
+            const data = await res.json();
+            if(data.success) {
+                localStorage.setItem('userEmail', loginEmail.value);
+                if(data.role === 'admin') {
+                    document.getElementById('menu-admin').classList.remove('hidden');
+                    switchView('admin');
+                } else {
+                    switchView('student');
                 }
-            });
+            } else { showAlert('login', data.message, false); }
         });
-
-        async function verifyForgotEmail() {
-            const email = document.getElementById('forgotEmail').value;
-            showLoading('جارِ البحث عن البريد الإلكتروني...', async () => {
-                const res = await fetch('/api/check-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-                const data = await res.json();
-                if(data.success) {
-                    verifiedForgotEmail = email;
-                    showAlert('forgot', data.message, true);
-                    document.getElementById('forgot-step-1').classList.add('hidden');
-                    document.getElementById('forgot-step-2').classList.remove('hidden');
-                } else {
-                    showAlert('forgot', data.message, false);
-                }
-            });
-        }
-
-        async function submitNewPassword() {
-            const newPass = document.getElementById('newPasswordInput').value;
-            showLoading('جارِ تحديث كلمة المرور...', async () => {
-                const res = await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
-                const data = await res.json();
-                if(data.success) {
-                    showAlert('forgot', data.message, true);
-                    setTimeout(() => switchView('login'), 2000);
-                } else {
-                    showAlert('forgot', data.message, false);
-                }
-            });
-        }
 
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const section = document.getElementById('qSection').value;
-            const model = document.getElementById('qModel').value;
-            const question = document.getElementById('qText').value;
-            const options = [
-                document.getElementById('qA').value,
-                document.getElementById('qB').value,
-                document.getElementById('qC').value,
-                document.getElementById('qD').value
-            ];
-            const correct_answer = document.getElementById('qCorrect').value;
-            
-            const res = await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section, model, question, options, correct_answer }) });
+            const res = await fetch('/api/add-question', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    section: qSection.value, 
+                    type: qType.value, 
+                    model: qModel.value, 
+                    question: qText.value, 
+                    options: [qA.value, qB.value, qC.value, qD.value], 
+                    correct_answer: qCorrect.value 
+                }) 
+            });
             const data = await res.json();
-            if(data.success) { showAlert('q', data.message, true); document.getElementById('questionForm').reset(); }
-            else { showAlert('q', 'حدث خطأ في الحفظ', false); }
+            if(data.success) { showAlert('q', data.message, true); questionForm.reset(); }
         });
 
         async function loadQuestionsList() {
-            document.getElementById('add-question-box').classList.add('hidden');
             document.getElementById('data-list-container').classList.remove('hidden');
-            document.getElementById('list-title').innerText = 'الأسئلة المسجلة في المنصة:';
             const res = await fetch('/api/questions');
             const data = await res.json();
-            const output = document.getElementById('data-output');
-            if(data.length === 0) { output.innerHTML = '<p style="color:#64748b; text-align:center;">لا توجد أسئلة مضافة حالياً.</p>'; return; }
-            output.innerHTML = data.map((q, i) => {
-                let qText = q.question || q.text;
-                let optA = Array.isArray(q.options) ? q.options[0] : (q.options?.a || '');
-                let optB = Array.isArray(q.options) ? q.options[1] : (q.options?.b || '');
-                let optC = Array.isArray(q.options) ? q.options[2] : (q.options?.c || '');
-                let optD = Array.isArray(q.options) ? q.options[3] : (q.options?.d || '');
-                let correctAns = q.correct_answer || q.correct || '';
-                return `<div class="question-card"><strong>[${q.section} - نموذج ${q.model || 1}] س${i+1}:</strong> ${qText}<br><small style="color:#4f46e5;">أ) ${optA} | ب) ${optB} | ج) ${optC} | د) ${optD}</small><br><span style="color:#10b981;">الإجابة الصحيحة: ${correctAns}</span></div>`;
-            }).join('');
+            document.getElementById('data-output').innerHTML = data.map((q, i) => `
+                <div class="question-card"><strong>[${q.section} - ${q.type} - نموذج ${q.model}] س${i+1}:</strong> ${q.question}<br><span style="color:#10b981;">الإجابة: ${q.correct_answer}</span></div>
+            `).join('');
         }
 
         async function loadUsersList() {
-            document.getElementById('add-question-box').classList.add('hidden');
-            const container = document.getElementById('data-list-container');
-            container.classList.remove('hidden');
-            
-            document.getElementById('list-title').innerText = '📂 الحسابات المسجلة في المنصة:';
-            const output = document.getElementById('data-output');
-            output.innerHTML = '<p style="text-align:center; color:#64748b;">جاري تحميل الحسابات...</p>';
-
-            try {
-                const res = await fetch('/api/users');
-                const data = await res.json();
-                
-                if(!data || data.length === 0) {
-                    output.innerHTML = '<p style="color:#64748b; text-align:center;">لا توجد حسابات مسجلة حالياً.</p>';
-                    return;
-                }
-
-                output.innerHTML = data.map((u, i) => `
-                    <div class="user-card" style="background:#fff; border:1px solid #cbd5e1; padding:15px; border-radius:10px; margin-bottom:10px; text-align:right;">
-                        <strong>الحساب ${i+1}: ${u.name}</strong><br>
-                        <small style="color:#64748b;">البريد الإلكتروني: ${u.email}</small><br>
-                        <small style="color:${u.role === 'admin' ? '#f59e0b' : '#10b981'}; font-weight:bold;">الدور: ${u.role === 'admin' ? 'مشرف النظام 👑' : 'طالب 📚'}</small>
-                    </div>
-                `).join('');
-            } catch (error) {
-                output.innerHTML = '<p style="color:#ef4444; text-align:center;">حدث خطأ أثناء جلب الحسابات من السيرفر.</p>';
-            }
+            document.getElementById('data-list-container').classList.remove('hidden');
+            const res = await fetch('/api/users');
+            const data = await res.json();
+            document.getElementById('data-output').innerHTML = data.map((u, i) => `
+                <div class="user-card"><strong>${i+1}. ${u.name}</strong> (${u.email}) - <span style="color:var(--primary);">${u.role}</span></div>
+            `).join('');
         }
     </script>
 </body>
