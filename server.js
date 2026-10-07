@@ -47,12 +47,7 @@ if (!fs.existsSync(QUESTIONS_FILE)) {
     writeJsonFile(QUESTIONS_FILE, []);
 }
 if (!fs.existsSync(MODELS_STATUS_FILE)) {
-    // افتراضياً، نفترض أن النماذج من 1 إلى 10 مفعلة (active: true)
-    const initialModels = {};
-    for (let i = 1; i <= 10; i++) {
-        initialModels[i] = { active: true };
-    }
-    writeJsonFile(MODELS_STATUS_FILE, initialModels);
+    writeJsonFile(MODELS_STATUS_FILE, {});
 }
 
 // ==================== مسارات الـ API ====================
@@ -220,10 +215,25 @@ app.post('/api/admin/delete-user', (req, res) => {
 
 // ==================== مسارات إدارة النماذج (تنشيط / تعطيل) ====================
 
-// جلب حالة جميع النماذج
-app.get('/api/models-status', (req, res) => {
-    const statuses = readJsonFile(MODELS_STATUS_FILE, {});
-    res.json({ success: true, models: statuses });
+// جلب النماذج المضافة تلقائياً مع حالتها (نشط / معطل) وعدد الأسئلة
+app.get('/api/models', (req, res) => {
+    const questions = readJsonFile(QUESTIONS_FILE);
+    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+
+    // استخراج أرقام النماذج الفريدة الموجودة في الأسئلة المضافة
+    const uniqueModelIds = [...new Set(questions.map(q => Number(q.model) || 1))];
+
+    // دمج النماذج مع حالتها
+    const modelsList = uniqueModelIds.map(modelId => {
+        return {
+            modelId: modelId,
+            // إذا لم يتم تحديث حالته صراحة، يكون مفاعلاً افتراضياً (true)
+            active: modelsStatus[modelId] !== undefined ? modelsStatus[modelId].active : true,
+            questionsCount: questions.filter(q => (Number(q.model) || 1) === modelId).length
+        };
+    });
+
+    res.json({ success: true, models: modelsList });
 });
 
 // تنشيط أو تعطيل نموذج معين (خاص بالمشرف)
@@ -237,13 +247,13 @@ app.post('/api/admin/toggle-model', (req, res) => {
         return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
     }
 
-    if (!modelId) {
+    if (modelId === undefined || modelId === null) {
         return res.json({ success: false, message: '⚠️ رقم النموذج مطلوب!' });
     }
 
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
     
-    // تحديث أو إنشاؤه إذا لم يكن موجوداً
+    // تحديث حالة النموذج
     modelsStatus[modelId] = {
         active: Boolean(active)
     };
