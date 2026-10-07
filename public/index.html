@@ -100,7 +100,6 @@
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
         
-        /* تصميم حقل كلمة المرور وتحسين زر الإظهار والإخفاء */
         .password-container { position: relative; width: 100%; }
         .password-container input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; }
         .password-container input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
@@ -224,10 +223,7 @@
                 <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
                 <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
-                
-                <!-- الإضافات الجديدة المطلوبة -->
                 <li><button onclick="openAdminTab('registered-accounts-box')">👥 الحسابات المسجلة</button></li>
-                <li><button onclick="window.open('https://qudrat-platform-trii.onrender.com/admin.html', '_blank')">🔗 صفحة النظام الأساسية (API)</button></li>
             </div>
 
             <li style="margin-top: auto; padding-top: 15px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
@@ -242,7 +238,7 @@
                 <div class="hero-badge">🌟 بوابتك الموثوقة نحو التفوق والتميز</div>
                 <div class="hero-logo">🎯</div>
                 <div class="hero-title">منصة قدرات الاحترافية</div>
-                <p class="hero-subtitle">"اصنع طموحك اليوم، واحصد درجاتك العالية غداً."</p>
+                <p class="hero-subtitle">"اصنع طموحك اليوم، واحصد درجاتك العالية غداً."[cite: 1]</p>
                 <div class="features-grid">
                     <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>نماذج شاملة للأقسام بعناية فائقة.</p></div>
                     <div class="feature-box"><h4>🔥 تحفيز مستمر</h4><p>بيئة تفاعلية ممتازة تشعل حماسك.</p></div>
@@ -463,10 +459,10 @@
                     <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
                 </div>
 
-                <!-- صندوق الحسابات المسجلة -->
+                <!-- صندوق الحسابات المسجلة (مع زر الحذف) -->
                 <div id="registered-accounts-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">👥 إدارة الحسابات المسجلة</h3>
-                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة:</p>
+                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة، مع إمكانية حذف أي حساب بضغطة زر:</p>
                     <div id="accountsListContainer" style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; min-height: 150px;">
                         <p style="text-align: center; color: #64748b;">جاري تحميل الحسابات المسجلة...</p>
                     </div>
@@ -611,28 +607,70 @@
             }
         }
 
+        // دالة جلب الحسابات المسجلة مع زر الحذف المدمج
         async function loadRegisteredAccounts() {
             const container = document.getElementById('accountsListContainer');
             container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
             try {
-                const res = await fetch('/api/users'); // استبدل بالمسار الصحيح لجلب الحسابات إذا كان مختلفاً
-                const users = await res.json();
-                if(users && users.length > 0) {
-                    container.innerHTML = users.map(u => `
-                        <div style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                const adminEmail = sessionStorage.getItem('sessionUserEmail');
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: adminEmail })
+                });
+                const data = await res.json();
+                if(data.success && data.users) {
+                    if(data.users.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة.</p>';
+                        return;
+                    }
+                    container.innerHTML = data.users.map(u => `
+                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                             <div>
                                 <strong style="color: #1e293b;">${u.name || 'مستخدم'}</strong>
-                                <span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span>
+                                <span style="color: #64748b; font-size: 13px; display: block;">${u.email} (كلمة المرور: ${u.pass})</span>
                             </div>
-                            <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">${u.role || 'student'}</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">${u.role}</span>
+                                ${u.email !== adminEmail ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; width: auto; margin: 0; box-shadow: none;">حذف 🗑️</button>` : ''}
+                            </div>
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة أو تعذر جلبها.</p>';
+                    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${data.message || 'تعذر جلب الحسابات.'}</p>`;
                 }
             } catch (e) {
                 container.innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر الاتصال بالخادم لجلب الحسابات.</p>';
             }
+        }
+
+        // تأكيد حذف المستخدم
+        function confirmDeleteUser(userEmail) {
+            showConfirmModal(`هل أنت متأكد من رغبتك في حذف الحساب (${userEmail}) نهائياً؟`, () => {
+                executeDeleteUser(userEmail);
+            });
+        }
+
+        // إرسال طلب الحذف للسيرفر
+        async function executeDeleteUser(userEmail) {
+            showLoading('جاري حذف الحساب...', 600, async () => {
+                try {
+                    const adminEmail = sessionStorage.getItem('sessionUserEmail');
+                    const res = await fetch('/api/admin/delete-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ adminEmail: adminEmail, userEmailToDelete: userEmail })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        loadRegisteredAccounts(); // تحديث القائمة بعد الحذف بنجاح
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء محاولة الحذف.');
+                    }
+                } catch (err) {
+                    alert('حدث خطأ في الاتصال بالخادم.');
+                }
+            });
         }
 
         function togglePasswordVisibility(fieldId, btnElement) {
@@ -1081,46 +1119,6 @@
                     }
                 } catch (err) {
                     showAlert('qiyas-q', 'حدث خطأ في الاتصال بالخادم', false);
-                }
-            });
-        });
-
-        document.getElementById('editQuestionForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const index = document.getElementById('editQIndex').value;
-            const updatedData = {
-                index: Number(index),
-                section: document.getElementById('editQSection').value,
-                type: document.getElementById('editQType').value,
-                model: document.getElementById('editQModel').value,
-                score: document.getElementById('editQScore').value,
-                question: document.getElementById('editQText').value,
-                options: [
-                    document.getElementById('editQA').value,
-                    document.getElementById('editQB').value,
-                    document.getElementById('editQC').value,
-                    document.getElementById('editQD').value
-                ],
-                correct_answer: document.getElementById('editQCorrect').value
-            };
-
-            showLoading('جاري تحديث السؤال...', 500, async () => {
-                try {
-                    const res = await fetch('/api/edit-question', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updatedData)
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        closeEditModal();
-                        loadAdminQuestionsList();
-                        loadAdminStats();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء التعديل');
-                    }
-                } catch (err) {
-                    alert('حدث خطأ في الاتصال بالخادم');
                 }
             });
         });
