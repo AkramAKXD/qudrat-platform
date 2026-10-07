@@ -149,6 +149,7 @@
         .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* تنسيقات تبويبات إدارة النماذج للمشرف */
         .tab-btn {
             padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none;
         }
@@ -379,7 +380,7 @@
 
             <!-- واجهة اختبار قياس -->
             <div id="qiyas-models-section" class="app-section">
-                <h2 style="color: var(--accent);">⏱️ اختبار قياس (نماذج المحاكي)</h2>
+                <h2 style="color: var(--accent);">⏱️ اختبار قياس (5 نماذج محاكية)</h2>
                 <div class="model-grid" id="qiyasModelsGrid"></div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
@@ -440,7 +441,7 @@
                     </form>
                 </div>
 
-                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها -->
+                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها (الميزة المطلوبة) -->
                 <div id="manage-models-box" class="admin-tab-content hidden" style="background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
@@ -448,7 +449,9 @@
                         <button type="button" onclick="loadAdminModelsList('verbal')" class="tab-btn" id="btnAdminVerbal">القسم اللفظي</button>
                         <button type="button" onclick="loadAdminModelsList('mock')" class="tab-btn" id="btnAdminMock">اختبار محاكي لقياس</button>
                     </div>
-                    <div id="adminModelsListContent"></div>
+                    <div id="adminModelsListContent">
+                        <!-- يتم تعبئتها ديناميكياً بالنماذج وحالة تفعيلها -->
+                    </div>
                 </div>
 
                 <!-- صندوق إدارة وتعديل الأسئلة -->
@@ -478,7 +481,7 @@
                     <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
                 </div>
 
-                <!-- صندوق الحسابات المسجلة -->
+                <!-- صندوق الحسابات المسجلة (مع زر الحذف) -->
                 <div id="registered-accounts-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">👥 إدارة الحسابات المسجلة</h3>
                     <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة، مع إمكانية حذف أي حساب بضغطة زر:</p>
@@ -628,6 +631,7 @@
             }
         }
 
+        // جلب وعرض النماذج في لوحة التحكم لإدارة التنشيط والتعطيل
         async function loadAdminModelsList(sectionKey) {
             ['quant', 'verbal', 'mock'].forEach(s => {
                 const btn = document.getElementById(`btnAdmin${s.charAt(0).toUpperCase() + s.slice(1)}`);
@@ -661,7 +665,7 @@
                                     <strong style="font-size: 16px; color: #1e293b;">النموذج رقم (${model.modelNumber})</strong>
                                     <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
                                     <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
-                                        ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (لا يظهر للمستخدمين)'}
+                                        ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
                                     </span>
                                 </div>
                                 <div>
@@ -678,6 +682,7 @@
             }
         }
 
+        // إرسال طلب تفعيل أو تعطيل النموذج للسيرفر
         async function toggleModelStatus(section, modelNumber) {
             try {
                 const adminEmail = sessionStorage.getItem('sessionUserEmail');
@@ -697,6 +702,7 @@
             }
         }
 
+        // دالة جلب الحسابات المسجلة مع زر الحذف المدمج
         async function loadRegisteredAccounts() {
             const container = document.getElementById('accountsListContainer');
             container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
@@ -808,59 +814,39 @@
             });
         }
 
-        // 🌟 تعديل جوهري: جلب النماذج النشطة فقط من السيرفر لعرضها للطالب
-        async function renderQiyasModelsGrid() {
+        function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
-            grid.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: span 3;">جاري التحميل...</p>';
-            
-            try {
-                const res = await fetch('/api/student/active-models');
-                const data = await res.json();
-                
-                if (data.success && data.models) {
-                    const mockModels = data.models.mock || {};
-                    const modelNums = Object.keys(mockModels);
-
-                    grid.innerHTML = '';
-                    if (modelNums.length === 0) {
-                        grid.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: span 3;">لا توجد نماذج قياس نشطة حالياً.</p>';
-                        return;
-                    }
-
-                    modelNums.forEach(mNum => {
-                        const btn = document.createElement('button');
-                        btn.className = 'model-btn';
-                        btn.style.borderColor = 'var(--accent)';
-                        btn.innerText = `نموذج قياس ${mNum}`;
-                        btn.onclick = () => selectQiyasModel(mNum);
-                        grid.appendChild(btn);
-                    });
-                }
-            } catch (error) {
-                grid.innerHTML = '<p style="text-align: center; color: #ef4444; grid-column: span 3;">تعذر جلب النماذج.</p>';
+            grid.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'model-btn';
+                btn.style.borderColor = 'var(--accent)';
+                btn.innerText = `نموذج قياس ${i}`;
+                btn.onclick = () => selectQiyasModel(i);
+                grid.appendChild(btn);
             }
         }
 
         async function selectQiyasModel(modelNum) {
             showLoading('جاري جلب أسئلة قياس...', 400, async () => {
                 try {
-                    const res = await fetch('/api/get-model-questions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ section: 'mock', modelNumber: modelNum })
-                    });
-                    const data = await res.json();
+                    const res = await fetch('/api/questions');
+                    const allQuestions = await res.json();
+                    
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.type === 'qiyas_simulation' && 
+                        Number(q.model) === Number(modelNum)
+                    );
 
                     document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
 
-                    if (!data.success || !data.questions || data.questions.length === 0) {
+                    if (currentTrainingQuestions.length === 0) {
                         setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                        document.getElementById('no-q-title').innerText = `النموذج معطل أو غير متاح`;
-                        document.getElementById('no-q-desc').innerText = data.message || `عذراً، هذا النموذج معطّل حالياً من قِبل الإدارة.`;
+                        document.getElementById('no-q-title').innerText = `نموذج قياس ${modelNum} فارغ حالياً`;
+                        document.getElementById('no-q-desc').innerText = `لم تتم إضافة أسئلة لهذا النموذج من قِبل المشرف بعد.`;
                         return;
                     }
 
-                    currentTrainingQuestions = data.questions;
                     currentQuestionIndex = 0;
                     setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 50);
                     renderTrainingQuestion();
@@ -870,72 +856,45 @@
             });
         }
 
-        // 🌟 تعديل جوهري: جلب النماذج النشطة فقط لقسمي (الكمي واللفظي) عبر API
-        async function openModelsSelection(sectionType, mode) {
+        function openModelsSelection(sectionType, mode) {
             if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
             currentSectionType = sectionType; 
             currentActionMode = mode;         
             
             const gridContainer = document.getElementById('modelsGridContainer');
-            gridContainer.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: span 3;">جاري جلب النماذج المتاحة...</p>';
+            gridContainer.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'model-btn';
+                btn.innerText = `النموذج ${i}`;
+                btn.onclick = () => selectModel(i);
+                gridContainer.appendChild(btn);
+            }
 
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => document.getElementById('models-selection-section').classList.add('active-view'), 50);
-
-            try {
-                const res = await fetch('/api/student/active-models');
-                const data = await res.json();
-
-                if (data.success && data.models) {
-                    const sectionData = data.models[sectionType] || {};
-                    const modelNums = Object.keys(sectionData);
-
-                    gridContainer.innerHTML = '';
-                    if (modelNums.length === 0) {
-                        gridContainer.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: span 3;">لا توجد نماذج نشطة في هذا القسم حالياً.</p>';
-                        return;
-                    }
-
-                    modelNums.forEach(mNum => {
-                        const btn = document.createElement('button');
-                        btn.className = 'model-btn';
-                        btn.innerText = `النموذج ${mNum}`;
-                        btn.onclick = () => selectModel(mNum);
-                        gridContainer.appendChild(btn);
-                    });
-                }
-            } catch (error) {
-                gridContainer.innerHTML = '<p style="text-align: center; color: #ef4444; grid-column: span 3;">تعذر تحميل النماذج النشطة.</p>';
-            }
         }
 
         async function selectModel(modelNum) {
             selectedModelNum = modelNum;
             showLoading('جاري تحميل الأسئلة...', 400, async () => {
                 try {
-                    const res = await fetch('/api/get-model-questions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ section: currentSectionType, modelNumber: modelNum })
-                    });
-                    const data = await res.json();
+                    const res = await fetch('/api/questions');
+                    const allQuestions = await res.json();
+                    
+                    currentTrainingQuestions = allQuestions.filter(q => 
+                        q.section === currentSectionType && 
+                        Number(q.model) === Number(modelNum) && 
+                        q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
+                    );
 
                     document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
 
-                    if (!data.success || !data.questions || data.questions.length === 0) {
-                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                        document.getElementById('no-q-title').innerText = `النموذج معطل أو غير متاح`;
-                        document.getElementById('no-q-desc').innerText = data.message || `عذراً، هذا النموذج معطّل حالياً من قِبل الإدارة.`;
-                        return;
-                    }
-
-                    // تصفية حسب وضع التدريب أو الاختبار المحاكي العادي
-                    const targetType = (currentActionMode === 'exam' ? 'simulation' : 'practice');
-                    currentTrainingQuestions = data.questions.filter(q => q.type === targetType);
-
                     if (currentTrainingQuestions.length === 0) {
-                        // إذا لم يوجد نوع محدد، جرب عرض كافة أسئلة النموذج المتاحة
-                        currentTrainingQuestions = data.questions;
+                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
+                        document.getElementById('no-q-title').innerText = `لا توجد أسئلة متاحة حالياً`;
+                        document.getElementById('no-q-desc').innerText = `عذراً، هذا النموذج غير نشط أو لم تتم إضافة أسئلة مطابقة له.`;
+                        return;
                     }
 
                     currentQuestionIndex = 0;
