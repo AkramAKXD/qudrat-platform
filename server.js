@@ -1,215 +1,100 @@
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+// فتح لوحة إدارة نماذج الاختبارات والقوائم الثلاث (كمي، لفظي، محاكي)
+function openAdminModelsManagement() {
+    // إخفاء الأقسام الأخرى إذا لزم الأمر
+    const contentArea = document.getElementById('adminDashboardContent') || document.body;
+    
+    let container = document.getElementById('adminModelsContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'adminModelsContainer';
+        container.style.cssText = "margin-top: 20px;";
+        contentArea.appendChild(container);
+    }
+    
+    container.innerHTML = `
+        <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات</h3>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
+                <button onclick="loadModelsList('quant')" class="tab-btn active-tab" id="btnQuant" style="padding: 10px 20px; border-radius: 8px; border:none; cursor:pointer; font-weight:bold;">القسم الكمي</button>
+                <button onclick="loadModelsList('verbal')" class="tab-btn" id="btnVerbal" style="padding: 10px 20px; border-radius: 8px; border:none; cursor:pointer; font-weight:bold;">القسم اللفظي</button>
+                <button onclick="loadModelsList('mock')" class="tab-btn" id="btnMock" style="padding: 10px 20px; border-radius: 8px; border:none; cursor:pointer; font-weight:bold;">اختبار محاكي لقياس</button>
+            </div>
+            <div id="modelsListContent">
+                <!-- يتم تعبئتها ديناميكياً بالنماذج -->
+            </div>
+        </div>
+    `;
+    loadModelsList('quant');
+}
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// مسارات ملفات البيانات
-const USERS_FILE = path.join(__dirname, 'users.json');
-const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
-
-// دوال قراءة وكتابة ملفات JSON
-function readJsonFile(filePath) {
-    try {
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify([], null, 2), 'utf8');
+// جلب وعرض النماذج التي تحتوي على أسئلة لكل قسم
+async function loadModelsList(sectionKey) {
+    ['quant', 'verbal', 'mock'].forEach(s => {
+        const btn = document.getElementById(`btn${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        if(btn) {
+            btn.style.background = s === sectionKey ? 'var(--primary)' : '#e2e8f0';
+            btn.style.color = s === sectionKey ? '#fff' : '#1e293b';
         }
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error(`Error reading ${filePath}:`, error.message);
-        return [];
-    }
-}
+    });
 
-function writeJsonFile(filePath, data) {
+    const contentDiv = document.getElementById('modelsListContent');
+    contentDiv.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب النماذج...</p>';
+
     try {
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-        console.error(`Error writing ${filePath}:`, error.message);
+        const res = await fetch('/api/admin/models-status');
+        const data = await res.json();
+        
+        if (data.success && data.models) {
+            const sectionModels = data.models[sectionKey] || {};
+            const modelKeys = Object.keys(sectionModels);
+
+            if (modelKeys.length === 0) {
+                contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج تحتوي على أسئلة في هذا القسم حالياً.</p>';
+                return;
+            }
+
+            contentDiv.innerHTML = modelKeys.map(mKey => {
+                const model = sectionModels[mKey];
+                const isActive = model.isActive !== false;
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <strong style="font-size: 16px; color: #1e293b;">النموذج رقم (${model.modelNumber})</strong>
+                            <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
+                            <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
+                                ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
+                            </span>
+                        </div>
+                        <div>
+                            <button onclick="toggleModelStatus('${sectionKey}', ${model.modelNumber})" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto;">
+                                ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (e) {
+        contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444;">حدث خطأ أثناء جلب النماذج.</p>';
     }
 }
 
-// تهيئة الملفات وحساب المشرف الأساسي عند بدء التشغيل
-if (!fs.existsSync(USERS_FILE)) {
-    writeJsonFile(USERS_FILE, [
-        { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
-    ]);
-}
-if (!fs.existsSync(QUESTIONS_FILE)) {
-    writeJsonFile(QUESTIONS_FILE, []);
-}
-
-// ==================== مسارات الـ API ====================
-
-// تسجيل حساب جديد
-app.post('/api/register', (req, res) => {
-    const { name, email, pass } = req.body;
-    if (!name || !email || !pass) {
-        return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول المطلوبة!' });
-    }
-
-    const users = readJsonFile(USERS_FILE);
-    const normalizedEmail = email.trim().toLowerCase();
-
-    if (users.find(u => u.email.toLowerCase() === normalizedEmail)) {
-        return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقاً!' });
-    }
-
-    users.push({ 
-        name: name.trim(), 
-        email: normalizedEmail, 
-        pass, 
-        role: 'student' 
-    });
-    
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
-});
-
-// تسجيل الدخول
-app.post('/api/login', (req, res) => {
-    const { email, pass } = req.body;
-    if (!email || !pass) {
-        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور!' });
-    }
-
-    const users = readJsonFile(USERS_FILE);
-    const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.pass === pass);
-    
-    if (!user) {
-        return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
-    }
-    
-    res.json({ 
-        success: true, 
-        name: user.name, 
-        role: user.role, 
-        email: user.email 
-    });
-});
-
-// استعادة / تحديث كلمة المرور
-app.post('/api/reset-password', (req, res) => {
-    const { email, newPass } = req.body;
-    if (!email || !newPass) {
-        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور الجديدة!' });
-    }
-
-    const users = readJsonFile(USERS_FILE);
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    
-    if (userIndex === -1) {
-        return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
-    }
-    
-    users[userIndex].pass = newPass;
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
-});
-
-// جلب جميع الأسئلة
-app.get('/api/questions', (req, res) => {
-    const questions = readJsonFile(QUESTIONS_FILE);
-    res.json(questions);
-});
-
-// إضافة سؤال جديد
-app.post('/api/add-question', (req, res) => {
-    const { section, type, model, question, options, correct_answer, image } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
-    
-    questions.push({ 
-        id: questions.length > 0 ? questions[questions.length - 1].id + 1 : 1, 
-        section: section || "quant", 
-        type: type || 'practice', 
-        model: Number(model) || 1, 
-        question, 
-        options, 
-        correct_answer, 
-        image: image || null 
-    });
-    
-    writeJsonFile(QUESTIONS_FILE, questions);
-    res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
-});
-
-// حذف سؤال بواسطة الـ Index
-app.post('/api/delete-question', (req, res) => {
-    const { index } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
-    
-    if (index !== undefined && index >= 0 && index < questions.length) {
-        questions.splice(index, 1);
-        writeJsonFile(QUESTIONS_FILE, questions);
-        return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
-    }
-    res.json({ success: false, message: '❌ السؤال غير موجود!' });
-});
-
-// جلب قائمة المستخدمين العامة (بدون كلمات المرور)
-app.get('/api/users', (req, res) => {
-    const users = readJsonFile(USERS_FILE);
-    res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
-});
-
-// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف مع التحقق من الصلاحية
-app.post('/api/admin/users', (req, res) => {
-    const { email } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    
-    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').trim().toLowerCase() && u.role === 'admin');
-    
-    if (!adminUser) {
-        return res.json({ 
-            success: false, 
-            message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' 
+// دالة إرسال طلب التنشيط أو التعطيل للنموذج المحدد
+async function toggleModelStatus(section, modelNumber) {
+    try {
+        const adminEmail = sessionStorage.getItem('sessionUserEmail');
+        const res = await fetch('/api/admin/toggle-model', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ section, modelNumber, adminEmail })
         });
+        const data = await res.json();
+        if (data.success) {
+            loadModelsList(section); // تحديث القائمة ديناميكياً
+        } else {
+            alert(data.message || 'حدث خطأ ما');
+        }
+    } catch (e) {
+        alert('حدث خطأ في الاتصال بالخادم');
     }
-    
-    res.json({ 
-        success: true, 
-        users: users.map(u => ({ 
-            name: u.name, 
-            email: u.email, 
-            pass: u.pass, 
-            role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
-        })) 
-    });
-});
-
-// ==================== مسار حذف الحساب الجديد ====================
-app.post('/api/admin/delete-user', (req, res) => {
-    const { adminEmail, userEmailToDelete } = req.body;
-    const users = readJsonFile(USERS_FILE);
-
-    // التحقق من صلاحيات المشرف المرسل للطلب
-    const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
-    if (!adminUser) {
-        return res.json({ success: false, message: '⛔ ليس لديك صلاحية إجراء الحذف!' });
-    }
-
-    // منع المشرف من حذف حسابه الشخصي بالخطأ
-    if (adminEmail.trim().toLowerCase() === userEmailToDelete.trim().toLowerCase()) {
-        return res.json({ success: false, message: '⚠️ لا يمكنك حذف حساب المشرف الخاص بك!' });
-    }
-
-    const initialLength = users.length;
-    const filteredUsers = users.filter(u => u.email.toLowerCase() !== userEmailToDelete.trim().toLowerCase());
-
-    if (filteredUsers.length < initialLength) {
-        writeJsonFile(USERS_FILE, filteredUsers);
-        return res.json({ success: true, message: '🗑️ تم حذف الحساب بنجاح من النظام!' });
-    } else {
-        return res.json({ success: false, message: '❌ لم يتم العثور على الحساب المراد حذفه.' });
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`🚀 السيرفر يعمل على الرابط: http://localhost:${PORT}`);
-});
+}
