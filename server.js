@@ -126,7 +126,7 @@ app.get('/api/questions', (req, res) => {
 
 // إضافة سؤال جديد
 app.post('/api/add-question', (req, res) => {
-    const { section, type, model, question, options, correct_answer, image } = req.body;
+    const { section, type, model, score, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
     
     questions.push({ 
@@ -134,6 +134,7 @@ app.post('/api/add-question', (req, res) => {
         section: section || "quant", 
         type: type || 'practice', 
         model: Number(model) || 1, 
+        score: Number(score) || 1,
         question, 
         options, 
         correct_answer, 
@@ -155,12 +156,6 @@ app.post('/api/delete-question', (req, res) => {
         return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
     }
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
-});
-
-// جلب قائمة المستخدمين العامة (بدون كلمات المرور)
-app.get('/api/users', (req, res) => {
-    const users = readJsonFile(USERS_FILE);
-    res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف مع التحقق من الصلاحية
@@ -213,32 +208,46 @@ app.post('/api/admin/delete-user', (req, res) => {
     }
 });
 
-// ==================== مسارات إدارة النماذج (دعم كافة الاحتمالات لمنع الأخطاء) ====================
+// ==================== مسارات إدارة النماذج المتوافقة مع الواجهة ====================
 
-// دالة مشتركة لتوليد قائمة النماذج
-function getModelsData() {
-    const questions = readJsonFile(QUESTIONS_FILE);
-    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي
+app.get('/api/admin/models-status', (req, res) => {
+    try {
+        const questions = readJsonFile(QUESTIONS_FILE);
+        const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
 
-    const uniqueModelIds = [...new Set(questions.map(q => Number(q.model) || 1))];
-    const finalModelIds = uniqueModelIds.length > 0 ? uniqueModelIds : [1, 2, 3, 4, 5];
+        const result = {
+            quant: {},
+            verbal: {},
+            mock: {}
+        };
 
-    return finalModelIds.map(modelId => ({
-        modelId: modelId,
-        model: modelId,
-        active: modelsStatus[modelId] !== undefined ? modelsStatus[modelId].active : true,
-        questionsCount: questions.filter(q => (Number(q.model) || 1) === modelId).length
-    }));
-}
+        questions.forEach(q => {
+            let sec = q.section === 'verbal' ? 'verbal' : 'quant';
+            if (q.type === 'qiyas_simulation') {
+                sec = 'mock';
+            }
+            const mNum = Number(q.model) || 1;
+            
+            if (!result[sec][mNum]) {
+                result[sec][mNum] = {
+                    modelNumber: mNum,
+                    questionCount: 0,
+                    isActive: modelsStatus[`${sec}_${mNum}`]?.active ?? true
+                };
+            }
+            result[sec][mNum].questionCount++;
+        });
 
-// تغطية كافة المسارات المحتملة التي قد تطلبها الواجهة الأمامية
-app.get('/api/models', (req, res) => res.json(getModelsData()));
-app.get('/api/get-models', (req, res) => res.json(getModelsData()));
-app.get('/api/exam-models', (req, res) => res.json(getModelsData()));
+        res.json({ success: true, models: result });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء جلب النماذج' });
+    }
+});
 
-// تنشيط أو تعطيل نموذج معين (مع تغطية المسارين الشائعين)
-const handleToggleModel = (req, res) => {
-    const { adminEmail, modelId, active } = req.body;
+// مسار تنشيط أو تعطيل النموذج
+app.post('/api/admin/toggle-model', (req, res) => {
+    const { adminEmail, section, modelNumber } = req.body;
     const users = readJsonFile(USERS_FILE);
 
     const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
@@ -246,20 +255,20 @@ const handleToggleModel = (req, res) => {
         return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
     }
 
-    if (modelId === undefined || modelId === null) {
-        return res.json({ success: false, message: '⚠️ رقم النموذج مطلوب!' });
+    if (!section || modelNumber === undefined) {
+        return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
     }
 
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    modelsStatus[modelId] = { active: Boolean(active) };
+    const key = `${section}_${modelNumber}`;
+    
+    const currentActive = modelsStatus[key]?.active ?? true;
+    modelsStatus[key] = { active: !currentActive };
+    
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
     
-    const statusText = active ? 'تنشيط' : 'تعطيل';
-    res.json({ success: true, message: `✅ تم ${statusText} النموذج رقم ${modelId} بنجاح!` });
-};
-
-app.post('/api/admin/toggle-model', handleToggleModel);
-app.post('/api/toggle-model', handleToggleModel);
+    res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
+});
 
 // تشغيل الخادم
 app.listen(PORT, () => {
