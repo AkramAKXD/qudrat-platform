@@ -112,10 +112,37 @@ app.post('/api/delete-question', (req, res) => {
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
-// جلب قائمة المستخدمين
+// جلب قائمة المستخدمين العادية
 app.get('/api/users', (req, res) => {
     const users = readJsonFile(USERS_FILE);
     res.json(users.map(u => ({ name: u.name, email: u.email, role: u.role })));
+});
+
+// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف (admin.html) مع التحقق من الصلاحية
+app.post('/api/admin/users', (req, res) => {
+    const { email } = req.body;
+    const users = readJsonFile(USERS_FILE);
+    
+    // التحقق من أن المستخدم مسجل ولديه صلاحية مشرف
+    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').toLowerCase() && u.role === 'admin');
+    
+    if (!adminUser) {
+        return res.json({ 
+            success: false, 
+            message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' 
+        });
+    }
+    
+    // إرجاع البيانات كاملة لملف admin.html
+    res.json({ 
+        success: true, 
+        users: users.map(u => ({ 
+            name: u.name, 
+            email: u.email, 
+            pass: u.pass, 
+            role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
+        })) 
+    });
 });
 
 app.listen(PORT, () => {
