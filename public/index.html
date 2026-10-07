@@ -635,6 +635,9 @@
         }
 
         function switchView(view) {
+            // حفظ القسم الحالي لكي لا يضيع عند تحديث الصفحة
+            sessionStorage.setItem('currentView', view);
+
             hideAlerts();
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
@@ -825,6 +828,7 @@
             showLoading('جاري تسجيل الخروج...', 1500, () => {
                 sessionStorage.removeItem('sessionUserEmail');
                 sessionStorage.removeItem('sessionUserRole');
+                sessionStorage.removeItem('currentView');
                 updateAuthStateUI();
                 navigateTo('landing');
             });
@@ -970,6 +974,11 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
+            
+            // استرجاع آخر صفحة كان بها المستخدم عند عمل تحديث (Refresh)
+            const isAuth = checkAuth();
+            const lastView = sessionStorage.getItem('currentView') || (isAuth ? 'student' : 'landing');
+            switchView(lastView);
         });
     </script>
 </body>
