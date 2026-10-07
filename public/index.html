@@ -161,7 +161,7 @@
             background: #fffbeb;
             border: 1px dashed var(--admin-color);
             border-radius: 14px;
-            padding: 8px;
+            padding: 10px;
             margin-top: 10px;
             margin-bottom: 10px;
         }
@@ -170,7 +170,7 @@
             font-weight: 900;
             color: #d97706;
             text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         /* المحتوى الرئيسي */
@@ -317,12 +317,15 @@
             <h2>🚀 منصة قدرات</h2>
         </div>
         <ul class="sidebar-menu">
-            <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
-            <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
-            <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
-            <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
+            <!-- خيارات الطالب (تظهر فقط للطلاب وتختفي تماماً للمشرف) -->
+            <div id="student-sidebar-group">
+                <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
+                <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
+                <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
+                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
+            </div>
             
-            <!-- خيارات المشرف في القائمة الجانبية (المعاينة، إضافة سؤال، إدارة الأسئلة، إحصائيات، API) -->
+            <!-- خيارات المشرف في القائمة الجانبية (تظهر فقط للمشرف) -->
             <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
                 <div class="admin-sidebar-title">👑 لوحة المشرف</div>
                 <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
@@ -538,7 +541,7 @@
                     <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
                 </div>
 
-                <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← الانتقال للوحة الطالب</span></div>
+                <div class="switch-link" style="margin-top: 25px;"><span onclick="openAdminTab('add-question-box')">← العودة للوحة المشرف الرئيسية</span></div>
             </div>
         </div>
     </div>
@@ -589,17 +592,22 @@
             const isAuth = checkAuth();
             const body = document.getElementById('appBody');
             const adminSidebarSec = document.getElementById('admin-sidebar-section');
+            const studentSidebarGroup = document.getElementById('student-sidebar-group');
+
             if (isAuth) {
                 body.classList.add('logged-in');
                 const userRole = sessionStorage.getItem('sessionUserRole');
                 if (userRole === 'admin') {
                     adminSidebarSec.classList.remove('hidden');
+                    studentSidebarGroup.classList.add('hidden'); // إخفاء قائمة الطلاب نهائياً للمشرف
                 } else {
                     adminSidebarSec.classList.add('hidden');
+                    studentSidebarGroup.classList.remove('hidden'); // إظهار قائمة الطلاب للطالب العادي
                 }
             } else {
                 body.classList.remove('logged-in');
                 adminSidebarSec.classList.add('hidden');
+                studentSidebarGroup.classList.remove('hidden');
             }
         }
 
