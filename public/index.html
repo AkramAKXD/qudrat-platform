@@ -10,12 +10,12 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: #f0f3f8; color: #0f172a; min-height: 100vh; display: flex; }
 
-        /* القائمة الجانبية بتصميم عصري وأنيق */
+        /* القائمة الجانبية (تظهر فقط بعد تسجيل الدخول) */
         .sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid #e2e8f0;
-            display: flex;
+            display: none; /* مخفية افتراضياً حتى يتم تسجيل الدخول */
             flex-direction: column;
             position: fixed;
             top: 0;
@@ -24,6 +24,8 @@
             z-index: 100;
             box-shadow: -4px 0 15px rgba(0,0,0,0.04);
         }
+        .sidebar.visible { display: flex; }
+        
         .sidebar-header {
             padding: 30px 20px;
             text-align: center;
@@ -72,15 +74,19 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
-        /* المحتوى الرئيسي */
+        /* المحتوى الرئيسي (يتكيف مع القائمة الجانبية إذا ظهرت) */
         .main-content {
-            margin-right: var(--sidebar-width);
+            margin-right: 0; /* الافتراضي بدون قائمة جانبية */
             flex-grow: 1;
             padding: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: margin-right 0.3s ease;
+        }
+        body.logged-in .main-content {
+            margin-right: var(--sidebar-width); /* يتسع مكان القائمة عند الدخول */
         }
 
         .container { background: #fff; padding: 40px; border-radius: 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.06); width: 100%; max-width: 850px; position: relative; min-height: 480px; }
@@ -175,20 +181,20 @@
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .sidebar { position: relative; width: 100%; height: auto; border-left: none; border-bottom: 1px solid #e2e8f0; }
-            .main-content { margin-right: 0; padding: 20px; }
+            body.logged-in .main-content { margin-right: 0; }
+            .main-content { padding: 20px; }
             .features-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-<body>
+<body id="appBody">
 
-    <!-- القائمة الجانبية (Sidebar) -->
-    <nav class="sidebar">
+    <!-- القائمة الجانبية (مخفية تماماً حتى يتم تسجيل الدخول) -->
+    <nav class="sidebar" id="appSidebar">
         <div class="sidebar-header">
             <h2>🚀 منصة قدرات</h2>
         </div>
         <ul class="sidebar-menu">
-            <li id="menu-landing" class="active"><button onclick="navigateTo('landing')">🏠 الرئيسية</button></li>
             <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
             <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
             <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
@@ -238,6 +244,7 @@
                 </form>
                 <div class="switch-link"><span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span></div>
                 <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً</span></div>
+                <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
             <!-- 3. شاشة نسيت كلمة المرور -->
@@ -276,6 +283,7 @@
                     <button type="submit">إنشاء حساب 🔥</button>
                 </form>
                 <div class="switch-link">لديك حساب؟ <span onclick="switchView('login')">سجل دخولك</span></div>
+                <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
             <!-- 5. لوحة تحكم الطالب -->
@@ -386,15 +394,31 @@
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
 
-        // دالة التحقق من تسجيل الدخول ومنع التصفح العشوائي
+        // دالة التحقق من تسجيل الدخول
         function checkAuth() {
             const userEmail = localStorage.getItem('userEmail');
             return !!userEmail;
         }
 
+        // تحديث حالة واجهة المستخدم والقائمة الجانبية بناءً على تسجيل الدخول
+        function updateAuthStateUI() {
+            const isAuth = checkAuth();
+            const sidebar = document.getElementById('appSidebar');
+            const body = document.getElementById('appBody');
+
+            if (isAuth) {
+                sidebar.classList.add('visible');
+                body.classList.add('logged-in');
+            } else {
+                sidebar.classList.remove('visible');
+                body.classList.remove('logged-in');
+            }
+        }
+
         function navigateTo(view) {
-            // الصفحات المتاحة بدون تسجيل دخول هي الرئيسية فقط
-            if (view !== 'landing' && view !== 'login' && view !== 'register' && view !== 'forgot') {
+            // الصفحات العامة المتاحة بدون تسجيل دخول
+            const publicPages = ['landing', 'login', 'register', 'forgot'];
+            if (!publicPages.includes(view)) {
                 if (!checkAuth()) {
                     alert('يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة! 🔒');
                     switchView('login');
@@ -409,7 +433,7 @@
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
             let targetId = '';
-            if (view === 'landing') { targetId = 'landing-section'; document.getElementById('menu-landing').classList.add('active'); }
+            if (view === 'landing') { targetId = 'landing-section'; }
             else if (view === 'login') { targetId = 'login-section'; }
             else if (view === 'register') { targetId = 'register-section'; }
             else if (view === 'forgot') { targetId = 'forgot-section'; }
@@ -422,6 +446,8 @@
                 document.getElementById('menu-qiyas').classList.add('active'); 
             }
             else if (view === 'admin') { targetId = 'admin-dashboard'; document.getElementById('menu-admin').classList.add('active'); }
+
+            updateAuthStateUI();
 
             if (targetId) {
                 setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 100);
@@ -446,7 +472,7 @@
             currentSectionType = sectionType; 
             currentActionMode = mode;         
             
-            // توليد أزرار النماذج العشرة (10 نماذج) ديناميكياً
+            // توليد أزرار النماذج العشرة (10 نماذج)
             const gridContainer = document.getElementById('modelsGridContainer');
             gridContainer.innerHTML = '';
             for (let i = 1; i <= 10; i++) {
@@ -529,6 +555,7 @@
         function logout() {
             localStorage.removeItem('userEmail');
             document.getElementById('menu-admin').classList.add('hidden');
+            updateAuthStateUI();
             navigateTo('landing');
         }
 
@@ -555,6 +582,7 @@
             const data = await res.json();
             if(data.success) {
                 localStorage.setItem('userEmail', loginEmail.value);
+                updateAuthStateUI();
                 if(data.role === 'admin') {
                     document.getElementById('menu-admin').classList.remove('hidden');
                     navigateTo('admin');
@@ -599,6 +627,11 @@
                 <div class="user-card"><strong>${i+1}. ${u.name}</strong> (${u.email}) - <span style="color:var(--primary);">${u.role}</span></div>
             `).join('');
         }
+
+        // تحقق من الحالة عند فتح الصفحة لأول مرة
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthStateUI();
+        });
     </script>
 </body>
 </html>
