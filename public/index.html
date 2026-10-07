@@ -7,10 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #6366f1; 
-            --primary-dark: #4f46e5; 
+            --primary: #4f46e5; 
+            --primary-dark: #4338ca; 
             --accent: #10b981; 
-            --accent-hover: #059669;
             --admin-color: #f59e0b; 
             --sidebar-width: 280px;
             --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
@@ -19,13 +18,12 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-gradient); color: #0f172a; min-height: 100vh; display: flex; overflow-x: hidden; }
 
-        /* القائمة الجانبية - مخفية افتراضياً ولا تظهر إلا بعد إضافة صنف logged-in لجسم الصفحة */
+        /* القائمة الجانبية - بتصميم أنيق وملون */
         .sidebar {
             width: var(--sidebar-width);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid rgba(226, 232, 240, 0.8);
-            display: none; /* إخفاء تام افتراضياً */
+            display: none;
             flex-direction: column;
             position: fixed;
             top: 0;
@@ -35,14 +33,14 @@
             box-shadow: -5px 0 25px rgba(0,0,0,0.05);
         }
         body.logged-in .sidebar {
-            display: flex; /* تظهر فقط بعد تسجيل الدخول */
+            display: flex;
         }
         
         .sidebar-header {
             padding: 30px 20px;
             text-align: center;
             border-bottom: 1px solid #f1f5f9;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
         }
         .sidebar-header h2 {
             color: var(--primary);
@@ -62,7 +60,7 @@
         .sidebar-menu li {
             margin-bottom: 12px;
         }
-        .sidebar-menu a, .sidebar-menu button {
+        .sidebar-menu button {
             display: flex;
             align-items: center;
             gap: 14px;
@@ -74,20 +72,19 @@
             color: #475569;
             font-size: 15px;
             font-weight: 700;
-            text-decoration: none;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: right;
         }
-        .sidebar-menu a:hover, .sidebar-menu button:hover {
+        .sidebar-menu button:hover {
             background: #eef2ff;
             color: var(--primary);
             transform: translateX(-5px);
         }
-        .sidebar-menu li.active a, .sidebar-menu li.active button {
+        .sidebar-menu li.active button {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
         }
 
         /* المحتوى الرئيسي */
@@ -145,10 +142,7 @@
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 14px; color: #334155; }
         
-        .password-container { 
-            position: relative; 
-            width: 100%; 
-        }
+        .password-container { position: relative; width: 100%; }
         .password-container input { 
             width: 100%; 
             padding: 14px 45px 14px 16px; 
@@ -159,97 +153,54 @@
             background: #f8fafc;
             transition: all 0.3s ease;
         }
-        .password-container input:focus {
-            border-color: var(--primary); 
-            background: #fff; 
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-        }
+        .password-container input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
         .toggle-password { 
-            position: absolute; 
-            left: 14px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            background: transparent !important; 
-            border: none !important; 
-            box-shadow: none !important; 
-            cursor: pointer; 
-            font-size: 18px; 
-            color: #64748b; 
-            padding: 0; 
-            width: 32px; 
-            height: 32px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            margin-top: 0 !important;
-            transition: color 0.2s;
-        }
-        .toggle-password:hover {
-            color: var(--primary);
-            transform: translateY(-50%) scale(1.15);
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%); 
+            background: transparent !important; border: none !important; box-shadow: none !important; 
+            cursor: pointer; font-size: 18px; color: #64748b; padding: 0; width: 32px; height: 32px; 
+            display: flex; align-items: center; justify-content: center;
         }
 
         input, select, textarea { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 15px; outline: none; transition: all 0.3s ease; background: #f8fafc; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12); }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
         
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3); }
-        button:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4); }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3); }
+        button:hover { filter: brightness(1.05); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4); }
         
         .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
-        .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; transition: color 0.2s; }
-        .switch-link span:hover { color: var(--primary-dark); }
+        .switch-link span { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: underline; }
         .hidden { display: none !important; }
         .alert { padding: 14px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: 700; display: none; font-size: 14px; }
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
-        
-        .loading-overlay { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; border-radius: 32px; opacity: 0; visibility: hidden; transition: 0.3s; }
-        .loading-overlay.active { opacity: 1; visibility: visible; }
-        .spinner { width: 50px; height: 50px; border: 4px solid #e0e7ff; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* واجهة البداية */
         .hero-section { text-align: center; }
-        .hero-badge { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 800; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(99,102,241,0.1); }
-        .hero-logo { font-size: 75px; margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .hero-badge { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 800; margin-bottom: 15px; }
+        .hero-logo { font-size: 75px; margin-bottom: 15px; }
         .hero-title { font-size: 34px; font-weight: 900; color: var(--primary); margin-bottom: 12px; }
         .hero-subtitle { color: #64748b; font-size: 16px; margin-bottom: 35px; line-height: 1.7; font-weight: 600; }
-        
         .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 35px; text-align: right; }
-        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 20px; transition: all 0.3s ease; }
-        .feature-box:hover { border-color: var(--primary); background: #fff; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.04); }
-        .feature-box h4 { color: var(--primary); font-size: 16px; margin-bottom: 8px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-        .feature-box p { color: #64748b; font-size: 13px; line-height: 1.5; }
-        
+        .feature-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 20px; }
         .hero-buttons { display: flex; gap: 15px; }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
-        .btn-outline:hover { background: #eef2ff; color: var(--primary); transform: translateY(-2px); }
 
         .student-video-card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 24px; border-radius: 24px; margin-bottom: 25px; text-align: center; }
         .student-video-card video { width: 100%; max-height: 220px; border-radius: 16px; background: #000; margin-bottom: 18px; }
+        .motivation-box { background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border: 1px solid #c7d2fe; padding: 20px; border-radius: 16px; text-align: right; }
         
-        .motivation-box { background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border: 1px solid #c7d2fe; padding: 20px; border-radius: 16px; text-align: right; box-shadow: 0 4px 15px rgba(99,102,241,0.05); }
-        .motivation-box h4 { color: var(--primary-dark); font-size: 17px; margin-bottom: 8px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-        .motivation-box p { color: #4338ca; font-size: 14px; line-height: 1.7; font-weight: 700; }
-
         .sections-stack { display: flex; flex-direction: column; gap: 18px; margin-top: 20px; }
-        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 26px; border-radius: 20px; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .section-big-card:hover { border-color: var(--primary); background: #eef2ff; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(99,102,241,0.1); }
-        .section-big-card h3 { color: var(--primary); font-size: 22px; margin-bottom: 8px; font-weight: 800; }
-        .section-big-card p { color: #64748b; font-size: 14px; font-weight: 600; }
-
+        .section-big-card { background: #f8fafc; border: 2px solid #cbd5e1; padding: 26px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .section-big-card:hover { border-color: var(--primary); background: #eef2ff; transform: translateY(-3px); }
         .section-detail-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 24px; border-radius: 20px; margin-bottom: 25px; text-align: right; }
         .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
 
         .admin-panel { background: #fffbeb; border: 2px dashed var(--admin-color); padding: 25px; border-radius: 20px; margin-top: 20px; }
-        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; margin-top: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(245,158,11,0.2); }
-        .admin-btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
+        .admin-btn { background: var(--admin-color); color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; margin-top: 12px; font-weight: bold; cursor: pointer; }
         
         .question-card, .user-card { background: #f8fafc; border: 1px solid #cbd5e1; padding: 22px; border-radius: 16px; margin-top: 15px; text-align: right; }
         .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; max-width: 650px; margin: 0 auto; }
-        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); }
+        .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
@@ -257,13 +208,12 @@
             body.logged-in .main-content { margin-right: 0; }
             .main-content { padding: 20px; }
             .features-grid { grid-template-columns: 1fr; }
-            .container { padding: 25px; }
         }
     </style>
 </head>
 <body id="appBody">
 
-    <!-- القائمة الجانبية (مخفية تلقائياً ولا تظهر إلا بعد تسجيل الدخول) -->
+    <!-- القائمة الجانبية -->
     <nav class="sidebar" id="appSidebar">
         <div class="sidebar-header">
             <h2>🚀 منصة قدرات</h2>
@@ -281,30 +231,16 @@
     <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <div class="container">
-            <div id="loadingOverlay" class="loading-overlay">
-                <div class="spinner"></div>
-                <div id="loadingText" class="loading-text">جارِ التحميل، يرجى الانتظار...</div>
-            </div>
-
             <!-- 1. واجهة البداية -->
             <div id="landing-section" class="app-section hero-section active-view">
                 <div class="hero-badge">🌟 بوابتك الموثوقة نحو التفوق والتميز</div>
                 <div class="hero-logo">🎯</div>
                 <div class="hero-title">منصة قدرات الاحترافية</div>
-                <p class="hero-subtitle">"اصنع طموحك اليوم، واحصد درجاتك العالية غداً. تتدرب بذكاء، تقيس مستواك بثقة، وتصل إلى القمة بجدارة!"</p>
+                <p class="hero-subtitle">"اصنع طموحك اليوم، واحصد درجاتك العالية غداً."</p>
                 <div class="features-grid">
-                    <div class="feature-box">
-                        <h4>🎯 تدريب ذكي</h4>
-                        <p>10 نماذج شاملة للأقسام بعناية فائقة.</p>
-                    </div>
-                    <div class="feature-box">
-                        <h4>🔥 تحفيز مستمر</h4>
-                        <p>بيئة تفاعلية ممتازة تشعل حماسك.</p>
-                    </div>
-                    <div class="feature-box">
-                        <h4>⚡ سرعة وسهولة</h4>
-                        <p>واجهة متقدمة، آمنة، وسلسة الاستخدام.</p>
-                    </div>
+                    <div class="feature-box"><h4>🎯 تدريب ذكي</h4><p>نماذج شاملة للأقسام بعناية فائقة.</p></div>
+                    <div class="feature-box"><h4>🔥 تحفيز مستمر</h4><p>بيئة تفاعلية ممتازة تشعل حماسك.</p></div>
+                    <div class="feature-box"><h4>⚡ سرعة وسهولة</h4><p>واجهة متقدمة وآمنة.</p></div>
                 </div>
                 <div class="hero-buttons">
                     <button onclick="switchView('login')">تسجيل الدخول 🔑</button>
@@ -315,7 +251,6 @@
             <!-- 2. شاشة تسجيل الدخول -->
             <div id="login-section" class="app-section">
                 <h1>🎯 مرحباً بك مجدداً!</h1>
-                <p style="text-align: center; color: #64748b; margin-top: -15px; margin-bottom: 25px; font-weight: 600;">"النجاح يبدأ بخطوة، واصل مسيرتك نحو التميز"</p>
                 <div id="login-alert" class="alert"></div>
                 <form id="loginForm">
                     <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="loginEmail" required placeholder="أدخل بريدك الإلكتروني"></div>
@@ -332,10 +267,9 @@
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
-            <!-- 3. شاشة نسيت كلمة المرور -->
+            <!-- 3. شاشة استعادة كلمة المرور -->
             <div id="forgot-section" class="app-section">
                 <h1>🔑 استعادة كلمة المرور</h1>
-                <p style="text-align: center; color: #64748b; margin-top: -15px; margin-bottom: 25px; font-weight: 600;">"لا تقلق، عودتك لطريق النجاح تبدأ من هنا"</p>
                 <div id="forgot-alert" class="alert"></div>
                 <div id="forgot-step-1">
                     <div class="form-group"><label>البريد المسجل:</label><input type="email" id="forgotEmail" placeholder="student@gmail.com"></div>
@@ -356,14 +290,13 @@
             <!-- 4. شاشة تسجيل حساب جديد -->
             <div id="register-section" class="app-section">
                 <h1>✨ انضم إلى نخبة المتفوقين</h1>
-                <p style="text-align: center; color: #64748b; margin-top: -15px; margin-bottom: 25px; font-weight: 600;">"اصنع مستقبلًا مشرقًا وابدأ رحلة الـ 100% معنا اليوم"</p>
                 <div id="reg-alert" class="alert"></div>
                 <form id="registerForm">
                     <div class="form-group"><label>الاسم الكامل:</label><input type="text" id="regName" required placeholder="أدخل اسمك الكريم"></div>
                     <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="regEmail" required placeholder="email@gmail.com"></div>
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
-                            <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور (6 أحرف على الأقل)">
+                            <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
                             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁</button>
                         </div>
                     </div>
@@ -380,21 +313,21 @@
                     <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
                     <div class="motivation-box">
                         <h4>💡 إشراقة اليوم:</h4>
-                        <p>"الجهد المبذول اليوم هو درجات الفرح غدًا. استمر في التدريب ولا تتوقف، فالقمة تنتظر أبطالاً مثلك!"</p>
+                        <p>"الجهد المبذول اليوم هو درجات الفرح غدًا."</p>
                     </div>
                 </div>
                 <div class="sections-stack">
                     <div class="section-big-card" onclick="navigateTo('quant')">
                         <h3>📐 القسم الكمي</h3>
-                        <p>اصقل مهاراتك الرياضية والتحليلية مع 10 نماذج تدريبية متكاملة</p>
+                        <p>اصقل مهاراتك الرياضية والتحليلية</p>
                     </div>
                     <div class="section-big-card" onclick="navigateTo('verbal')">
                         <h3>📚 القسم اللفظي</h3>
-                        <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء (10 نماذج)</p>
+                        <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء</p>
                     </div>
                     <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: var(--accent); background: #f0fdf4;">
                         <h3 style="color: var(--accent);">⏱️ اختبار قياس التجريبي</h3>
-                        <p>عش أجواء اختبار قياس الحقيقي واقس مستواك عبر 5 نماذج محاكية</p>
+                        <p>عش أجواء اختبار قياس الحقيقي</p>
                     </div>
                 </div>
             </div>
@@ -404,7 +337,7 @@
                 <h2>📐 القسم الكمي</h2>
                 <div class="section-detail-box">
                     <h3>💡 دليل القسم:</h3>
-                    <p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء بطريقة مبسطة واحترافية.</p>
+                    <p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء.</p>
                 </div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
@@ -418,7 +351,7 @@
                 <h2>📚 القسم اللفظي</h2>
                 <div class="section-detail-box">
                     <h3>💡 دليل القسم:</h3>
-                    <p>يركز على استيعاب المقروء، التناظر اللفظي، الخطأ السياقي، والمفردات الشاذة.</p>
+                    <p>يركز على استيعاب المقروء، التناظر اللفظي، والخطأ السياقي.</p>
                 </div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
@@ -427,17 +360,16 @@
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة اختيار النماذج (10 نماذج) -->
+            <!-- واجهة اختيار النماذج -->
             <div id="models-selection-section" class="app-section">
-                <h2 id="models-title">اختر نموذج التدريب (من 1 إلى 10)</h2>
+                <h2 id="models-title">اختر نموذج التدريب</h2>
                 <div class="model-grid" id="modelsGridContainer"></div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة اختبار قياس النماذج (5 نماذج) -->
+            <!-- واجهة اختبار قياس -->
             <div id="qiyas-models-section" class="app-section">
                 <h2 style="color: var(--accent);">⏱️ اختبار قياس (5 نماذج محاكية)</h2>
-                <p style="text-align: center; color: #64748b; margin-top: -15px; margin-bottom: 25px; font-weight: 600;">"ضع نفسك في بيئة الاختبار الحقيقي واختبر جاهزيتك"</p>
                 <div class="model-grid">
                     <button onclick="selectQiyasModel(1)" class="model-btn" style="border-color: var(--accent);">النموذج 1</button>
                     <button onclick="selectQiyasModel(2)" class="model-btn" style="border-color: var(--accent);">النموذج 2</button>
@@ -448,16 +380,16 @@
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة الاعتذار عن عدم توفر الأسئلة -->
+            <!-- واجهة عدم توفر الأسئلة -->
             <div id="no-questions-section" class="app-section">
                 <div style="text-align: center; padding: 25px;">
                     <h2 id="no-q-title" style="color: #d97706;">تنبيه مؤقت</h2>
-                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً. ترقبوا التحديثات القادمة!</p>
+                    <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لم تتم إضافة أسئلة لهذا النموذج مؤقتاً.</p>
                     <button onclick="navigateTo('student')" style="width: auto; padding: 12px 30px;">العودة للوحة الرئيسية</button>
                 </div>
             </div>
 
-            <!-- واجهة الأسئلة التفاعلية -->
+            <!-- واجهة الأسئلة -->
             <div id="training-section" class="app-section">
                 <h2 id="training-main-title">⚡ تحدي التدريب الذكي</h2>
                 <div id="training-container"></div>
@@ -475,7 +407,7 @@
                     <div id="q-alert" class="alert"></div>
                     <form id="questionForm">
                         <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
-                        <div class="form-group"><label>نوع السؤال:</label><select id="qType"><option value="practice">تدريب (practice)</option><option value="simulation">اختبار محاكي (simulation)</option></select></div>
+                        <div class="form-group"><label>نوع السؤال:</label><select id="qType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي</option></select></div>
                         <div class="form-group"><label>النموذج (1-10):</label><input type="number" id="qModel" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
                         <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
@@ -483,7 +415,7 @@
                         <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required></div>
                         <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required></div>
                         <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
-                        <button type="submit" style="background: var(--accent);">حفظ السؤال في القاعدة 💾</button>
+                        <button type="submit" style="background: var(--accent);">حفظ السؤال 💾</button>
                     </form>
                 </div>
                 <div id="data-list-container" class="hidden" style="margin-top: 20px;">
@@ -501,22 +433,29 @@
         let selectedModelNum = 1;
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
+        let verifiedForgotEmail = '';
 
+        // التحقق الحقيقي من الجلسة (التحقق من وجود المستخدم عبر الخادم أو التخزين الآمن)
         function checkAuth() {
-            const userEmail = localStorage.getItem('userEmail');
+            const userEmail = sessionStorage.getItem('sessionUserEmail'); // استخدام sessionStorage لإنهاء الجلسة عند إغلاق المتصفح
             return !!userEmail;
         }
 
-        // التحكم بظهور القائمة الجانبية بناءً على حالة تسجيل الدخول فقط
         function updateAuthStateUI() {
             const isAuth = checkAuth();
             const body = document.getElementById('appBody');
-
             if (isAuth) {
-                body.classList.add('logged-in'); // يظهر القائمة الجانبية
+                body.classList.add('logged-in');
             } else {
-                body.classList.remove('logged-in'); // يزيل القائمة ويخفيها تماماً
+                body.classList.remove('logged-in');
             }
+        }
+
+        function hideAlerts() {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.style.display = 'none';
+                el.innerText = '';
+            });
         }
 
         function navigateTo(view) {
@@ -532,6 +471,7 @@
         }
 
         function switchView(view) {
+            hideAlerts(); // إخفاء أي تنبيهات سابقة عند تبديل الصفحات لمنع بقاء رسائل الخطأ القديمة
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
@@ -539,7 +479,12 @@
             if (view === 'landing') { targetId = 'landing-section'; }
             else if (view === 'login') { targetId = 'login-section'; }
             else if (view === 'register') { targetId = 'register-section'; }
-            else if (view === 'forgot') { targetId = 'forgot-section'; }
+            else if (view === 'forgot') { 
+                targetId = 'forgot-section'; 
+                document.getElementById('forgot-step-1').classList.remove('hidden');
+                document.getElementById('forgot-step-2').classList.add('hidden');
+                document.getElementById('forgotEmail').value = '';
+            }
             else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
@@ -552,11 +497,7 @@
 
             updateAuthStateUI();
 
-            // تمرير الصفحة تلقائياً إلى الأعلى بسلاسة عند تغيير القسم
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (targetId) {
                 setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 100);
@@ -571,6 +512,38 @@
             } else {
                 passwordInput.type = 'password';
                 btnElement.innerText = '👁';
+            }
+        }
+
+        async function verifyForgotEmail() {
+            const email = document.getElementById('forgotEmail').value;
+            if(!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني', false); return; }
+            
+            // تحقق مبدئي من وجود المستخدم (أو استدعاء API التحقق)
+            verifiedForgotEmail = email;
+            document.getElementById('forgot-step-1').classList.add('hidden');
+            document.getElementById('forgot-step-2').classList.remove('hidden');
+            showAlert('forgot', 'تم التحقق من البريد. أدخل كلمة المرور الجديدة', true);
+        }
+
+        async function submitNewPassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            if(!newPass || newPass.length < 6) {
+                showAlert('forgot', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', false);
+                return;
+            }
+            
+            const res = await fetch('/api/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
+            });
+            const data = await res.json();
+            if(data.success) {
+                showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! قم بتسجيل الدخول الآن', true);
+                setTimeout(() => switchView('login'), 2000);
+            } else {
+                showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
             }
         }
 
@@ -632,7 +605,7 @@
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
-                container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 كفو يا بطل! أتممت أسئلة النموذج بنجاح تام وتألق.</h3><p style="margin-top: 10px; font-weight: 600;">استمر بهذا الأداء الرائع نحو تحقيق هدفك المنشود!</p><button onclick="navigateTo('student')" style="margin-top:20px; width:auto; padding:12px 25px;">العودة لوحة الطالب</button></div>`;
+                container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 كفو يا بطل! أتممت أسئلة النموذج بنجاح تام وتألق.</h3><button onclick="navigateTo('student')" style="margin-top:20px; width:auto; padding:12px 25px;">العودة لوحة الطالب</button></div>`;
                 return;
             }
             const q = currentTrainingQuestions[currentQuestionIndex];
@@ -662,15 +635,15 @@
             } else {
                 btn.style.background = '#fee2e2';
                 btn.style.borderColor = '#f87171';
-                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الإجابة الصحيحة هي: (${correctOpt}) 💪 لا تتوقف، واصل التعلم!</span>`;
+                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الإجابة الصحيحة هي: (${correctOpt}) 💪</span>`;
             }
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1800);
         }
 
         function logout() {
-            localStorage.removeItem('userEmail');
+            sessionStorage.removeItem('sessionUserEmail');
             document.getElementById('menu-admin').classList.add('hidden');
-            updateAuthStateUI(); // إخفاء القائمة الجانبية فوراً عند تسجيل الخروج
+            updateAuthStateUI();
             navigateTo('landing');
         }
 
@@ -686,6 +659,7 @@
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            hideAlerts();
             const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) });
             const data = await res.json();
             if(data.success) { showAlert('reg', data.message, true); setTimeout(() => switchView('login'), 1500); } else { showAlert('reg', data.message, false); }
@@ -693,18 +667,21 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            hideAlerts();
             const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) });
             const data = await res.json();
             if(data.success) {
-                localStorage.setItem('userEmail', loginEmail.value);
-                updateAuthStateUI(); // إظهار القائمة الجانبية فوراً بعد نجاح تسجيل الدخول
+                sessionStorage.setItem('sessionUserEmail', loginEmail.value);
+                updateAuthStateUI();
                 if(data.role === 'admin') {
                     document.getElementById('menu-admin').classList.remove('hidden');
                     navigateTo('admin');
                 } else {
                     navigateTo('student');
                 }
-            } else { showAlert('login', data.message, false); }
+            } else { 
+                showAlert('login', data.message, false); 
+            }
         });
 
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
@@ -744,7 +721,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            updateAuthStateUI(); // التحقق من حالة الدخول عند تحميل الصفحة لأول مرة وإخفاء القائمة إن لم يكن مسجلاً
+            updateAuthStateUI();
         });
     </script>
 </body>
