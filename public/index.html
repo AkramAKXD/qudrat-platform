@@ -1235,7 +1235,7 @@
             e.preventDefault();
             showLoading('جاري حفظ سؤال قياس...', 500, async () => {
                 try {
-                    ,res = await fetch('/api/add-question', { 
+                    const res = await fetch('/api/add-question', { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify({ 
