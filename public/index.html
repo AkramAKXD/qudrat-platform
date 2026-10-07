@@ -56,6 +56,45 @@
             to { transform: rotate(360deg); }
         }
 
+        /* نافذة التأكيد التفاعلية (Modal) */
+        #custom-confirm-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        #custom-confirm-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .confirm-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        #custom-confirm-modal.active .confirm-box {
+            transform: scale(1);
+        }
+        .confirm-box h3 { color: #1e293b; margin-bottom: 12px; font-size: 20px; font-weight: 900; }
+        .confirm-box p { color: #64748b; margin-bottom: 25px; font-size: 15px; font-weight: 600; line-height: 1.6; }
+        .confirm-actions { display: flex; gap: 12px; }
+        .confirm-actions button { margin-top: 0; flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px; }
+        .btn-cancel-action { background: #f1f5f9; color: #475569; }
+        .btn-confirm-action { background: #ef4444; color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+
         /* القائمة الجانبية */
         .sidebar {
             width: var(--sidebar-width);
@@ -117,7 +156,7 @@
             box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
         }
 
-        /* تصنيف أدوات المشرف في القائمة الجانبية */
+        /* تصنيف أدوات المشرف المخصصة في القائمة الجانبية */
         .admin-sidebar-group {
             background: #fffbeb;
             border: 1px dashed var(--admin-color);
@@ -260,6 +299,18 @@
         <div class="loading-text" id="loadingMessage">جاري المعالجة...</div>
     </div>
 
+    <!-- نافذة تأكيد الحذف التفاعلية -->
+    <div id="custom-confirm-modal">
+        <div class="confirm-box">
+            <h3>⚠️ تأكيد الحذف</h3>
+            <p id="confirmModalText">هل أنت متأكد من رغبتك في حذف هذا السؤال نهائياً من المنصة؟</p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-cancel-action" onclick="closeConfirmModal()">إلغاء</button>
+                <button type="button" class="btn-confirm-action" id="confirmActionBtn">نعم، حذف</button>
+            </div>
+        </div>
+    </div>
+
     <!-- القائمة الجانبية -->
     <nav class="sidebar" id="appSidebar">
         <div class="sidebar-header">
@@ -271,13 +322,13 @@
             <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
             <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
             
-            <!-- أدوات وعمليات المشرف في القائمة الجانبية -->
+            <!-- خيارات المشرف في القائمة الجانبية (المعاينة، إضافة سؤال، إدارة الأسئلة، إحصائيات، API) -->
             <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
                 <div class="admin-sidebar-title">👑 لوحة المشرف</div>
+                <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
                 <li><button onclick="openAdminTab('add-question-box')">➕ إضافة سؤال</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وحذف الأسئلة</button></li>
                 <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
-                <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
                 <li><a href="/admin.html" target="_blank" style="text-decoration: none;"><button style="color: #0284c7;">📂 تقرير الحسابات (API)</button></a></li>
             </div>
 
@@ -363,7 +414,7 @@
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
-            <!-- 5. لوحة تحكم الطالب (أو المعاينة المباشرة) -->
+            <!-- 5. لوحة تحكم الطالب -->
             <div id="student-dashboard" class="app-section">
                 <h1 id="student-welcome">أهلاً بك يا بطل القمة! 🌟</h1>
                 <div class="student-video-card">
@@ -452,7 +503,7 @@
                 <div id="training-container"></div>
             </div>
 
-            <!-- لوحة تحكم المشرف (إدارة الأسئلة والإحصائيات تظهر هنا عند اختيارها من القائمة الجانبية) -->
+            <!-- لوحة تحكم المشرف -->
             <div id="admin-dashboard" class="app-section">
                 <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
                 
@@ -500,7 +551,6 @@
         let currentQuestionIndex = 0;
         let verifiedForgotEmail = '';
 
-        // دوال التحكم بشاشة التحميل (ثانية ونصف لتسجيل الدخول/الخروج، وأقل من ثانية للتنقل بين النماذج)
         function showLoading(message = 'جاري المعالجة...', duration = 1500, callback) {
             document.getElementById('loadingMessage').innerText = message;
             document.getElementById('loading-overlay').classList.add('active');
@@ -508,6 +558,26 @@
                 document.getElementById('loading-overlay').classList.remove('active');
                 if (callback) callback();
             }, duration);
+        }
+
+        // دوال رسالة التأكيد المخصصة على الشاشة
+        function showConfirmModal(text, onConfirmCallback) {
+            document.getElementById('confirmModalText').innerText = text;
+            const modal = document.getElementById('custom-confirm-modal');
+            modal.classList.add('active');
+
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+            newConfirmBtn.addEventListener('click', () => {
+                closeConfirmModal();
+                if (onConfirmCallback) onConfirmCallback();
+            });
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('custom-confirm-modal').classList.remove('active');
         }
 
         function checkAuth() {
@@ -743,7 +813,6 @@
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
         }
 
-        // تسجيل الخروج خلال 1.5 ثانية
         function logout() {
             showLoading('جاري تسجيل الخروج...', 1500, () => {
                 sessionStorage.removeItem('sessionUserEmail');
@@ -775,7 +844,7 @@
                 listContainer.innerHTML = questions.map((q, idx) => `
                     <div style="background:#fff; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
                         <span><strong>${idx+1}.</strong> ${q.question.substring(0, 40)}... (القسم: ${q.section})</span>
-                        <button onclick="deleteQuestion(${idx})" style="background:#ef4444; width:auto; padding:6px 12px; margin:0; font-size:13px;">حذف</button>
+                        <button onclick="confirmDeleteQuestion(${idx})" style="background:#ef4444; width:auto; padding:6px 12px; margin:0; font-size:13px;">حذف</button>
                     </div>
                 `).join('');
             } catch (e) {
@@ -783,8 +852,13 @@
             }
         }
 
+        function confirmDeleteQuestion(index) {
+            showConfirmModal('هل أنت متأكد من رغبتك في حذف هذا السؤال من المنصة؟', () => {
+                deleteQuestion(index);
+            });
+        }
+
         async function deleteQuestion(index) {
-            if(!confirm('هل أنت متأكد من حذف هذا السؤال؟')) return;
             showLoading('جاري حذف السؤال...', 500, async () => {
                 try {
                     const res = await fetch('/api/delete-question', {
@@ -804,7 +878,6 @@
             });
         }
 
-        // إنشاء حساب جديد خلال 1.5 ثانية
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
@@ -828,7 +901,6 @@
             });
         });
 
-        // تسجيل الدخول خلال 1.5 ثانية
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
