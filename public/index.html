@@ -15,7 +15,7 @@
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid #e2e8f0;
-            display: none; /* مخفية افتراضياً حتى يتم تسجيل الدخول */
+            display: none;
             flex-direction: column;
             position: fixed;
             top: 0;
@@ -74,9 +74,9 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
 
-        /* المحتوى الرئيسي (يتكيف مع القائمة الجانبية إذا ظهرت) */
+        /* المحتوى الرئيسي */
         .main-content {
-            margin-right: 0; /* الافتراضي بدون قائمة جانبية */
+            margin-right: 0;
             flex-grow: 1;
             padding: 40px;
             display: flex;
@@ -86,7 +86,7 @@
             transition: margin-right 0.3s ease;
         }
         body.logged-in .main-content {
-            margin-right: var(--sidebar-width); /* يتسع مكان القائمة عند الدخول */
+            margin-right: var(--sidebar-width);
         }
 
         .container { background: #fff; padding: 40px; border-radius: 28px; box-shadow: 0 12px 35px rgba(0,0,0,0.06); width: 100%; max-width: 850px; position: relative; min-height: 480px; }
@@ -118,9 +118,49 @@
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { width: 100%; padding: 12px 45px 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; }
-        .toggle-password { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: #64748b; }
+        /* تصميم دقيق ومضبوط لحقل كلمة المرور وزر الإظهار/الإخفاء */
+        .password-container { 
+            position: relative; 
+            width: 100%; 
+        }
+        .password-container input { 
+            width: 100%; 
+            padding: 12px 45px 12px 14px; /* ترك مسافة لليسار لكي لا يختفي النص تحت الزر */
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            outline: none; 
+            background: #fafafa;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .password-container input:focus {
+            border-color: var(--primary); 
+            background: #fff; 
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        .toggle-password { 
+            position: absolute; 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: transparent !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+            cursor: pointer; 
+            font-size: 18px; 
+            color: #64748b; 
+            padding: 0; 
+            width: 30px; 
+            height: 30px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin-top: 0 !important;
+        }
+        .toggle-password:hover {
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.1);
+        }
 
         input, select, textarea { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: #fafafa; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
@@ -277,7 +317,7 @@
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁</button>
                         </div>
                     </div>
                     <button type="submit">إنشاء حساب 🔥</button>
@@ -394,13 +434,11 @@
         let currentTrainingQuestions = [];
         let currentQuestionIndex = 0;
 
-        // دالة التحقق من تسجيل الدخول
         function checkAuth() {
             const userEmail = localStorage.getItem('userEmail');
             return !!userEmail;
         }
 
-        // تحديث حالة واجهة المستخدم والقائمة الجانبية بناءً على تسجيل الدخول
         function updateAuthStateUI() {
             const isAuth = checkAuth();
             const sidebar = document.getElementById('appSidebar');
@@ -416,7 +454,6 @@
         }
 
         function navigateTo(view) {
-            // الصفحات العامة المتاحة بدون تسجيل دخول
             const publicPages = ['landing', 'login', 'register', 'forgot'];
             if (!publicPages.includes(view)) {
                 if (!checkAuth()) {
@@ -454,10 +491,16 @@
             }
         }
 
+        // دالة تبديل إظهار وإخفاء كلمة المرور المنضبطة
         function togglePasswordVisibility(fieldId, btnElement) {
             const passwordInput = document.getElementById(fieldId);
-            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-            btnElement.innerText = passwordInput.type === 'password' ? '👁' : '🙈';
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                btnElement.innerText = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                btnElement.innerText = '👁';
+            }
         }
 
         function selectQiyasModel(modelNum) {
@@ -472,7 +515,6 @@
             currentSectionType = sectionType; 
             currentActionMode = mode;         
             
-            // توليد أزرار النماذج العشرة (10 نماذج)
             const gridContainer = document.getElementById('modelsGridContainer');
             gridContainer.innerHTML = '';
             for (let i = 1; i <= 10; i++) {
@@ -628,7 +670,6 @@
             `).join('');
         }
 
-        // تحقق من الحالة عند فتح الصفحة لأول مرة
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
         });
