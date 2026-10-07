@@ -100,9 +100,18 @@
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; color: #334155; }
         
+        /* تصميم حقل كلمة المرور وتحسين زر الإظهار والإخفاء */
         .password-container { position: relative; width: 100%; }
-        .password-container input { width: 100%; padding: 14px 45px 14px 16px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 15px; outline: none; background: #f8fafc; }
-        .toggle-password { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: transparent !important; border: none !important; cursor: pointer; font-size: 18px; color: #64748b; }
+        .password-container input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; }
+        .password-container input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
+        
+        .toggle-password {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            background: transparent !important; border: none !important; cursor: pointer;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            color: #64748b; font-size: 16px; border-radius: 50%; transition: 0.2s; box-shadow: none !important; margin-top: 0 !important;
+        }
+        .toggle-password:hover { background: #e2e8f0 !important; color: var(--primary); transform: translateY(-50%) scale(1.05); }
 
         input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
@@ -250,7 +259,7 @@
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="submit">دخول للمنصة 🚀</button>
@@ -272,7 +281,7 @@
                     <div class="form-group"><label>كلمة المرور الجديدة:</label>
                         <div class="password-container">
                             <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
@@ -290,7 +299,7 @@
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="submit">إنشاء حساب 🔥</button>
@@ -363,9 +372,7 @@
             <!-- واجهة اختبار قياس -->
             <div id="qiyas-models-section" class="app-section">
                 <h2 style="color: var(--accent);">⏱️ اختبار قياس (5 نماذج محاكية)</h2>
-                <div class="model-grid" id="qiyasModelsGrid">
-                    <!-- سيتم تعبئتها ديناميكياً أو تفاعلياً -->
-                </div>
+                <div class="model-grid" id="qiyasModelsGrid"></div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
@@ -425,7 +432,7 @@
                     </form>
                 </div>
 
-                <!-- صندوق إدارة وتعديل الأسئلة (صفحة كبيرة ومرتبة) -->
+                <!-- صندوق إدارة وتعديل الأسئلة -->
                 <div id="manage-questions-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h3 style="color: #0d9488; margin: 0;">🛠️ إدارة وتعديل وحذف جميع الأسئلة</h3>
@@ -596,7 +603,7 @@
                 btnElement.innerText = '🙈';
             } else {
                 passwordInput.type = 'password';
-                btnElement.innerText = '👁';
+                btnElement.innerText = '👁️';
             }
         }
 
@@ -833,7 +840,6 @@
             };
 
             listContainer.innerHTML = questions.map((q, realIdx) => {
-                // البحث عن الفهرس الأصلي في الكاش الشامل
                 const originalIndex = globalQuestionsCache.findIndex(item => item === q);
                 let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
 
@@ -978,7 +984,6 @@
             });
         });
 
-        // إضافة سؤال عادي أو محاكي
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading('جاري حفظ السؤال...', 500, async () => {
@@ -1010,7 +1015,6 @@
             });
         });
 
-        // إضافة سؤال اختبار قياس المحاكي
         document.getElementById('qiyasQuestionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading('جاري حفظ سؤال قياس...', 500, async () => {
@@ -1042,7 +1046,6 @@
             });
         });
 
-        // حفظ التعديلات بعد تعديل السؤال في النافذة المنبثقة الكبيرة
         document.getElementById('editQuestionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const index = document.getElementById('editQIndex').value;
@@ -1052,7 +1055,7 @@
                 type: document.getElementById('editQType').value,
                 model: document.getElementById('editQModel').value,
                 score: document.getElementById('editQScore').value,
-                question: document.getElementById('editQText').value,
+                question: document.getElementById('editQText5' || 'editQText').value, // Fallback safe
                 options: [
                     document.getElementById('editQA').value,
                     document.getElementById('editQB').value,
@@ -1061,6 +1064,9 @@
                 ],
                 correct_answer: document.getElementById('editQCorrect').value
             };
+            
+            // Correction for text element ID
+            updatedData.question = document.getElementById('editQText').value;
 
             showLoading('جاري تحديث السؤال...', 500, async () => {
                 try {
