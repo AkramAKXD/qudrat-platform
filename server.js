@@ -14,6 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const USERS_FILE = path.join(__dirname, 'users.json');
 const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
 const MODELS_STATUS_FILE = path.join(__dirname, 'models_status.json');
+const CUSTOM_MODELS_FILE = path.join(__dirname, 'custom_models.json');
 
 // دوال قراءة وكتابة ملفات JSON مع معالجة الأخطاء
 function readJsonFile(filePath, defaultValue = []) {
@@ -48,6 +49,9 @@ if (!fs.existsSync(QUESTIONS_FILE)) {
 }
 if (!fs.existsSync(MODELS_STATUS_FILE)) {
     writeJsonFile(MODELS_STATUS_FILE, {});
+}
+if (!fs.existsSync(CUSTOM_MODELS_FILE)) {
+    writeJsonFile(CUSTOM_MODELS_FILE, {});
 }
 
 // ==================== مسارات الـ API ====================
@@ -182,6 +186,25 @@ app.post('/api/delete-question', (req, res) => {
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
+// جلب النماذج المخصصة والمسميات
+app.get('/api/custom-models', (req, res) => {
+    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+    res.json({ success: true, models: customModels });
+});
+
+// إضافة وتسمية نموذج جديد
+app.post('/api/add-custom-model', (req, res) => {
+    const { category, modelNumber, customName } = req.body;
+    if (!category || !modelNumber || !customName) {
+        return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول!' });
+    }
+    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+    const key = `${category}_${modelNumber}`;
+    customModels[key] = customName.trim();
+    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+    res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
+});
+
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
 app.post('/api/admin/users', (req, res) => {
     const { email } = req.body;
@@ -292,64 +315,6 @@ app.post('/api/admin/toggle-model', (req, res) => {
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
     
     res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
-});
-
-// ==================== مسارات خاصة بالطلاب (للتحقق من النماذج النشطة فقط) ====================
-
-// جلب النماذج النشطة فقط التي يسمح للطالب رؤيتها
-app.get('/api/student/active-models', (req, res) => {
-    try {
-        const questions = readJsonFile(QUESTIONS_FILE);
-        const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-
-        const activeModels = {
-            quant: {},
-            verbal: {},
-            mock: {}
-        };
-
-        questions.forEach(q => {
-            let sec = q.section === 'verbal' ? 'verbal' : 'quant';
-            if (q.type === 'qiyas_simulation') sec = 'mock';
-            
-            const mNum = Number(q.model) || 1;
-            const key = `${sec}_${mNum}`;
-            
-            const isActive = modelsStatus[key]?.active ?? true;
-
-            if (isActive) {
-                if (!activeModels[sec][mNum]) {
-                    activeModels[sec][mNum] = { modelNumber: mNum, questionCount: 0 };
-                }
-                activeModels[sec][mNum].questionCount++;
-            }
-        });
-
-        res.json({ success: true, models: activeModels });
-    } catch (error) {
-        res.json({ success: false, message: '❌ حدث خطأ أثناء جلب النماذج النشطة' });
-    }
-});
-
-// جلب أسئلة نموذج معين بشرط ألا يكون معطلاً
-app.post('/api/get-model-questions', (req, res) => {
-    const { section, modelNumber } = req.body;
-    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    const key = `${section}_${modelNumber}`;
-    
-    const isActive = modelsStatus[key]?.active ?? true;
-    if (!isActive) {
-        return res.json({ success: false, message: '⛔ عذراً، هذا النموذج معطّل حالياً من قبل الإدارة.' });
-    }
-
-    const questions = readJsonFile(QUESTIONS_FILE);
-    const filteredQuestions = questions.filter(q => {
-        let sec = q.section === 'verbal' ? 'verbal' : 'quant';
-        if (q.type === 'qiyas_simulation') sec = 'mock';
-        return sec === section && Number(q.model) === Number(modelNumber);
-    });
-
-    res.json({ success: true, questions: filteredQuestions });
 });
 
 // تشغيل الخادم
