@@ -149,7 +149,6 @@
         .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
-        /* شكل النموذج المعطل عند عرضه للطالب */
         .model-btn.disabled-model {
             background: #e2e8f0 !important;
             color: #94a3b8 !important;
@@ -158,7 +157,6 @@
             cursor: not-allowed;
         }
 
-        /* تنسيقات تبويبات إدارة النماذج للمشرف */
         .tab-btn {
             padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none;
         }
@@ -461,25 +459,31 @@
                     <div id="adminModelsListContent"></div>
                 </div>
 
-                <!-- صندوق إدارة وتعديل الأسئلة -->
+                <!-- صندوق إدارة وتعديل الأسئلة الجديد المطور حسب الطلب -->
                 <div id="manage-questions-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="color: #0d9488; margin: 0;">🛠️ إدارة وتعديل وحذف جميع الأسئلة</h3>
-                        <span id="totalQuestionsBadge" style="background: #ccfbf1; color: #0f766e; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px;">0 سؤال</span>
-                    </div>
-                    <p style="color: #475569; font-size: 14px; margin-bottom: 20px;">يمكنك استعراض كافة الأسئلة في المنصة، وتعديل بياناتها، درجاتها، أو حذفها مباشرة بضغط زر.</p>
+                    <h3 style="color: #0d9488; margin-bottom: 20px;">🛠️ إدارة وتعديل الأسئلة</h3>
                     
-                    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                        <input type="text" id="adminSearchInput" placeholder="ابحث في نص الأسئلة..." onkeyup="filterAdminQuestions()" style="flex: 1;">
-                        <select id="adminFilterType" onchange="filterAdminQuestions()" style="width: 180px;">
-                            <option value="all">جميع الأنواع</option>
-                            <option value="practice">تدريب</option>
-                            <option value="simulation">اختبار محاكي</option>
-                            <option value="qiyas_simulation">قياس محاكي</option>
-                        </select>
+                    <!-- الأقسام الثلاثة الرئيسية المطلوبة -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; flex-wrap: wrap;">
+                        <button type="button" onclick="adminSelectMainCategory('verbal')" class="tab-btn active-tab" id="adminMainVerbal">القسم اللفظي</button>
+                        <button type="button" onclick="adminSelectMainCategory('quant')" class="tab-btn" id="adminMainQuant">القسم الكمي</button>
+                        <button type="button" onclick="adminSelectMainCategory('qiyas')" class="tab-btn" id="adminMainQiyas">اختبار محاكي قياس</button>
                     </div>
 
-                    <div id="adminQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
+                    <!-- خيارا (تدريب) و (اختبار محاكي) للفظي والكمي -->
+                    <div id="adminSubCategoryContainer" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button type="button" onclick="adminSelectSubCategory('practice')" class="tab-btn active-tab" id="adminSubPractice">تدريب</button>
+                        <button type="button" onclick="adminSelectSubCategory('simulation')" class="tab-btn" id="adminSubSimulation">اختبار محاكي</button>
+                    </div>
+
+                    <!-- عرض النماذج المضافة لها أسئلة فقط -->
+                    <div style="margin-bottom: 15px;">
+                        <h4 id="adminModelsHeading" style="color: #1e293b; margin-bottom: 12px; font-size: 16px;">اختر النموذج لاستعراض وتعديل أسئلته:</h4>
+                        <div id="adminModelsGrid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;"></div>
+                    </div>
+
+                    <!-- قائمة الأسئلة التابعة للنموذج المحدد -->
+                    <div id="adminFilteredQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
                 <!-- صندوق إحصائيات المنصة -->
@@ -508,6 +512,11 @@
         let currentQuestionIndex = 0;
         let verifiedForgotEmail = '';
         let globalQuestionsCache = [];
+
+        // متغيرات التنقل الجديدة الخاصة بإدارة الأسئلة للمشرف
+        let adminCurrentCat = 'verbal'; // verbal, quant, qiyas
+        let adminCurrentSub = 'practice'; // practice, simulation
+        let adminCurrentSelectedModel = null;
 
         function showLoading(message = 'جاري المعالجة...', duration = 1200, callback) {
             document.getElementById('loadingMessage').innerText = message;
@@ -630,7 +639,7 @@
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
             if(tabId === 'manage-questions-box') {
-                loadAdminQuestionsList();
+                initAdminQuestionsManagement();
             } else if(tabId === 'registered-accounts-box') {
                 loadRegisteredAccounts();
             } else if(tabId === 'manage-models-box') {
@@ -638,7 +647,153 @@
             }
         }
 
-        // جلب وعرض النماذج في لوحة التحكم لإدارة التنشيط والتعطيل
+        // دوال إدارة وتعديل الأسئلة المحدثة حسب الطلب
+        async function initAdminQuestionsManagement() {
+            showLoading('جاري تحميل الأسئلة...', 400, async () => {
+                try {
+                    const res = await fetch('/api/questions');
+                    globalQuestionsCache = await res.json();
+                    adminSelectMainCategory('verbal');
+                } catch (e) {
+                    alert('تعذر جلب الأسئلة.');
+                }
+            });
+        }
+
+        function adminSelectMainCategory(cat) {
+            adminCurrentCat = cat;
+            adminCurrentSelectedModel = null;
+
+            ['verbal', 'quant', 'qiyas'].forEach(c => {
+                const btn = document.getElementById(`adminMain${c.charAt(0).toUpperCase() + c.slice(1)}`);
+                if(btn) btn.className = c === cat ? 'tab-btn active-tab' : 'tab-btn';
+            });
+
+            const subContainer = document.getElementById('adminSubCategoryContainer');
+            if (cat === 'qiyas') {
+                subContainer.style.display = 'none';
+            } else {
+                subContainer.style.display = 'flex';
+                adminSelectSubCategory('practice');
+                return;
+            }
+            renderAdminModels();
+        }
+
+        function adminSelectSubCategory(sub) {
+            adminCurrentSub = sub;
+            adminCurrentSelectedModel = null;
+
+            ['Practice', 'Simulation'].forEach(s => {
+                const btn = document.getElementById(`adminSub${s}`);
+                if(btn) btn.className = s.toLowerCase() === sub ? 'tab-btn active-tab' : 'tab-btn';
+            });
+            renderAdminModels();
+        }
+
+        // عرض النماذج المضافة لها أسئلة فقط
+        function renderAdminModels() {
+            const modelsGrid = document.getElementById('adminModelsGrid');
+            const questionsList = document.getElementById('adminFilteredQuestionsList');
+            questionsList.innerHTML = '';
+
+            // تصفية الأسئلة بناءً على القسم ونوع التدريب أو الاختبار
+            let targetType = adminCurrentSub;
+            let targetSection = adminCurrentCat;
+            if (adminCurrentCat === 'qiyas') {
+                targetType = 'qiyas_simulation';
+                targetSection = ''; // قيايس يجمع كل الأقسام أو حسب ما تم تخزينه
+            }
+
+            const matchedQuestions = globalQuestionsCache.filter(q => {
+                if (adminCurrentCat === 'qiyas') {
+                    return q.type === 'qiyas_simulation';
+                } else {
+                    return q.section === targetSection && q.type === targetType;
+                }
+            });
+
+            // استخراج أرقام النماذج الفريدة التي تحتوي على أسئلة فعلياً
+            const availableModels = [...new Set(matchedQuestions.map(q => Number(q.model)))].sort((a, b) => a - b);
+
+            if (availableModels.length === 0) {
+                modelsGrid.innerHTML = '<p style="color: #64748b; font-size: 14px;">لا توجد نماذج مضافة لها أسئلة في هذا القسم حالياً.</p>';
+                return;
+            }
+
+            modelsGrid.innerHTML = availableModels.map(mNum => `
+                <button type="button" onclick="adminSelectModel(${mNum})" class="tab-btn ${adminCurrentSelectedModel === mNum ? 'active-tab' : ''}" style="width: auto; background: ${adminCurrentSelectedModel === mNum ? 'var(--primary)' : '#e2e8f0'}; color: ${adminCurrentSelectedModel === mNum ? '#fff' : '#1e293b'};">
+                    النموذج ${mNum}
+                </button>
+            `).join('');
+
+            if (adminCurrentSelectedModel && availableModels.includes(adminCurrentSelectedModel)) {
+                renderAdminQuestionsForSelectedModel();
+            } else if (availableModels.length > 0) {
+                adminSelectModel(availableModels[0]);
+            }
+        }
+
+        function adminSelectModel(mNum) {
+            adminCurrentSelectedModel = mNum;
+            renderAdminModels();
+            renderAdminQuestionsForSelectedModel();
+        }
+
+        function renderAdminQuestionsForSelectedModel() {
+            const listContainer = document.getElementById('adminFilteredQuestionsList');
+            let targetType = adminCurrentSub;
+            let targetSection = adminCurrentCat;
+            if (adminCurrentCat === 'qiyas') {
+                targetType = 'qiyas_simulation';
+            }
+
+            const filtered = globalQuestionsCache.filter(q => {
+                if (adminCurrentCat === 'qiyas') {
+                    return q.type === 'qiyas_simulation' && Number(q.model) === Number(adminCurrentSelectedModel);
+                } else {
+                    return q.section === targetSection && q.type === targetType && Number(q.model) === Number(adminCurrentSelectedModel);
+                }
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">لا توجد أسئلة في هذا النموذج.</p>';
+                return;
+            }
+
+            let typeNames = { 'practice': 'تدريب', 'simulation': 'اختبار محاكي', 'qiyas_simulation': 'قياس محاكي' };
+            let sectionNames = { 'quant': 'كمي', 'verbal': 'لفظي' };
+
+            listContainer.innerHTML = filtered.map((q) => {
+                const originalIndex = globalQuestionsCache.findIndex(item => item === q);
+                let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+
+                return `
+                    <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${sectionNames[q.section] || q.section}</span>
+                                <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${typeNames[q.type] || q.type} (نموذج ${q.model})</span>
+                                <span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">⭐ ${q.score || 1} درجة</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" onclick="openEditModal(${originalIndex})" style="background:#0284c7; width:auto; padding:6px 14px; margin:0; font-size:13px;">تعديل</button>
+                                <button type="button" onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
+                            </div>
+                        </div>
+                        <p style="font-weight:700; color:#1e293b; font-size:15px; margin:4px 0;">${q.question}</p>
+                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; color:#475569; background:#f8fafc; padding:10px; border-radius:8px;">
+                            <div>أ) ${opts[0]}</div>
+                            <div>ب) ${opts[1]}</div>
+                            <div>ج) ${opts[2]}</div>
+                            <div>د) ${opts[3]}</div>
+                        </div>
+                        <div style="font-size:13px; color:#059669; font-weight:bold;">الإجابة الصحيحة: (${q.correct_answer})</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         async function loadAdminModelsList(sectionKey) {
             ['quant', 'verbal', 'mock'].forEach(s => {
                 const btn = document.getElementById(`btnAdmin${s.charAt(0).toUpperCase() + s.slice(1)}`);
@@ -689,7 +844,6 @@
             }
         }
 
-        // إرسال طلب تفعيل أو تعطيل النموذج للسيرفر
         async function toggleModelStatus(section, modelNumber) {
             try {
                 const adminEmail = sessionStorage.getItem('sessionUserEmail');
@@ -709,7 +863,6 @@
             }
         }
 
-        // عرض نماذج اختبار قياس مع التحقق من حالتها (معطلة أم لا)
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
@@ -735,7 +888,6 @@
             }
         }
 
-        // الضغط على نموذج قياس مع إظهار رسالة "تم تعطيل النموذج" إذا كان معطلاً
         async function selectQiyasModel(modelNum, isActive) {
             if (!isActive) {
                 alert('تم تعطيل النموذج');
@@ -770,7 +922,6 @@
             });
         }
 
-        // عرض نماذج القسم (كمي أو لفظي) مع التحقق من حالتها
         async function openModelsSelection(sectionType, mode) {
             if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
             currentSectionType = sectionType; 
@@ -803,7 +954,6 @@
             }
         }
 
-        // الضغط على رقم نموذج القسم مع إظهار رسالة "تم تعطيل النموذج" إذا كان معطلاً
         async function selectModel(modelNum, isActive) {
             if (!isActive) {
                 alert('تم تعطيل النموذج');
@@ -840,7 +990,6 @@
             });
         }
 
-        // دالة جلب الحسابات المسجلة مع زر الحذف المدمج
         async function loadRegisteredAccounts() {
             const container = document.getElementById('accountsListContainer');
             container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
@@ -1023,81 +1172,6 @@
             }
         }
 
-        async function loadAdminQuestionsList() {
-            showLoading('جاري تحميل سجل الأسئلة...', 400, async () => {
-                try {
-                    const res = await fetch('/api/questions');
-                    globalQuestionsCache = await res.json();
-                    renderQuestionsTable(globalQuestionsCache);
-                } catch (e) {
-                    alert('تعذر جلب الأسئلة.');
-                }
-            });
-        }
-
-        function renderQuestionsTable(questions) {
-            const listContainer = document.getElementById('adminQuestionsList');
-            document.getElementById('totalQuestionsBadge').innerText = `${questions.length} سؤال`;
-
-            if (questions.length === 0) {
-                listContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">لا توجد أسئلة مطابقة للبحث أو مضافة بعد.</p>';
-                return;
-            }
-
-            let typeNames = {
-                'practice': 'تدريب',
-                'simulation': 'اختبار محاكي',
-                'qiyas_simulation': 'قياس محاكي'
-            };
-
-            let sectionNames = {
-                'quant': 'كمي',
-                'verbal': 'لفظي'
-            };
-
-            listContainer.innerHTML = questions.map((q, realIdx) => {
-                const originalIndex = globalQuestionsCache.findIndex(item => item === q);
-                let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
-
-                return `
-                    <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${sectionNames[q.section] || q.section}</span>
-                                <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${typeNames[q.type] || q.type} (نموذج ${q.model})</span>
-                                <span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">⭐ ${q.score || 1} درجة</span>
-                            </div>
-                            <div style="display:flex; gap:8px;">
-                                <button onclick="openEditModal(${originalIndex})" style="background:#0284c7; width:auto; padding:6px 14px; margin:0; font-size:13px;">تعديل</button>
-                                <button onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
-                            </div>
-                        </div>
-                        <p style="font-weight:700; color:#1e293b; font-size:15px; margin:4px 0;">${q.question}</p>
-                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; color:#475569; background:#f8fafc; padding:10px; border-radius:8px;">
-                            <div>أ) ${opts[0]}</div>
-                            <div>ب) ${opts[1]}</div>
-                            <div>ج) ${opts[2]}</div>
-                            <div>د) ${opts[3]}</div>
-                        </div>
-                        <div style="font-size:13px; color:#059669; font-weight:bold;">الإجابة الصحيحة: (${q.correct_answer})</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function filterAdminQuestions() {
-            const query = document.getElementById('adminSearchInput').value.toLowerCase();
-            const filterType = document.getElementById('adminFilterType').value;
-
-            const filtered = globalQuestionsCache.filter(q => {
-                const matchesQuery = q.question.toLowerCase().includes(query);
-                const matchesType = (filterType === 'all' || q.type === filterType);
-                return matchesQuery && matchesType;
-            });
-
-            renderQuestionsTable(filtered);
-        }
-
         function openEditModal(index) {
             const q = globalQuestionsCache[index];
             document.getElementById('editQIndex').value = index;
@@ -1137,7 +1211,10 @@
                     });
                     const data = await res.json();
                     if(data.success) {
-                        loadAdminQuestionsList();
+                        // تحديث الكاش المحلي وإعادة العرض
+                        const resQ = await fetch('/api/questions');
+                        globalQuestionsCache = await resQ.json();
+                        renderAdminModels();
                         loadAdminStats();
                     } else {
                         alert(data.message || 'حدث خطأ أثناء الحذف');
@@ -1147,6 +1224,50 @@
                 }
             });
         }
+
+        // ربط نموذج تعديل السؤال وإرساله للسيرفر بنجاح لتطبيق التعديل الفعلي
+        document.getElementById('editQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const index = document.getElementById('editQIndex').value;
+            const updatedData = {
+                index: Number(index),
+                section: document.getElementById('editQSection').value,
+                type: document.getElementById('editQType').value,
+                model: Number(document.getElementById('editQModel').value),
+                score: Number(document.getElementById('editQScore').value),
+                question: document.getElementById('editQText').value,
+                options: [
+                    document.getElementById('editQA').value,
+                    document.getElementById('editQB').value,
+                    document.getElementById('editQC').value,
+                    document.getElementById('editQD').value
+                ],
+                correct_answer: document.getElementById('editQCorrect').value
+            };
+
+            showLoading('جاري حفظ التعديلات...', 600, async () => {
+                try {
+                    const res = await fetch('/api/edit-question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        closeEditModal();
+                        // إعادة جلب الأسئلة وتحديث العرض
+                        const resQ = await fetch('/api/questions');
+                        globalQuestionsCache = await resQ.json();
+                        renderAdminModels();
+                        loadAdminStats();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تعديل السؤال');
+                    }
+                } catch (err) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
+        });
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
