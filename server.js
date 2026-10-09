@@ -165,7 +165,7 @@ app.post('/api/add-question', (req, res) => {
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
 });
 
-// تعديل وحفظ السؤال وتوجيهه للمكان المحدد بدقة
+// تعديل وحفظ السؤال
 app.post('/api/edit-question', (req, res) => {
     const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
@@ -205,6 +205,38 @@ app.post('/api/edit-question', (req, res) => {
     res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
+// نقل السؤال إلى نموذج آخر محدد
+app.post('/api/move-question', (req, res) => {
+    const { index, section, type, model } = req.body;
+    const questions = readJsonFile(QUESTIONS_FILE);
+
+    if (index !== undefined && index >= 0 && index < questions.length) {
+        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+        let modelExists = false;
+        const modelNum = Number(model);
+
+        if (type === 'qiyas_simulation') {
+            if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
+        } else {
+            if (customModels[`${section}_${type}_${modelNum}`]) {
+                modelExists = true;
+            }
+        }
+
+        if (!modelExists) {
+            return res.json({ success: false, message: '⚠️ لا يوجد نموذج مضاف في المكان المختار لتتمكن من نقل السؤال إليه!' });
+        }
+
+        questions[index].section = section;
+        questions[index].type = type;
+        questions[index].model = modelNum;
+
+        writeJsonFile(QUESTIONS_FILE, questions);
+        return res.json({ success: true, message: '🚚 تم نقل السؤال بنجاح إلى المكان المطلوب!' });
+    }
+    res.json({ success: false, message: '❌ السؤال غير موجود!' });
+});
+
 // حذف سؤال بواسطة الـ Index
 app.post('/api/delete-question', (req, res) => {
     const { index } = req.body;
@@ -224,7 +256,7 @@ app.get('/api/custom-models', (req, res) => {
     res.json({ success: true, models: customModels });
 });
 
-// إضافة وتسمية نموذج جديد
+// إضافة وتسمية نموذج جديد مع منع تكرار نفس رقم النموذج في نفس التصنيف
 app.post('/api/add-custom-model', (req, res) => {
     const { category, modelNumber, customName } = req.body;
     if (!category || !modelNumber || !customName) {
@@ -232,9 +264,39 @@ app.post('/api/add-custom-model', (req, res) => {
     }
     const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
     const key = `${category}_${modelNumber}`;
+
+    if (customModels[key]) {
+        return res.json({ success: false, message: '⚠️ هذا النموذج موجود مسبقاً بنفس رقم القسم والنوع! لا يمكن تكراره.' });
+    }
+
     customModels[key] = customName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
     res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
+});
+
+// حذف النموذج بشكل كامل مع إزالة الأسئلة المرتبطة به
+app.post('/api/admin/delete-model', (req, res) => {
+    const { modelKey, modelNumber } = req.body;
+    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+
+    if (modelKey && customModels[modelKey]) {
+        delete customModels[modelKey];
+    } else {
+        // حذف احتياطي برقم النموذج والبحث عنه
+        Object.keys(customModels).forEach(k => {
+            if (k.endsWith(`_${modelNumber}`)) {
+                delete customModels[k];
+            }
+        });
+    }
+    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+
+    // حذف الأسئلة التابعة لهذا النموذج أيضاً
+    let questions = readJsonFile(QUESTIONS_FILE);
+    questions = questions.filter(q => Number(q.model) !== Number(modelNumber));
+    writeJsonFile(QUESTIONS_FILE, questions);
+
+    res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
 // تعديل وتغيير نوع ونموذج الاختبار بالكامل من صفحة إدارة النماذج
@@ -246,11 +308,9 @@ app.post('/api/admin/edit-model-full', (req, res) => {
 
     const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
     
-    // إزالة المفتاح القديم إن وجد
     if (oldKey && customModels[oldKey]) {
         delete customModels[oldKey];
     }
-    // إزالة أي مفتاح آخر بنفس الرقم للقسم للتأكد من عدم التداخل
     Object.keys(customModels).forEach(k => {
         if (k.endsWith(`_${modelNumber}`) && (k.startsWith('quant') || k.startsWith('verbal') || k.startsWith('qiyas'))) {
             delete customModels[k];
@@ -261,7 +321,6 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
 
-    // تحديث نوع القسم ورقم النموذج للأسئلة التابعة لهذا النموذج تلقائياً
     const questions = readJsonFile(QUESTIONS_FILE);
     let updatedSection = 'quant';
     let updatedType = 'practice';
