@@ -256,7 +256,7 @@ app.get('/api/custom-models', (req, res) => {
     res.json({ success: true, models: customModels });
 });
 
-// إضافة وتسمية نموذج جديد مع منع تكرار نفس رقم النموذج في نفس التصنيف
+// إضافة وتسمية نموذج جديد مع دعم التعديل الحر ورقم تسلسلي تلقائي صحيح
 app.post('/api/add-custom-model', (req, res) => {
     const { category, modelNumber, customName } = req.body;
     if (!category || !modelNumber || !customName) {
@@ -266,7 +266,7 @@ app.post('/api/add-custom-model', (req, res) => {
     const key = `${category}_${modelNumber}`;
 
     if (customModels[key]) {
-        return res.json({ success: false, message: '⚠️ هذا النموذج موجود مسبقاً بنفس رقم القسم والنوع! لا يمكن تكراره.' });
+        return res.json({ success: false, message: '⚠️ هذا رقم النموذج موجود مسبقاً في هذا القسم والنوع! اختر رقماً آخر أو اترك الرقم التلقائي.' });
     }
 
     customModels[key] = customName.trim();
@@ -297,7 +297,7 @@ app.post('/api/admin/delete-model', (req, res) => {
     res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع الترقيم التلقائي الذكي لمنع التداخل وحذف النماذج الأخرى)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع الترقيم التسلسلي التلقائي الذكي عند النقل لمنع التداخل وحذف النماذج الأخرى)
 app.post('/api/admin/edit-model-full', (req, res) => {
     const { oldKey, modelNumber, newName, newCategory } = req.body;
     if (!oldKey || !newName || !newCategory) {
@@ -324,7 +324,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         targetSectionPrefix = 'qiyas_simulation_';
     }
 
-    // حساب أعلى رقم نموذج موجود حالياً في القسم المستهدف لمنح رقم تالي تسلسلي تلقائياً (مثل 3)
+    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي (مثال: إذا وجدنا 1 و 2، يصبح الرقم الجديد 3)
     let maxNum = 0;
     Object.keys(customModels).forEach(k => {
         if (k.startsWith(targetSectionPrefix)) {
@@ -337,7 +337,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
 
     const newAssignedModelNum = maxNum + 1;
 
-    // حذف المفتاح القديم فقط وعدم المساس بالنماذج الأخرى
+    // حذف المفتاح القديم فقط وعدم المساس بالنماذج الأخرى الموجودة
     if (customModels[oldKey]) {
         delete customModels[oldKey];
     }
@@ -347,12 +347,12 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         }
     });
 
-    // حفظ النموذج بالرقم الجديد التلقائي في القسم الجديد مع اسمه الأصلي
+    // حفظ النموذج بالرقم الجديد التلقائي في القسم المستهدف مع اسمه
     const newKey = `${targetSectionPrefix}${newAssignedModelNum}`;
     customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
 
-    // تحديث الأسئلة التابعة لهذا النموذج للقسم ورقم النموذج الجديد
+    // تحديث الأسئلة التابعة لهذا النموذج للقسم ورقم النموذج الجديد بدقة
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.forEach(q => {
         if (Number(q.model) === Number(modelNumber)) {
@@ -369,7 +369,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي (${newAssignedModelNum}) تلقائياً دون تداخل!` });
+    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي الجديد (${newAssignedModelNum}) تلقائياً دون أي تداخل!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
