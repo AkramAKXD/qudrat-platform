@@ -185,6 +185,38 @@
         </div>
     </div>
 
+    <!-- نافذة نقل السؤال المستقلة -->
+    <div id="move-question-modal" class="custom-modal">
+        <div class="modal-box">
+            <h3>🚚 نقل السؤال إلى نموذج آخر</h3>
+            <form id="moveQuestionForm">
+                <input type="hidden" id="moveQIndex">
+                <div class="form-group"><label>اختر القسم المستهدف:</label>
+                    <select id="moveQTargetSection" onchange="updateMoveModelDropdowns()">
+                        <option value="quant">كمي</option>
+                        <option value="verbal">لفظي</option>
+                        <option value="qiyas">اختبار قياس محاكي</option>
+                    </select>
+                </div>
+                <div class="form-group" id="moveQTypeGroup"><label>نوع التدريب / الاختبار:</label>
+                    <select id="moveQTargetType" onchange="updateMoveModelDropdowns()">
+                        <option value="practice">تدريب</option>
+                        <option value="simulation">اختبار محاكي</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>اختر النموذج المستهدف المتاح:</label>
+                    <select id="moveQTargetModel" required>
+                        <option value="">اختر النموذج...</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeMoveModal()">إلغاء</button>
+                    <button type="submit" style="background: var(--primary);">تنفيذ النقل 🚀</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- نافذة تعديل اسم ونوع النموذج في إدارة النماذج -->
     <div id="edit-model-modal" class="custom-modal">
         <div class="modal-box">
@@ -519,9 +551,9 @@
                     </form>
                 </div>
 
-                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها وتعديل أسمائها وأنواعها -->
+                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها وتعديل أسمائها وأنواعها وحذفها -->
                 <div id="manage-models-box" class="admin-tab-content hidden" style="background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
-                    <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها وتعديل أسمائها وأنواعها</h3>
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها وتعديل أسمائها وحذفها</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
                         <button type="button" onclick="loadAdminModelsList('quant')" class="tab-btn active-tab" id="btnAdminQuant">القسم الكمي</button>
                         <button type="button" onclick="loadAdminModelsList('verbal')" class="tab-btn" id="btnAdminVerbal">القسم اللفظي</button>
@@ -841,11 +873,11 @@
                     });
                     const data = await res.json();
                     if(data.success) {
-                        showAlert('custom-model', 'تم حفظ تسمية النموذج بنجاح! 🏷️', true);
+                        showAlert('custom-model', 'تم حفظ وتنسيق النموذج بنجاح ليظهر فوراً في الإدارة! 🏷️', true);
                         document.getElementById('customModelName').value = '';
                         loadCustomModelsCache();
                     } else {
-                        showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ', false);
+                        showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ، تأكد من عدم تكرار رقم النموذج في نفس القسم والنوع', false);
                     }
                 } catch(err) {
                     showAlert('custom-model', 'حدث خطأ في الاتصال بالخادم', false);
@@ -979,6 +1011,7 @@
                                 <span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">⭐ ${q.score || 1} درجة</span>
                             </div>
                             <div style="display:flex; gap:8px;">
+                                <button type="button" onclick="openMoveModal(${originalIndex})" style="background:#7c3aed; width:auto; padding:6px 14px; margin:0; font-size:13px;">نقل 🚚</button>
                                 <button type="button" onclick="openEditModal(${originalIndex})" style="background:#0284c7; width:auto; padding:6px 14px; margin:0; font-size:13px;">تعديل</button>
                                 <button type="button" onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
                             </div>
@@ -996,6 +1029,98 @@
                 `;
             }).join('');
         }
+
+        async function openMoveModal(index) {
+            await loadCustomModelsCache();
+            document.getElementById('moveQIndex').value = index;
+            document.getElementById('moveQTargetSection').value = 'quant';
+            document.getElementById('moveQTargetType').value = 'practice';
+            document.getElementById('moveQTypeGroup').style.display = 'block';
+            await updateMoveModelDropdowns();
+            document.getElementById('move-question-modal').classList.add('active');
+        }
+
+        function closeMoveModal() {
+            document.getElementById('move-question-modal').classList.remove('active');
+        }
+
+        async function updateMoveModelDropdowns() {
+            await loadCustomModelsCache();
+            const sec = document.getElementById('moveQTargetSection').value;
+            const typeGroup = document.getElementById('moveQTypeGroup');
+            const typeEl = document.getElementById('moveQTargetType');
+            const selectEl = document.getElementById('moveQTargetModel');
+            selectEl.innerHTML = '<option value="">اختر النموذج المستهدف...</option>';
+
+            let prefix = '';
+            if (sec === 'qiyas') {
+                typeGroup.style.display = 'none';
+                prefix = 'qiyas_simulation_';
+            } else {
+                typeGroup.style.display = 'block';
+                const typeVal = typeEl.value;
+                prefix = `${sec}_${typeVal}_`;
+            }
+
+            let foundAny = false;
+            Object.keys(customModelNamesCache).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    foundAny = true;
+                    const modelNum = key.replace(prefix, '');
+                    const modelName = customModelNamesCache[key];
+                    const opt = document.createElement('option');
+                    opt.value = modelNum;
+                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    selectEl.appendChild(opt);
+                }
+            });
+
+            if (!foundAny) {
+                selectEl.innerHTML = '<option value="">⚠️ لا يوجد نموذج مضاف في هذا المكان المختار</option>';
+            }
+        }
+
+        document.getElementById('moveQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const index = Number(document.getElementById('moveQIndex').value);
+            const sec = document.getElementById('moveQTargetSection').value;
+            const targetModel = document.getElementById('moveQTargetModel').value;
+
+            if (!targetModel) {
+                alert('عذراً، لا يوجد نموذج في المكان المختار لتتمكن من نقل السؤال إليه!');
+                return;
+            }
+
+            let targetType = 'practice';
+            let finalSection = sec;
+            if (sec === 'qiyas') {
+                finalSection = 'quant'; // افتراضي لقياس
+                targetType = 'qiyas_simulation';
+            } else {
+                targetType = document.getElementById('moveQTargetType').value;
+            }
+
+            showLoading('جاري نقل السؤال...', 600, async () => {
+                try {
+                    const res = await fetch('/api/move-question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ index, section: finalSection, type: targetType, model: Number(targetModel) })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        closeMoveModal();
+                        const resQ = await fetch('/api/questions');
+                        globalQuestionsCache = await resQ.json();
+                        renderAdminModels();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء نقل السؤال');
+                    }
+                } catch(err) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
+        });
 
         async function loadAdminModelsList(sectionKey) {
             ['quant', 'verbal', 'mock'].forEach(s => {
@@ -1040,18 +1165,20 @@
                             currentCatVal = 'qiyas_simulation';
                         }
 
-                        let modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${model.modelNumber}`] || customModelNamesCache[`verbal_practice_${model.modelNumber}`] || customModelNamesCache[customKey] || `النموذج ${model.modelNumber}`;
+                        let modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${model.modelNumber}`] || customModelNamesCache[`verbal_practice_${model.modelNumber}`] || `النموذج ${model.modelNumber}`;
 
-                        // تحديد هل هو تدريب أم اختبار محاكي بالنسبة للكمي واللفظي
                         let typeBadgeText = '';
                         let typeBadgeColor = '#64748b';
+                        let rawKeyForMatch = '';
                         if (sectionKey === 'quant' || sectionKey === 'verbal') {
                             const isPractice = customModelNamesCache[`${sectionKey}_practice_${model.modelNumber}`] !== undefined;
                             typeBadgeText = isPractice ? 'تدريب' : 'اختبار محاكي';
                             typeBadgeColor = isPractice ? '#0284c7' : '#d97706';
+                            rawKeyForMatch = isPractice ? `${sectionKey}_practice_${model.modelNumber}` : `${sectionKey}_simulation_${model.modelNumber}`;
                         } else if (sectionKey === 'mock') {
                             typeBadgeText = 'اختبار قياس محاكي';
                             typeBadgeColor = '#10b981';
+                            rawKeyForMatch = `qiyas_simulation_${model.modelNumber}`;
                         }
 
                         return `
@@ -1071,6 +1198,7 @@
                                     <button type="button" onclick="toggleModelStatus('${sectionKey}', ${model.modelNumber})" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
                                         ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
                                     </button>
+                                    <button type="button" onclick="confirmDeleteModel('${rawKeyForMatch}', ${model.modelNumber})" style="background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">حذف النموذج 🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -1079,6 +1207,33 @@
             } catch (e) {
                 contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">حدث خطأ أثناء جلب النماذج.</p>';
             }
+        }
+
+        function confirmDeleteModel(modelKey, modelNum) {
+            showConfirmModal(`هل أنت متأكد من رغبتك في حذف هذا النموذج نهائياً؟ (سيتم حذف الأسئلة التابعة له أيضاً)`, () => {
+                executeDeleteModel(modelKey, modelNum);
+            });
+        }
+
+        async function executeDeleteModel(modelKey, modelNum) {
+            showLoading('جاري حذف النموذج...', 600, async () => {
+                try {
+                    const res = await fetch('/api/admin/delete-model', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ modelKey, modelNumber: modelNum })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        loadAdminModelsList('quant');
+                        loadCustomModelsCache();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء الحذف');
+                    }
+                } catch(err) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
         }
 
         function openEditModelNameModal(sectionKey, modelNum, currentName, catVal) {
