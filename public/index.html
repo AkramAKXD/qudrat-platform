@@ -955,11 +955,18 @@
                 return;
             }
 
-            modelsGrid.innerHTML = availableModels.map(mNum => `
-                <button type="button" onclick="adminSelectModel(${mNum})" class="tab-btn ${adminCurrentSelectedModel === mNum ? 'active-tab' : ''}" style="width: auto; background: ${adminCurrentSelectedModel === mNum ? 'var(--primary)' : '#e2e8f0'}; color: ${adminCurrentSelectedModel === mNum ? '#fff' : '#1e293b'};">
-                    النموذج ${mNum}
-                </button>
-            `).join('');
+            modelsGrid.innerHTML = availableModels.map(mNum => {
+                let customKey = `${adminCurrentCat}_${adminCurrentSub}_${mNum}`;
+                if(adminCurrentCat === 'qiyas') customKey = `qiyas_simulation_${mNum}`;
+                
+                let modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${mNum}`] || customModelNamesCache[`verbal_practice_${mNum}`] || `النموذج ${mNum}`;
+
+                return `
+                    <button type="button" onclick="adminSelectModel(${mNum})" class="tab-btn ${adminCurrentSelectedModel === mNum ? 'active-tab' : ''}" style="width: auto; background: ${adminCurrentSelectedModel === mNum ? 'var(--primary)' : '#e2e8f0'}; color: ${adminCurrentSelectedModel === mNum ? '#fff' : '#1e293b'};">
+                        📌 ${modelDisplayName} (رقم: ${mNum})
+                    </button>
+                `;
+            }).join('');
 
             if (adminCurrentSelectedModel && availableModels.includes(adminCurrentSelectedModel)) {
                 renderAdminQuestionsForSelectedModel();
@@ -1094,7 +1101,7 @@
             let targetType = 'practice';
             let finalSection = sec;
             if (sec === 'qiyas') {
-                finalSection = 'quant'; // افتراضي لقياس
+                finalSection = 'quant';
                 targetType = 'qiyas_simulation';
             } else {
                 targetType = document.getElementById('moveQTargetType').value;
@@ -1148,44 +1155,30 @@
                         return;
                     }
 
-                    contentDiv.innerHTML = modelKeys.map(mKey => {
-                        const model = sectionModels[mKey];
+                    contentDiv.innerHTML = modelKeys.map(uKey => {
+                        const model = sectionModels[uKey];
                         const isActive = model.isActive !== false;
-                        
-                        let customKey = '';
-                        let currentCatVal = '';
-                        if(sectionKey === 'quant') {
-                            customKey = `quant_simulation_${model.modelNumber}`;
-                            currentCatVal = 'quant_simulation';
-                        } else if(sectionKey === 'verbal') {
-                            customKey = `verbal_simulation_${model.modelNumber}`;
-                            currentCatVal = 'verbal_simulation';
-                        } else if(sectionKey === 'mock') {
-                            customKey = `qiyas_simulation_${model.modelNumber}`;
-                            currentCatVal = 'qiyas_simulation';
-                        }
-
-                        let modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${model.modelNumber}`] || customModelNamesCache[`verbal_practice_${model.modelNumber}`] || `النموذج ${model.modelNumber}`;
+                        const customKey = model.customKey;
+                        const modelDisplayName = customModelNamesCache[customKey] || `النموذج ${model.modelNumber}`;
 
                         let typeBadgeText = '';
                         let typeBadgeColor = '#64748b';
-                        let rawKeyForMatch = '';
-                        if (sectionKey === 'quant' || sectionKey === 'verbal') {
-                            const isPractice = customModelNamesCache[`${sectionKey}_practice_${model.modelNumber}`] !== undefined;
-                            typeBadgeText = isPractice ? 'تدريب' : 'اختبار محاكي';
-                            typeBadgeColor = isPractice ? '#0284c7' : '#d97706';
-                            rawKeyForMatch = isPractice ? `${sectionKey}_practice_${model.modelNumber}` : `${sectionKey}_simulation_${model.modelNumber}`;
-                        } else if (sectionKey === 'mock') {
+                        if (model.categoryType.includes('practice')) {
+                            typeBadgeText = 'تدريب';
+                            typeBadgeColor = '#0284c7';
+                        } else if (model.categoryType.includes('simulation')) {
+                            typeBadgeText = 'اختبار محاكي';
+                            typeBadgeColor = '#d97706';
+                        } else {
                             typeBadgeText = 'اختبار قياس محاكي';
                             typeBadgeColor = '#10b981';
-                            rawKeyForMatch = `qiyas_simulation_${model.modelNumber}`;
                         }
 
                         return `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                 <div>
                                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <strong style="font-size: 16px; color: #1e293b;">${modelDisplayName} (رقم النموذج: ${model.modelNumber})</strong>
+                                        <strong style="font-size: 16px; color: #1e293b;">📌 الاسم: ${modelDisplayName} (رقم النموذج: ${model.modelNumber})</strong>
                                         <span style="background: ${typeBadgeColor}; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">${typeBadgeText}</span>
                                     </div>
                                     <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
@@ -1194,11 +1187,11 @@
                                     </span>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <button type="button" onclick="openEditModelNameModal('${sectionKey}', ${model.modelNumber}, '${modelDisplayName}', '${currentCatVal}')" style="background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">تعديل الاسم والنوع ✏️</button>
-                                    <button type="button" onclick="toggleModelStatus('${sectionKey}', ${model.modelNumber})" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
+                                    <button type="button" onclick="openEditModelNameModal('${sectionKey}', ${model.modelNumber}, '${modelDisplayName}', '${model.categoryType}')" style="background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">تعديل الاسم والنوع ✏️</button>
+                                    <button type="button" onclick="toggleModelStatus('${sectionKey}', '${uKey}')" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
                                         ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
                                     </button>
-                                    <button type="button" onclick="confirmDeleteModel('${rawKeyForMatch}', ${model.modelNumber})" style="background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">حذف النموذج 🗑️</button>
+                                    <button type="button" onclick="confirmDeleteModel('${customKey}', ${model.modelNumber})" style="background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">حذف النموذج 🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -1276,13 +1269,13 @@
             });
         });
 
-        async function toggleModelStatus(section, modelNumber) {
+        async function toggleModelStatus(section, uniqueKey) {
             try {
                 const adminEmail = sessionStorage.getItem('sessionUserEmail');
                 const res = await fetch('/api/admin/toggle-model', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ section, modelNumber, adminEmail })
+                    body: JSON.stringify({ section, uniqueKey, adminEmail })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -1295,7 +1288,6 @@
             }
         }
 
-        // قياس: عرض النماذج المضافة والمفعلة فقط
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
@@ -1319,7 +1311,7 @@
                     }
                     hasAnyVisibleModel = true;
                     const modelNum = modelData.modelNumber;
-                    const customKey = `qiyas_simulation_${modelNum}`;
+                    const customKey = modelData.customKey || `qiyas_simulation_${modelNum}`;
                     const btnName = customNames[customKey] || `نموذج قياس ${modelNum}`;
 
                     const btn = document.createElement('button');
@@ -1370,7 +1362,6 @@
             });
         }
 
-        // كمي ولفظي: عرض النماذج المضافة والمفعلة فقط
         async function openModelsSelection(sectionType, mode) {
             if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
             currentSectionType = sectionType; 
@@ -1403,8 +1394,8 @@
                     }
                     hasAnyVisibleModel = true;
                     const modelNum = modelData.modelNumber;
-                    const customKey = `${sectionType}_${modeTypeKey}_${modelNum}`;
-                    const btnName = customNames[customKey] || customNames[`${sectionType}_practice_${modelNum}`] || customNames[`${sectionType}_simulation_${modelNum}`] || `النموذج ${modelNum}`;
+                    const customKey = modelData.customKey || `${sectionType}_${modeTypeKey}_${modelNum}`;
+                    const btnName = customNames[customKey] || `النموذج ${modelNum}`;
 
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
