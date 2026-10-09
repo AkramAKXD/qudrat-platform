@@ -256,7 +256,7 @@ app.get('/api/custom-models', (req, res) => {
     res.json({ success: true, models: customModels });
 });
 
-// إضافة وتسمية نموذج جديد مع دعم التعديل الحر ورقم تسلسلي تلقائي صحيح
+// إضافة وتسمية نموذج جديد
 app.post('/api/add-custom-model', (req, res) => {
     const { category, modelNumber, customName } = req.body;
     if (!category || !modelNumber || !customName) {
@@ -266,7 +266,7 @@ app.post('/api/add-custom-model', (req, res) => {
     const key = `${category}_${modelNumber}`;
 
     if (customModels[key]) {
-        return res.json({ success: false, message: '⚠️ هذا رقم النموذج موجود مسبقاً في هذا القسم والنوع! اختر رقماً آخر أو اترك الرقم التلقائي.' });
+        return res.json({ success: false, message: '⚠️ هذا رقم النموذج موجود مسبقاً في هذا القسم والنوع!' });
     }
 
     customModels[key] = customName.trim();
@@ -324,7 +324,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         targetSectionPrefix = 'qiyas_simulation_';
     }
 
-    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي (مثال: إذا وجدنا 1 و 2، يصبح الرقم الجديد 3)
+    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي (مثال: إذا كان هناك نموذجان ونقلت إليهما نموذجاً، سيأخذ الرقم 3 تلقائياً دون تداخل أو حذف)
     let maxNum = 0;
     Object.keys(customModels).forEach(k => {
         if (k.startsWith(targetSectionPrefix)) {
