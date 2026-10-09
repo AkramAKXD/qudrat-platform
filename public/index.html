@@ -185,6 +185,22 @@
         </div>
     </div>
 
+    <!-- نافذة تعديل اسم النموذج في إدارة النماذج -->
+    <div id="edit-model-modal" class="custom-modal">
+        <div class="modal-box">
+            <h3>✏️ تعديل اسم النموذج</h3>
+            <form id="editModelForm">
+                <input type="hidden" id="editModelSecKey">
+                <input type="hidden" id="editModelNumVal">
+                <div class="form-group"><label>اسم النموذج الجديد:</label><input type="text" id="editModelNameInput" required></div>
+                <div class="modal-actions">
+                    <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeEditModelModal()">إلغاء</button>
+                    <button type="submit" style="background: var(--accent);">حفظ التعديل ✅</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- نافذة تعديل السؤال الكبيرة للمشرف -->
     <div id="edit-question-modal" class="custom-modal">
         <div class="modal-box">
@@ -194,6 +210,7 @@
                 <div class="form-group"><label>القسم:</label><select id="editQSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                 <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="editQType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option><option value="qiyas_simulation">اختبار قياس المحاكي</option></select></div>
                 <div class="form-group"><label>رقم النموذج:</label><input type="number" id="editQModel" min="1"></div>
+                <div class="form-group"><label>رابط الصورة (اختياري):</label><input type="text" id="editQImage" placeholder="أدخل رابط الصورة إذا لزم الأمر"></div>
                 <div class="form-group"><label>عدد الدرجات:</label><input type="number" id="editQScore" min="1" max="10" value="1"></div>
                 <div class="form-group"><label>نص السؤال:</label><textarea id="editQText" rows="2" required></textarea></div>
                 <div class="form-group"><label>الخيار أ:</label><input type="text" id="editQA" required></div>
@@ -429,9 +446,10 @@
                     <h3 style="color: var(--primary); margin-bottom: 15px;">➕ إضافة سؤال جديد للمنصة</h3>
                     <div id="q-alert" class="alert"></div>
                     <form id="questionForm">
-                        <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
-                        <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="qType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option></select></div>
-                        <div class="form-group"><label>رقم النموذج (يجب أن يكون نموذجاً منشأ مسبقاً):</label><input type="number" id="qModel" value="1" min="1" required></div>
+                        <div class="form-group"><label>القسم:</label><select id="qSection" onchange="updateModelDropdowns()"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                        <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="qType" onchange="updateModelDropdowns()"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option></select></div>
+                        <div class="form-group"><label>اختر النموذج (النماذج المضافة مسبقاً):</label><select id="qModel" required><option value="">اختر النموذج أولاً...</option></select></div>
+                        <div class="form-group"><label>رابط الصورة للسؤال (اختياري):</label><input type="text" id="qImage" placeholder="أدخل رابط أو مسار الصورة إن وجد"></div>
                         <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qScore" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
                         <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
@@ -448,8 +466,9 @@
                     <h3 style="color: #0284c7; margin-bottom: 15px;">⏱️ إضافة أسئلة لاختبار قياس المحاكي</h3>
                     <div id="qiyas-q-alert" class="alert"></div>
                     <form id="qiyasQuestionForm">
-                        <div class="form-group"><label>القسم:</label><select id="qiyasSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
-                        <div class="form-group"><label>رقم النموذج:</label><input type="number" id="qiyasModelNum" value="1" min="1" required></div>
+                        <div class="form-group"><label>القسم:</label><select id="qiyasSection" onchange="updateQiyasModelDropdowns()"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
+                        <div class="form-group"><label>اختر النموذج (النماذج المضافة مسبقاً):</label><select id="qiyasModelNum" required><option value="">اختر نموذج قياس...</option></select></div>
+                        <div class="form-group"><label>رابط الصورة للسؤال (اختياري):</label><input type="text" id="qiyasImage" placeholder="أدخل رابط أو مسار الصورة إن وجد"></div>
                         <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qiyasScore" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>نص السؤال:</label><textarea id="qiyasText" rows="2" required></textarea></div>
                         <div class="form-group"><label>الخيار أ:</label><input type="text" id="qiyasA" required></div>
@@ -461,9 +480,9 @@
                     </form>
                 </div>
 
-                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها -->
+                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها وتعديل أسمائها -->
                 <div id="manage-models-box" class="admin-tab-content hidden" style="background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
-                    <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها</h3>
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها وتعديل أسمائها</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
                         <button type="button" onclick="loadAdminModelsList('quant')" class="tab-btn active-tab" id="btnAdminQuant">القسم الكمي</button>
                         <button type="button" onclick="loadAdminModelsList('verbal')" class="tab-btn" id="btnAdminVerbal">القسم اللفظي</button>
@@ -651,6 +670,10 @@
                 loadAdminModelsList('quant');
             } else if(tabId === 'add-custom-model-box') {
                 loadCustomModelsCache();
+            } else if(tabId === 'add-question-box') {
+                loadCustomModelsCache().then(() => updateModelDropdowns());
+            } else if(tabId === 'qiyas-question-box') {
+                loadCustomModelsCache().then(() => updateQiyasModelDropdowns());
             }
         }
 
@@ -662,6 +685,45 @@
                     customModelNamesCache = data.models || {};
                 }
             } catch(e) {}
+        }
+
+        async function updateModelDropdowns() {
+            await loadCustomModelsCache();
+            const sec = document.getElementById('qSection').value;
+            const type = document.getElementById('qType').value;
+            const selectEl = document.getElementById('qModel');
+            selectEl.innerHTML = '<option value="">اختر النموذج...</option>';
+
+            const prefix = `${sec}_${type}_`;
+            Object.keys(customModelNamesCache).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    const modelNum = key.replace(prefix, '');
+                    const modelName = customModelNamesCache[key];
+                    const opt = document.createElement('option');
+                    opt.value = modelNum;
+                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    selectEl.appendChild(opt);
+                }
+            });
+        }
+
+        async function updateQiyasModelDropdowns() {
+            await loadCustomModelsCache();
+            const sec = document.getElementById('qiyasSection').value;
+            const selectEl = document.getElementById('qiyasModelNum');
+            selectEl.innerHTML = '<option value="">اختر نموذج قياس...</option>';
+
+            const prefix = `qiyas_simulation_`;
+            Object.keys(customModelNamesCache).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    const modelNum = key.replace(prefix, '');
+                    const modelName = customModelNamesCache[key];
+                    const opt = document.createElement('option');
+                    opt.value = modelNum;
+                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    selectEl.appendChild(opt);
+                }
+            });
         }
 
         document.getElementById('customModelForm').addEventListener('submit', async (e) => {
@@ -822,6 +884,7 @@
                             </div>
                         </div>
                         <p style="font-weight:700; color:#1e293b; font-size:15px; margin:4px 0;">${q.question}</p>
+                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة السؤال"/>` : ''}
                         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; color:#475569; background:#f8fafc; padding:10px; border-radius:8px;">
                             <div>أ) ${opts[0]}</div>
                             <div>ب) ${opts[1]}</div>
@@ -849,9 +912,7 @@
                 const res = await fetch('/api/admin/models-status');
                 const data = await res.json();
 
-                const resCustom = await fetch('/api/custom-models');
-                const dataCustom = await resCustom.json();
-                const customNames = (dataCustom.success && dataCustom.models) ? dataCustom.models : {};
+                await loadCustomModelsCache();
                 
                 if (data.success && data.models) {
                     const sectionModels = data.models[sectionKey] || {};
@@ -871,18 +932,19 @@
                         else if(sectionKey === 'verbal') customKey = `verbal_simulation_${model.modelNumber}`;
                         else if(sectionKey === 'mock') customKey = `qiyas_simulation_${model.modelNumber}`;
 
-                        const modelDisplayName = customNames[customKey] || customNames[`quant_practice_${model.modelNumber}`] || customNames[`verbal_practice_${model.modelNumber}`] || `النموذج ${model.modelNumber}`;
+                        const modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${model.modelNumber}`] || customModelNamesCache[`verbal_practice_${model.modelNumber}`] || `النموذج ${model.modelNumber}`;
 
                         return `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                 <div>
-                                    <strong style="font-size: 16px; color: #1e293b;">${modelDisplayName}</strong>
+                                    <strong style="font-size: 16px; color: #1e293b;">${modelDisplayName} (رقم النموذج: ${model.modelNumber})</strong>
                                     <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
                                     <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
                                         ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
                                     </span>
                                 </div>
-                                <div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" onclick="openEditModelNameModal('${sectionKey}', ${model.modelNumber}, '${modelDisplayName}')" style="background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">تعديل الاسم ✏️</button>
                                     <button type="button" onclick="toggleModelStatus('${sectionKey}', ${model.modelNumber})" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
                                         ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
                                     </button>
@@ -895,6 +957,44 @@
                 contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">حدث خطأ أثناء جلب النماذج.</p>';
             }
         }
+
+        function openEditModelNameModal(sectionKey, modelNum, currentName) {
+            document.getElementById('editModelSecKey').value = sectionKey;
+            document.getElementById('editModelNumVal').value = modelNum;
+            document.getElementById('editModelNameInput').value = currentName;
+            document.getElementById('edit-model-modal').classList.add('active');
+        }
+
+        function closeEditModelModal() {
+            document.getElementById('edit-model-modal').classList.remove('active');
+        }
+
+        document.getElementById('editModelForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const sectionKey = document.getElementById('editModelSecKey').value;
+            const modelNum = document.getElementById('editModelNumVal').value;
+            const newName = document.getElementById('editModelNameInput').value;
+
+            showLoading('جاري تحديث اسم النموذج...', 500, async () => {
+                try {
+                    const res = await fetch('/api/admin/edit-model-name', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ section: sectionKey, modelNumber: Number(modelNum), newName })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        closeEditModelModal();
+                        loadAdminModelsList(sectionKey);
+                        loadCustomModelsCache();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء التحديث');
+                    }
+                } catch(err) {
+                    alert('حدث خطأ في الاتصال بالخادم');
+                }
+            });
+        });
 
         async function toggleModelStatus(section, modelNumber) {
             try {
@@ -1202,6 +1302,7 @@
                         <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;">الدرجات: ${q.score || 1}</span>
                     </div>
                     <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b;">${q.question}</p>
+                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة السؤال"/></div>` : ''}
                     <div style="display: flex; flex-direction: column; gap: 14px;">
                         <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">أ) ${opts[0]}</button>
                         <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">ب) ${opts[1]}</button>
@@ -1263,6 +1364,7 @@
             document.getElementById('editQSection').value = q.section || 'quant';
             document.getElementById('editQType').value = q.type || 'practice';
             document.getElementById('editQModel').value = q.model || 1;
+            document.getElementById('editQImage').value = q.image || '';
             document.getElementById('editQScore').value = q.score || 1;
             document.getElementById('editQText').value = q.question || '';
             
@@ -1317,6 +1419,7 @@
                 section: document.getElementById('editQSection').value,
                 type: document.getElementById('editQType').value,
                 model: Number(document.getElementById('editQModel').value),
+                image: document.getElementById('editQImage').value || null,
                 score: Number(document.getElementById('editQScore').value),
                 question: document.getElementById('editQText').value,
                 options: [
@@ -1414,6 +1517,7 @@
                             section: qSection.value, 
                             type: qType.value, 
                             model: qModel.value,
+                            image: qImage.value || null,
                             score: qScore.value,
                             question: qText.value, 
                             options: [qA.value, qB.value, qC.value, qD.value], 
@@ -1424,6 +1528,7 @@
                     if(data.success) { 
                         showAlert('q', data.message, true); 
                         questionForm.reset(); 
+                        updateModelDropdowns();
                         loadAdminStats();
                     } else {
                         showAlert('q', data.message || 'حدث خطأ أثناء حفظ السؤال', false);
@@ -1445,6 +1550,7 @@
                             section: qiyasSection.value, 
                             type: 'qiyas_simulation', 
                             model: qiyasModelNum.value,
+                            image: qiyasImage.value || null,
                             score: qiyasScore.value,
                             question: qiyasText.value, 
                             options: [qiyasA.value, qiyasB.value, qiyasC.value, qiyasD.value], 
@@ -1455,6 +1561,7 @@
                     if(data.success) { 
                         showAlert('qiyas-q', 'تم حفظ سؤال قياس المحاكي بنجاح! 🎯', true); 
                         qiyasQuestionForm.reset(); 
+                        updateQiyasModelDropdowns();
                         loadAdminStats();
                     } else {
                         showAlert('qiyas-q', data.message || 'حدث خطأ أثناء الحفظ', false);
