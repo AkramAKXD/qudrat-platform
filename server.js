@@ -128,16 +128,33 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// إضافة سؤال جديد
+// إضافة سؤال جديد (التحقق من أن النموذج قد تم إنشاؤه وتسميته مسبقاً)
 app.post('/api/add-question', (req, res) => {
     const { section, type, model, score, question, options, correct_answer, image } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
+    const modelNum = Number(model);
     
+    // التحقق هل تم إنشاء هذا النموذج مسبقاً من خلال قائمة النماذج المخصصة
+    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+    let modelExists = false;
+
+    if (type === 'qiyas_simulation') {
+        if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
+    } else {
+        if (customModels[`${section}_${type}_${modelNum}`] || customModels[`${section}_practice_${modelNum}`] || customModels[`${section}_simulation_${modelNum}`]) {
+            modelExists = true;
+        }
+    }
+
+    if (!modelExists) {
+        return res.json({ success: false, message: '⚠️ لا يمكنك إضافة سؤال لنموذج لم تقم بإنشائه وتسميته من قسم "إضافة نماذج للاختبار" أولاً!' });
+    }
+
+    const questions = readJsonFile(QUESTIONS_FILE);
     questions.push({ 
         id: questions.length > 0 ? questions[questions.length - 1].id + 1 : 1, 
         section: section || "quant", 
         type: type || 'practice', 
-        model: Number(model) || 1, 
+        model: modelNum, 
         score: Number(score) || 1,
         question, 
         options, 
@@ -192,7 +209,7 @@ app.get('/api/custom-models', (req, res) => {
     res.json({ success: true, models: customModels });
 });
 
-// إضافة وتسمية نموذج جديد
+// إضافة وتسمية نموذج جديد (عدد غير محدد / لا نهائي)
 app.post('/api/add-custom-model', (req, res) => {
     const { category, modelNumber, customName } = req.body;
     if (!category || !modelNumber || !customName) {
@@ -257,11 +274,12 @@ app.post('/api/admin/delete-user', (req, res) => {
 
 // ==================== مسارات إدارة النماذج (للمشرف) ====================
 
-// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي للمشرف
+// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي للمشرف بناءً على النماذج التي أُنشئت
 app.get('/api/admin/models-status', (req, res) => {
     try {
         const questions = readJsonFile(QUESTIONS_FILE);
         const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
 
         const result = {
             quant: {},
@@ -269,6 +287,27 @@ app.get('/api/admin/models-status', (req, res) => {
             mock: {}
         };
 
+        // بناء النماذج من النماذج المخصصة المسجلة فقط لضمان عرض النماذج التي أنشأها المستخدم فقط
+        Object.keys(customModels).forEach(key => {
+            // key format: quant_practice_1, quant_simulation_1, verbal_practice_1, verbal_simulation_1, qiyas_simulation_1
+            const parts = key.split('_');
+            const modelNum = Number(parts[parts.length - 1]);
+            let secKey = '';
+            
+            if (key.startsWith('quant')) secKey = 'quant';
+            else if (key.startsWith('verbal')) secKey = 'verbal';
+            else if (key.startsWith('qiyas')) secKey = 'mock';
+
+            if (secKey && !result[secKey][modelNum]) {
+                result[secKey][modelNum] = {
+                    modelNumber: modelNum,
+                    questionCount: 0,
+                    isActive: modelsStatus[`${secKey}_${modelNum}`]?.active ?? true
+                };
+            }
+        });
+
+        // حساب عدد الأسئلة لكل نموذج
         questions.forEach(q => {
             let sec = q.section === 'verbal' ? 'verbal' : 'quant';
             if (q.type === 'qiyas_simulation') {
