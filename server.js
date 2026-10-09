@@ -128,12 +128,11 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// إضافة سؤال جديد (التحقق من أن النموذج قد تم إنشاؤه وتسميته مسبقاً)
+// إضافة سؤال جديد (مع دعم رابط الصورة)
 app.post('/api/add-question', (req, res) => {
     const { section, type, model, score, question, options, correct_answer, image } = req.body;
     const modelNum = Number(model);
     
-    // التحقق هل تم إنشاء هذا النموذج مسبقاً من خلال قائمة النماذج المخصصة
     const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
     let modelExists = false;
 
@@ -181,7 +180,7 @@ app.post('/api/edit-question', (req, res) => {
             question,
             options,
             correct_answer,
-            image: image || questions[index].image || null
+            image: image || null
         };
         
         writeJsonFile(QUESTIONS_FILE, questions);
@@ -209,7 +208,7 @@ app.get('/api/custom-models', (req, res) => {
     res.json({ success: true, models: customModels });
 });
 
-// إضافة وتسمية نموذج جديد (عدد غير محدد / لا نهائي)
+// إضافة وتسمية نموذج جديد
 app.post('/api/add-custom-model', (req, res) => {
     const { category, modelNumber, customName } = req.body;
     if (!category || !modelNumber || !customName) {
@@ -220,6 +219,35 @@ app.post('/api/add-custom-model', (req, res) => {
     customModels[key] = customName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
     res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
+});
+
+// تعديل اسم النموذج المخصص وتحديثه في النظام
+app.post('/api/admin/edit-model-name', (req, res) => {
+    const { section, modelNumber, newName } = req.body;
+    if (!section || modelNumber === undefined || !newName) {
+        return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
+    }
+
+    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+    
+    // البحث عن المفتاح المطابق لتحديثه
+    let updated = false;
+    Object.keys(customModels).forEach(key => {
+        if (key.includes(`_${modelNumber}`) && (key.startsWith(section) || (section === 'mock' && key.startsWith('qiyas')))) {
+            customModels[key] = newName.trim();
+            updated = true;
+        }
+    });
+
+    if (!updated) {
+        // إذا لم يكن موجوداً بصيغة معينة، نقوم بإضافته مباشرة بناء على القسم
+        let defaultCat = `${section}_simulation_${modelNumber}`;
+        if (section === 'mock') defaultCat = `qiyas_simulation_${modelNumber}`;
+        customModels[defaultCat] = newName.trim();
+    }
+
+    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+    res.json({ success: true, message: '✅ تم تحديث اسم النموذج بنجاح!' });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
@@ -274,7 +302,6 @@ app.post('/api/admin/delete-user', (req, res) => {
 
 // ==================== مسارات إدارة النماذج (للمشرف) ====================
 
-// جلب حالة ونماذج الأقسام واختبارات قياس المحاكي للمشرف بناءً على النماذج التي أُنشئت
 app.get('/api/admin/models-status', (req, res) => {
     try {
         const questions = readJsonFile(QUESTIONS_FILE);
@@ -287,9 +314,7 @@ app.get('/api/admin/models-status', (req, res) => {
             mock: {}
         };
 
-        // بناء النماذج من النماذج المخصصة المسجلة فقط لضمان عرض النماذج التي أنشأها المستخدم فقط
         Object.keys(customModels).forEach(key => {
-            // key format: quant_practice_1, quant_simulation_1, verbal_practice_1, verbal_simulation_1, qiyas_simulation_1
             const parts = key.split('_');
             const modelNum = Number(parts[parts.length - 1]);
             let secKey = '';
@@ -307,7 +332,6 @@ app.get('/api/admin/models-status', (req, res) => {
             }
         });
 
-        // حساب عدد الأسئلة لكل نموذج
         questions.forEach(q => {
             let sec = q.section === 'verbal' ? 'verbal' : 'quant';
             if (q.type === 'qiyas_simulation') {
@@ -331,7 +355,6 @@ app.get('/api/admin/models-status', (req, res) => {
     }
 });
 
-// مسار تنشيط أو تعطيل النموذج (خاص بالمشرف)
 app.post('/api/admin/toggle-model', (req, res) => {
     const { adminEmail, section, modelNumber } = req.body;
     const users = readJsonFile(USERS_FILE);
