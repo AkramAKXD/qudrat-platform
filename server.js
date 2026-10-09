@@ -145,6 +145,30 @@ app.post('/api/add-question', (req, res) => {
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
 });
 
+// تعديل وحفظ السؤال
+app.post('/api/edit-question', (req, res) => {
+    const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
+    const questions = readJsonFile(QUESTIONS_FILE);
+    
+    if (index !== undefined && index >= 0 && index < questions.length) {
+        questions[index] = {
+            id: questions[index].id, 
+            section: section || "quant",
+            type: type || 'practice',
+            model: Number(model) || 1,
+            score: Number(score) || 1,
+            question,
+            options,
+            correct_answer,
+            image: image || questions[index].image || null
+        };
+        
+        writeJsonFile(QUESTIONS_FILE, questions);
+        return res.json({ success: true, message: '✏️ تم تعديل وحفظ السؤال بنجاح!' });
+    }
+    res.json({ success: false, message: '❌ السؤال غير موجود!' });
+});
+
 // حذف سؤال بواسطة الـ Index
 app.post('/api/delete-question', (req, res) => {
     const { index } = req.body;
@@ -262,7 +286,6 @@ app.post('/api/admin/toggle-model', (req, res) => {
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
     const key = `${section}_${modelNumber}`;
     
-    // عكس الحالة الحالية (إذا كان مفعلاً يُعطل، والعكس صحيح)
     const currentActive = modelsStatus[key]?.active ?? true;
     modelsStatus[key] = { active: !currentActive };
     
