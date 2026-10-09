@@ -297,52 +297,79 @@ app.post('/api/admin/delete-model', (req, res) => {
     res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل من صفحة إدارة النماذج
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع الترقيم التلقائي الذكي لمنع التداخل وحذف النماذج الأخرى)
 app.post('/api/admin/edit-model-full', (req, res) => {
     const { oldKey, modelNumber, newName, newCategory } = req.body;
-    if (!modelNumber || !newName || !newCategory) {
+    if (!oldKey || !newName || !newCategory) {
         return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
     }
 
     const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
     
-    if (oldKey && customModels[oldKey]) {
+    let targetSectionPrefix = '';
+    let updatedSection = 'quant';
+    let updatedType = 'practice';
+
+    if (newCategory.startsWith('quant')) {
+        updatedSection = 'quant';
+        updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
+        targetSectionPrefix = newCategory.includes('simulation') ? 'quant_simulation_' : 'quant_practice_';
+    } else if (newCategory.startsWith('verbal')) {
+        updatedSection = 'verbal';
+        updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
+        targetSectionPrefix = newCategory.includes('simulation') ? 'verbal_simulation_' : 'verbal_practice_';
+    } else if (newCategory.startsWith('qiyas')) {
+        updatedSection = 'quant';
+        updatedType = 'qiyas_simulation';
+        targetSectionPrefix = 'qiyas_simulation_';
+    }
+
+    // حساب أعلى رقم نموذج موجود حالياً في القسم المستهدف لمنح رقم تالي تسلسلي تلقائياً (مثل 3)
+    let maxNum = 0;
+    Object.keys(customModels).forEach(k => {
+        if (k.startsWith(targetSectionPrefix)) {
+            const numPart = Number(k.split('_').pop());
+            if (!isNaN(numPart) && numPart > maxNum) {
+                maxNum = numPart;
+            }
+        }
+    });
+
+    const newAssignedModelNum = maxNum + 1;
+
+    // حذف المفتاح القديم فقط وعدم المساس بالنماذج الأخرى
+    if (customModels[oldKey]) {
         delete customModels[oldKey];
     }
     Object.keys(customModels).forEach(k => {
-        if (k.endsWith(`_${modelNumber}`) && (k.startsWith('quant') || k.startsWith('verbal') || k.startsWith('qiyas'))) {
+        if (k === `${newCategory}_${modelNumber}`) {
             delete customModels[k];
         }
     });
 
-    const newKey = `${newCategory}_${modelNumber}`;
+    // حفظ النموذج بالرقم الجديد التلقائي في القسم الجديد مع اسمه الأصلي
+    const newKey = `${targetSectionPrefix}${newAssignedModelNum}`;
     customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
 
+    // تحديث الأسئلة التابعة لهذا النموذج للقسم ورقم النموذج الجديد
     const questions = readJsonFile(QUESTIONS_FILE);
-    let updatedSection = 'quant';
-    let updatedType = 'practice';
-
-    if (newCategory.startsWith('quant')) updatedSection = 'quant';
-    else if (newCategory.startsWith('verbal')) updatedSection = 'verbal';
-
-    if (newCategory.includes('practice')) updatedType = 'practice';
-    else if (newCategory.includes('simulation')) updatedType = 'simulation';
-    else if (newCategory.includes('qiyas')) updatedType = 'qiyas_simulation';
-
     questions.forEach(q => {
         if (Number(q.model) === Number(modelNumber)) {
             if (newCategory.startsWith('qiyas')) {
+                q.section = updatedSection;
                 q.type = 'qiyas_simulation';
+                q.model = newAssignedModelNum;
             } else {
                 q.section = updatedSection;
                 q.type = updatedType;
+                q.model = newAssignedModelNum;
             }
         }
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    res.json({ success: true, message: '✅ تم تحديث وتغيير نوع النموذج بنجاح ونقل أسئلته!' });
+    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي (${newAssignedModelNum}) تلقائياً دون تداخل!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
