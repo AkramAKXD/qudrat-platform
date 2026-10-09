@@ -6,8 +6,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // إعدادات الوسيط (Middleware)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // مسارات ملفات البيانات
@@ -128,7 +128,7 @@ app.get('/api/questions', (req, res) => {
     res.json(questions);
 });
 
-// إضافة سؤال جديد (مع دعم رابط الصورة)
+// إضافة سؤال جديد
 app.post('/api/add-question', (req, res) => {
     const { section, type, model, score, question, options, correct_answer, image } = req.body;
     const modelNum = Number(model);
@@ -139,13 +139,13 @@ app.post('/api/add-question', (req, res) => {
     if (type === 'qiyas_simulation') {
         if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
     } else {
-        if (customModels[`${section}_${type}_${modelNum}`] || customModels[`${section}_practice_${modelNum}`] || customModels[`${section}_simulation_${modelNum}`]) {
+        if (customModels[`${section}_${type}_${modelNum}`]) {
             modelExists = true;
         }
     }
 
     if (!modelExists) {
-        return res.json({ success: false, message: '⚠️ لا يمكنك إضافة سؤال لنموذج لم تقم بإنشائه وتسميته من قسم "إضافة نماذج للاختبار" أولاً!' });
+        return res.json({ success: false, message: '⚠️ لا توجد نماذج في المكان المختار أو النموذج غير مُنشأ مسبقاً!' });
     }
 
     const questions = readJsonFile(QUESTIONS_FILE);
@@ -165,17 +165,33 @@ app.post('/api/add-question', (req, res) => {
     res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
 });
 
-// تعديل وحفظ السؤال
+// تعديل وحفظ السؤال وتوجيهه للمكان المحدد بدقة
 app.post('/api/edit-question', (req, res) => {
     const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
     const questions = readJsonFile(QUESTIONS_FILE);
     
     if (index !== undefined && index >= 0 && index < questions.length) {
+        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+        let modelExists = false;
+        const modelNum = Number(model);
+
+        if (type === 'qiyas_simulation') {
+            if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
+        } else {
+            if (customModels[`${section}_${type}_${modelNum}`]) {
+                modelExists = true;
+            }
+        }
+
+        if (!modelExists) {
+            return res.json({ success: false, message: '⚠️ عذراً، لا توجد نماذج في المكان المختار لتوجيه السؤال إليها!' });
+        }
+
         questions[index] = {
             id: questions[index].id, 
             section: section || "quant",
             type: type || 'practice',
-            model: Number(model) || 1,
+            model: modelNum,
             score: Number(score) || 1,
             question,
             options,
@@ -221,33 +237,55 @@ app.post('/api/add-custom-model', (req, res) => {
     res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
 });
 
-// تعديل اسم النموذج المخصص وتحديثه في النظام
-app.post('/api/admin/edit-model-name', (req, res) => {
-    const { section, modelNumber, newName } = req.body;
-    if (!section || modelNumber === undefined || !newName) {
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل من صفحة إدارة النماذج
+app.post('/api/admin/edit-model-full', (req, res) => {
+    const { oldKey, modelNumber, newName, newCategory } = req.body;
+    if (!modelNumber || !newName || !newCategory) {
         return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
     }
 
     const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
     
-    // البحث عن المفتاح المطابق لتحديثه
-    let updated = false;
-    Object.keys(customModels).forEach(key => {
-        if (key.includes(`_${modelNumber}`) && (key.startsWith(section) || (section === 'mock' && key.startsWith('qiyas')))) {
-            customModels[key] = newName.trim();
-            updated = true;
+    // إزالة المفتاح القديم إن وجد
+    if (oldKey && customModels[oldKey]) {
+        delete customModels[oldKey];
+    }
+    // إزالة أي مفتاح آخر بنفس الرقم للقسم للتأكد من عدم التداخل
+    Object.keys(customModels).forEach(k => {
+        if (k.endsWith(`_${modelNumber}`) && (k.startsWith('quant') || k.startsWith('verbal') || k.startsWith('qiyas'))) {
+            delete customModels[k];
         }
     });
 
-    if (!updated) {
-        // إذا لم يكن موجوداً بصيغة معينة، نقوم بإضافته مباشرة بناء على القسم
-        let defaultCat = `${section}_simulation_${modelNumber}`;
-        if (section === 'mock') defaultCat = `qiyas_simulation_${modelNumber}`;
-        customModels[defaultCat] = newName.trim();
-    }
-
+    const newKey = `${newCategory}_${modelNumber}`;
+    customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-    res.json({ success: true, message: '✅ تم تحديث اسم النموذج بنجاح!' });
+
+    // تحديث نوع القسم ورقم النموذج للأسئلة التابعة لهذا النموذج تلقائياً
+    const questions = readJsonFile(QUESTIONS_FILE);
+    let updatedSection = 'quant';
+    let updatedType = 'practice';
+
+    if (newCategory.startsWith('quant')) updatedSection = 'quant';
+    else if (newCategory.startsWith('verbal')) updatedSection = 'verbal';
+
+    if (newCategory.includes('practice')) updatedType = 'practice';
+    else if (newCategory.includes('simulation')) updatedType = 'simulation';
+    else if (newCategory.includes('qiyas')) updatedType = 'qiyas_simulation';
+
+    questions.forEach(q => {
+        if (Number(q.model) === Number(modelNumber)) {
+            if (newCategory.startsWith('qiyas')) {
+                q.type = 'qiyas_simulation';
+            } else {
+                q.section = updatedSection;
+                q.type = updatedType;
+            }
+        }
+    });
+    writeJsonFile(QUESTIONS_FILE, questions);
+
+    res.json({ success: true, message: '✅ تم تحديث وتغيير نوع النموذج بنجاح ونقل أسئلته!' });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
