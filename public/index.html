@@ -478,7 +478,7 @@
                     <div id="custom-model-alert" class="alert"></div>
                     <form id="customModelForm">
                         <div class="form-group"><label>القسم / النوع:</label>
-                            <select id="customModelCategory">
+                            <select id="customModelCategory" onchange="updateSuggestedModelNumber()">
                                 <option value="quant_practice">القسم الكمي - تدريب</option>
                                 <option value="quant_simulation">القسم الكمي - اختبار محاكي</option>
                                 <option value="verbal_practice">القسم اللفظي - تدريب</option>
@@ -486,7 +486,10 @@
                                 <option value="qiyas_simulation">اختبار محاكي لقياس</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>رقم النموذج:</label><input type="number" id="customModelNum" min="1" value="1" required></div>
+                        <div class="form-group">
+                            <label>رقم النموذج (يمكنك تعديله يدوياً أو يترقم تلقائياً):</label>
+                            <input type="number" id="customModelNum" min="1" value="1" required>
+                        </div>
                         <div class="form-group"><label>اسم النموذج المخصص (مثال: نموذج التميز، نموذج الرياض):</label><input type="text" id="customModelName" required placeholder="أدخل اسم النموذج"></div>
                         <button type="submit" style="background: var(--primary);">حفظ تسمية النموذج 💾</button>
                     </form>
@@ -740,7 +743,7 @@
             } else if(tabId === 'manage-models-box') {
                 loadAdminModelsList('quant');
             } else if(tabId === 'add-custom-model-box') {
-                loadCustomModelsCache();
+                loadCustomModelsCache().then(() => updateSuggestedModelNumber());
             } else if(tabId === 'add-question-box') {
                 loadCustomModelsCache().then(() => updateModelDropdowns());
             } else if(tabId === 'qiyas-question-box') {
@@ -756,6 +759,25 @@
                     customModelNamesCache = data.models || {};
                 }
             } catch(e) {}
+        }
+
+        // دالة تحديث رقم النموذج تلقائياً في صفحة إضافة النماذج ليصبح قابلاً للتعديل وبناءً على العدد الحالي
+        async function updateSuggestedModelNumber() {
+            await loadCustomModelsCache();
+            const selectedCat = document.getElementById('customModelCategory').value;
+            const prefix = selectedCat + '_';
+            
+            let maxNum = 0;
+            Object.keys(customModelNamesCache).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    const numPart = Number(key.split('_').pop());
+                    if (!isNaN(numPart) && numPart > maxNum) {
+                        maxNum = numPart;
+                    }
+                }
+            });
+
+            document.getElementById('customModelNum').value = maxNum + 1;
         }
 
         async function updateModelDropdowns() {
@@ -875,7 +897,7 @@
                     if(data.success) {
                         showAlert('custom-model', 'تم حفظ وتنسيق النموذج بنجاح ليظهر فوراً في الإدارة! 🏷️', true);
                         document.getElementById('customModelName').value = '';
-                        loadCustomModelsCache();
+                        loadCustomModelsCache().then(() => updateSuggestedModelNumber());
                     } else {
                         showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ، تأكد من عدم تكرار رقم النموذج في نفس القسم والنوع', false);
                     }
