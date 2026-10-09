@@ -282,7 +282,6 @@ app.post('/api/admin/delete-model', (req, res) => {
     if (modelKey && customModels[modelKey]) {
         delete customModels[modelKey];
     } else {
-        // حذف احتياطي برقم النموذج والبحث عنه
         Object.keys(customModels).forEach(k => {
             if (k.endsWith(`_${modelNumber}`)) {
                 delete customModels[k];
@@ -291,7 +290,6 @@ app.post('/api/admin/delete-model', (req, res) => {
     }
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
 
-    // حذف الأسئلة التابعة لهذا النموذج أيضاً
     let questions = readJsonFile(QUESTIONS_FILE);
     questions = questions.filter(q => Number(q.model) !== Number(modelNumber));
     writeJsonFile(QUESTIONS_FILE, questions);
@@ -412,19 +410,24 @@ app.get('/api/admin/models-status', (req, res) => {
         };
 
         Object.keys(customModels).forEach(key => {
-            const parts = key.split('_');
-            const modelNum = Number(parts[parts.length - 1]);
-            let secKey = '';
-            
-            if (key.startsWith('quant')) secKey = 'quant';
-            else if (key.startsWith('verbal')) secKey = 'verbal';
-            else if (key.startsWith('qiyas')) secKey = 'mock';
+            const lastUnderscoreIdx = key.lastIndexOf('_');
+            const catPart = key.substring(0, lastUnderscoreIdx);
+            const modelNum = Number(key.substring(lastUnderscoreIdx + 1));
 
-            if (secKey && !result[secKey][modelNum]) {
-                result[secKey][modelNum] = {
+            let secKey = '';
+            if (catPart.startsWith('quant')) secKey = 'quant';
+            else if (catPart.startsWith('verbal')) secKey = 'verbal';
+            else if (catPart.startsWith('qiyas')) secKey = 'mock';
+
+            const uniqueModelKey = `${catPart}_${modelNum}`;
+
+            if (secKey && !result[secKey][uniqueModelKey]) {
+                result[secKey][uniqueModelKey] = {
                     modelNumber: modelNum,
+                    categoryType: catPart,
+                    customKey: key,
                     questionCount: 0,
-                    isActive: modelsStatus[`${secKey}_${modelNum}`]?.active ?? true
+                    isActive: modelsStatus[uniqueModelKey]?.active ?? true
                 };
             }
         });
@@ -436,14 +439,30 @@ app.get('/api/admin/models-status', (req, res) => {
             }
             const mNum = Number(q.model) || 1;
             
-            if (!result[sec][mNum]) {
-                result[sec][mNum] = {
-                    modelNumber: mNum,
-                    questionCount: 0,
-                    isActive: modelsStatus[`${sec}_${mNum}`]?.active ?? true
-                };
+            let matchedKey = '';
+            Object.keys(result[sec]).forEach(uKey => {
+                const mData = result[sec][uKey];
+                if (mData.modelNumber === mNum) {
+                    if (sec === 'mock' || mData.categoryType.includes(q.type)) {
+                        matchedKey = uKey;
+                    }
+                }
+            });
+
+            if (!matchedKey) {
+                matchedKey = `${sec}_practice_${mNum}`;
+                if (!result[sec][matchedKey]) {
+                    result[sec][matchedKey] = {
+                        modelNumber: mNum,
+                        categoryType: `${sec}_practice`,
+                        customKey: matchedKey,
+                        questionCount: 0,
+                        isActive: modelsStatus[matchedKey]?.active ?? true
+                    };
+                }
             }
-            result[sec][mNum].questionCount++;
+
+            result[sec][matchedKey].questionCount++;
         });
 
         res.json({ success: true, models: result });
@@ -453,7 +472,7 @@ app.get('/api/admin/models-status', (req, res) => {
 });
 
 app.post('/api/admin/toggle-model', (req, res) => {
-    const { adminEmail, section, modelNumber } = req.body;
+    const { adminEmail, section, uniqueKey } = req.body;
     const users = readJsonFile(USERS_FILE);
 
     const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
@@ -461,18 +480,15 @@ app.post('/api/admin/toggle-model', (req, res) => {
         return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
     }
 
-    if (!section || modelNumber === undefined) {
+    if (!section || !uniqueKey) {
         return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
     }
 
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    const key = `${section}_${modelNumber}`;
-    
-    const currentActive = modelsStatus[key]?.active ?? true;
-    modelsStatus[key] = { active: !currentActive };
+    const currentActive = modelsStatus[uniqueKey]?.active ?? true;
+    modelsStatus[uniqueKey] = { active: !currentActive };
     
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
-    
     res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
 });
 
