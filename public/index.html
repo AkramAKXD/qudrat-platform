@@ -148,14 +148,6 @@
         .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; max-width: 650px; margin: 0 auto; }
         .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .model-btn.disabled-model {
-            background: #e2e8f0 !important;
-            color: #94a3b8 !important;
-            border-color: #cbd5e1 !important;
-            text-decoration: line-through;
-            cursor: not-allowed;
-        }
 
         .tab-btn {
             padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none;
@@ -201,7 +193,7 @@
                 <input type="hidden" id="editQIndex">
                 <div class="form-group"><label>القسم:</label><select id="editQSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                 <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="editQType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option><option value="qiyas_simulation">اختبار قياس المحاكي</option></select></div>
-                <div class="form-group"><label>رقم النموذج:</label><input type="number" id="editQModel" min="1" max="10"></div>
+                <div class="form-group"><label>رقم النموذج:</label><input type="number" id="editQModel" min="1"></div>
                 <div class="form-group"><label>عدد الدرجات:</label><input type="number" id="editQScore" min="1" max="10" value="1"></div>
                 <div class="form-group"><label>نص السؤال:</label><textarea id="editQText" rows="2" required></textarea></div>
                 <div class="form-group"><label>الخيار أ:</label><input type="text" id="editQA" required></div>
@@ -426,7 +418,7 @@
                                 <option value="qiyas_simulation">اختبار محاكي لقياس</option>
                             </select>
                         </div>
-                        <div class="form-group"><label>رقم النموذج:</label><input type="number" id="customModelNum" min="1" max="20" value="1" required></div>
+                        <div class="form-group"><label>رقم النموذج:</label><input type="number" id="customModelNum" min="1" value="1" required></div>
                         <div class="form-group"><label>اسم النموذج المخصص (مثال: نموذج التميز، نموذج الرياض):</label><input type="text" id="customModelName" required placeholder="أدخل اسم النموذج"></div>
                         <button type="submit" style="background: var(--primary);">حفظ تسمية النموذج 💾</button>
                     </form>
@@ -439,7 +431,7 @@
                     <form id="questionForm">
                         <div class="form-group"><label>القسم:</label><select id="qSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                         <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="qType"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option></select></div>
-                        <div class="form-group"><label>النموذج (رقم):</label><input type="number" id="qModel" value="1" min="1" max="20"></div>
+                        <div class="form-group"><label>رقم النموذج (يجب أن يكون نموذجاً منشأ مسبقاً):</label><input type="number" id="qModel" value="1" min="1" required></div>
                         <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qScore" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
                         <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
@@ -457,7 +449,7 @@
                     <div id="qiyas-q-alert" class="alert"></div>
                     <form id="qiyasQuestionForm">
                         <div class="form-group"><label>القسم:</label><select id="qiyasSection"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
-                        <div class="form-group"><label>نموذج قياس (1-5):</label><input type="number" id="qiyasModelNum" value="1" min="1" max="5"></div>
+                        <div class="form-group"><label>رقم النموذج:</label><input type="number" id="qiyasModelNum" value="1" min="1" required></div>
                         <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qiyasScore" value="1" min="1" max="10"></div>
                         <div class="form-group"><label>نص السؤال:</label><textarea id="qiyasText" rows="2" required></textarea></div>
                         <div class="form-group"><label>الخيار أ:</label><input type="text" id="qiyasA" required></div>
@@ -856,23 +848,35 @@
             try {
                 const res = await fetch('/api/admin/models-status');
                 const data = await res.json();
+
+                const resCustom = await fetch('/api/custom-models');
+                const dataCustom = await resCustom.json();
+                const customNames = (dataCustom.success && dataCustom.models) ? dataCustom.models : {};
                 
                 if (data.success && data.models) {
                     const sectionModels = data.models[sectionKey] || {};
                     const modelKeys = Object.keys(sectionModels);
 
                     if (modelKeys.length === 0) {
-                        contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج تحتوي على أسئلة في هذا القسم حالياً.</p>';
+                        contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج مضافة أو تحتوي على أسئلة في هذا القسم حالياً.</p>';
                         return;
                     }
 
                     contentDiv.innerHTML = modelKeys.map(mKey => {
                         const model = sectionModels[mKey];
                         const isActive = model.isActive !== false;
+                        
+                        let customKey = '';
+                        if(sectionKey === 'quant') customKey = `quant_simulation_${model.modelNumber}`;
+                        else if(sectionKey === 'verbal') customKey = `verbal_simulation_${model.modelNumber}`;
+                        else if(sectionKey === 'mock') customKey = `qiyas_simulation_${model.modelNumber}`;
+
+                        const modelDisplayName = customNames[customKey] || customNames[`quant_practice_${model.modelNumber}`] || customNames[`verbal_practice_${model.modelNumber}`] || `النموذج ${model.modelNumber}`;
+
                         return `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                 <div>
-                                    <strong style="font-size: 16px; color: #1e293b;">النموذج رقم (${model.modelNumber})</strong>
+                                    <strong style="font-size: 16px; color: #1e293b;">${modelDisplayName}</strong>
                                     <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
                                     <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
                                         ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
@@ -911,7 +915,7 @@
             }
         }
 
-        // قياس: عرض 5 نماذج كحد أقصى للطالب مع إظهار اسم النموذج المخصص إن وجد أو عبارة "لا توجد نماذج" إذا لم تكن مضافة أو مفعّلة
+        // قياس: عرض النماذج المضافة والمفعلة فقط
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
@@ -927,20 +931,22 @@
                 grid.innerHTML = '';
                 let hasAnyVisibleModel = false;
 
-                for (let i = 1; i <= 5; i++) {
-                    const modelData = mockModels[i];
+                const modelKeys = Object.keys(mockModels);
+                for (let k of modelKeys) {
+                    const modelData = mockModels[k];
                     if (!modelData || modelData.questionCount === 0 || modelData.isActive === false) {
                         continue;
                     }
                     hasAnyVisibleModel = true;
-                    const customKey = `qiyas_simulation_${i}`;
-                    const btnName = customNames[customKey] || `نموذج قياس ${i}`;
+                    const modelNum = modelData.modelNumber;
+                    const customKey = `qiyas_simulation_${modelNum}`;
+                    const btnName = customNames[customKey] || `نموذج قياس ${modelNum}`;
 
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
                     btn.style.borderColor = 'var(--accent)';
                     btn.innerText = btnName;
-                    btn.onclick = () => selectQiyasModel(i, true);
+                    btn.onclick = () => selectQiyasModel(modelNum, true);
                     grid.appendChild(btn);
                 }
 
@@ -984,7 +990,7 @@
             });
         }
 
-        // كمي ولفظي: عرض 10 نماذج كحد أقصى للطالب مع إظهار اسم النموذج المخصص إن وجد أو "لا توجد نماذج" إذا لم تكن مضافة أو مفعّلة
+        // كمي ولفظي: عرض النماذج المضافة والمفعلة فقط
         async function openModelsSelection(sectionType, mode) {
             if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
             currentSectionType = sectionType; 
@@ -1009,19 +1015,21 @@
                 let hasAnyVisibleModel = false;
                 const modeTypeKey = mode === 'exam' ? 'simulation' : 'practice';
 
-                for (let i = 1; i <= 10; i++) {
-                    const modelData = sectionModels[i];
+                const modelKeys = Object.keys(sectionModels);
+                for (let k of modelKeys) {
+                    const modelData = sectionModels[k];
                     if (!modelData || modelData.questionCount === 0 || modelData.isActive === false) {
                         continue;
                     }
                     hasAnyVisibleModel = true;
-                    const customKey = `${sectionType}_${modeTypeKey}_${i}`;
-                    const btnName = customNames[customKey] || `النموذج ${i}`;
+                    const modelNum = modelData.modelNumber;
+                    const customKey = `${sectionType}_${modeTypeKey}_${modelNum}`;
+                    const btnName = customNames[customKey] || customNames[`${sectionType}_practice_${modelNum}`] || customNames[`${sectionType}_simulation_${modelNum}`] || `النموذج ${modelNum}`;
 
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
                     btn.innerText = btnName;
-                    btn.onclick = () => selectModel(i, true);
+                    btn.onclick = () => selectModel(modelNum, true);
                     gridContainer.appendChild(btn);
                 }
 
