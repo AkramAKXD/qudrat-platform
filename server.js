@@ -297,7 +297,7 @@ app.post('/api/admin/delete-model', (req, res) => {
     res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه من مكانه السابق تماماً ونقله للمكان الجديد برقم تسلسلي جديد آمن)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم ونقله للمكان الجديد برقم تسلسلي جديد آمن)
 app.post('/api/admin/edit-model-full', (req, res) => {
     const { oldKey, modelNumber, newName, newCategory } = req.body;
     if (!oldKey || !newName || !newCategory) {
@@ -336,17 +336,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     const assignedModelNum = maxNum + 1;
 
-    // حذف النموذج القديم تماماً من ملف النماذج المخصصة (ليختفي من مكانه السابق)
-    if (customModels[oldKey]) {
-        delete customModels[oldKey];
-    }
-
-    // حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
-    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
-    customModels[newKey] = newName.trim();
-    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-
-    // تحليل المفتاح القديم لاستخراج القسم والنوع ورقم النموذج القديم بدقة
+    // استخراج معلومات القسم والنوع القديم من المفتاح القديم بدقة تامة
     let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
     const parts = oldKey.split('_');
     if (oldKey.startsWith('qiyas_simulation_')) {
@@ -359,7 +349,22 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         oldModelNum = Number(parts[parts.length - 1]);
     }
 
-    // تحديث الأسئلة التابعة لهذا النموذج لنقلها بالكامل إلى القسم والنوع ورقم النموذج الجديد
+    // 1. حذف النموذج تماماً من ملف النماذج المخصصة القديم (ليختفي تماماً من مكانه السابق)
+    if (customModels[oldKey]) {
+        delete customModels[oldKey];
+    }
+    // احتياطياً: حذف أي مفتاح يطابق القسم والنوع القديم مع هذا الرقم
+    const exactOldCustomKey = `${oldSec}_${oldType}_${oldModelNum}`;
+    if (customModels[exactOldCustomKey]) {
+        delete customModels[exactOldCustomKey];
+    }
+
+    // 2. حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
+    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
+    customModels[newKey] = newName.trim();
+    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+
+    // 3. تحديث الأسئلة التابعة لهذا النموذج لنقله بالكامل وإزالة أي بقايا تظهر في المكان القديم
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.forEach(q => {
         const isMatch = (q.section === oldSec && q.type === oldType && Number(q.model) === oldModelNum) ||
@@ -372,7 +377,15 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه من مكانه السابق بنجاح وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
+    // 4. مسح حالة النموذج القديم من ملف الـ status ليتم إزالته تماماً من الواجهة القديمة
+    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
+    const oldStatusKey = `${oldSec}_${oldType}_${oldModelNum}`;
+    if (modelsStatus[oldStatusKey]) {
+        delete modelsStatus[oldStatusKey];
+    }
+    writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
+
+    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
