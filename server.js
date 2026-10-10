@@ -297,7 +297,7 @@ app.post('/api/admin/delete-model', (req, res) => {
     res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع الترقيم التسلسلي التلقائي الذكي عند النقل لمنع التداخل وحذف النماذج الأخرى)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه من مكانه السابق تماماً ونقله للمكان الجديد برقم تسلسلي جديد آمن)
 app.post('/api/admin/edit-model-full', (req, res) => {
     const { oldKey, modelNumber, newName, newCategory } = req.body;
     if (!oldKey || !newName || !newCategory) {
@@ -324,33 +324,29 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         targetSectionPrefix = 'qiyas_simulation_';
     }
 
-    const isSameCategory = oldKey.startsWith(newCategory + '_');
-    let assignedModelNum = Number(modelNumber);
-
-    if (!isSameCategory) {
-        // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي جديد تماماً دون مساس بالنماذج الموجودة
-        let maxNum = 0;
-        Object.keys(customModels).forEach(k => {
-            if (k.startsWith(targetSectionPrefix)) {
-                const numPart = Number(k.split('_').pop());
-                if (!isNaN(numPart) && numPart > maxNum) {
-                    maxNum = numPart;
-                }
+    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تسلسلي جديد تلقائياً
+    let maxNum = 0;
+    Object.keys(customModels).forEach(k => {
+        if (k.startsWith(targetSectionPrefix)) {
+            const numPart = Number(k.split('_').pop());
+            if (!isNaN(numPart) && numPart > maxNum) {
+                maxNum = numPart;
             }
-        });
-        assignedModelNum = maxNum + 1;
-    }
+        }
+    });
+    const assignedModelNum = maxNum + 1;
 
-    // حذف المفتاح القديم فقط وعدم المساس بأي نموذج آخر في القسم المستهدف
+    // حذف النموذج القديم تماماً من ملف النماذج المخصصة (ليختفي من مكانه السابق)
     if (customModels[oldKey]) {
         delete customModels[oldKey];
     }
 
-    // حفظ النموذج بالرقم والمفتاح الجديد في القسم المستهدف
+    // حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
     const newKey = `${targetSectionPrefix}${assignedModelNum}`;
     customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
 
+    // تحليل المفتاح القديم لاستخراج القسم والنوع ورقم النموذج القديم بدقة
     let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
     const parts = oldKey.split('_');
     if (oldKey.startsWith('qiyas_simulation_')) {
@@ -363,7 +359,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         oldModelNum = Number(parts[parts.length - 1]);
     }
 
-    // تحديث الأسئلة التابعة لهذا النموذج للقسم ورقم النموذج الجديد بدقة
+    // تحديث الأسئلة التابعة لهذا النموذج لنقلها بالكامل إلى القسم والنوع ورقم النموذج الجديد
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.forEach(q => {
         const isMatch = (q.section === oldSec && q.type === oldType && Number(q.model) === oldModelNum) ||
@@ -376,7 +372,7 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي الجديد (${assignedModelNum}) تلقائياً دون أي تداخل أو حذف للنماذج الأخرى!` });
+    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه من مكانه السابق بنجاح وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
