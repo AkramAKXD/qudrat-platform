@@ -324,52 +324,59 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         targetSectionPrefix = 'qiyas_simulation_';
     }
 
-    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي (مثال: إذا كان هناك نموذجان ونقلت إليهما نموذجاً، سيأخذ الرقم 3 تلقائياً دون تداخل أو حذف)
-    let maxNum = 0;
-    Object.keys(customModels).forEach(k => {
-        if (k.startsWith(targetSectionPrefix)) {
-            const numPart = Number(k.split('_').pop());
-            if (!isNaN(numPart) && numPart > maxNum) {
-                maxNum = numPart;
+    const isSameCategory = oldKey.startsWith(newCategory + '_');
+    let assignedModelNum = Number(modelNumber);
+
+    if (!isSameCategory) {
+        // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي تلقائي جديد تماماً دون مساس بالنماذج الموجودة
+        let maxNum = 0;
+        Object.keys(customModels).forEach(k => {
+            if (k.startsWith(targetSectionPrefix)) {
+                const numPart = Number(k.split('_').pop());
+                if (!isNaN(numPart) && numPart > maxNum) {
+                    maxNum = numPart;
+                }
             }
-        }
-    });
+        });
+        assignedModelNum = maxNum + 1;
+    }
 
-    const newAssignedModelNum = maxNum + 1;
-
-    // حذف المفتاح القديم فقط وعدم المساس بالنماذج الأخرى الموجودة
+    // حذف المفتاح القديم فقط وعدم المساس بأي نموذج آخر في القسم المستهدف
     if (customModels[oldKey]) {
         delete customModels[oldKey];
     }
-    Object.keys(customModels).forEach(k => {
-        if (k === `${newCategory}_${modelNumber}`) {
-            delete customModels[k];
-        }
-    });
 
-    // حفظ النموذج بالرقم الجديد التلقائي في القسم المستهدف مع اسمه
-    const newKey = `${targetSectionPrefix}${newAssignedModelNum}`;
+    // حفظ النموذج بالرقم والمفتاح الجديد في القسم المستهدف
+    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
     customModels[newKey] = newName.trim();
     writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+
+    let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
+    const parts = oldKey.split('_');
+    if (oldKey.startsWith('qiyas_simulation_')) {
+        oldSec = 'quant';
+        oldType = 'qiyas_simulation';
+        oldModelNum = Number(parts[parts.length - 1]);
+    } else {
+        oldSec = parts[0];
+        oldType = parts[1];
+        oldModelNum = Number(parts[parts.length - 1]);
+    }
 
     // تحديث الأسئلة التابعة لهذا النموذج للقسم ورقم النموذج الجديد بدقة
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.forEach(q => {
-        if (Number(q.model) === Number(modelNumber)) {
-            if (newCategory.startsWith('qiyas')) {
-                q.section = updatedSection;
-                q.type = 'qiyas_simulation';
-                q.model = newAssignedModelNum;
-            } else {
-                q.section = updatedSection;
-                q.type = updatedType;
-                q.model = newAssignedModelNum;
-            }
+        const isMatch = (q.section === oldSec && q.type === oldType && Number(q.model) === oldModelNum) ||
+                        (oldType === 'qiyas_simulation' && q.type === 'qiyas_simulation' && Number(q.model) === oldModelNum);
+        if (isMatch) {
+            q.section = updatedSection;
+            q.type = updatedType;
+            q.model = assignedModelNum;
         }
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي الجديد (${newAssignedModelNum}) تلقائياً دون أي تداخل!` });
+    res.json({ success: true, message: `✅ تم نقل وتحديث النموذج بنجاح وإعطاؤه الرقم التسلسلي الجديد (${assignedModelNum}) تلقائياً دون أي تداخل أو حذف للنماذج الأخرى!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
