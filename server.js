@@ -297,7 +297,7 @@ app.post('/api/admin/delete-model', (req, res) => {
     res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم ونقله للمكان الجديد برقم تسلسلي جديد آمن)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم وإزالته من صفحة إدارة النماذج)
 app.post('/api/admin/edit-model-full', (req, res) => {
     const { oldKey, modelNumber, newName, newCategory } = req.body;
     if (!oldKey || !newName || !newCategory) {
@@ -336,7 +336,26 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     const assignedModelNum = maxNum + 1;
 
-    // استخراج معلومات القسم والنوع القديم من المفتاح القديم بدقة تامة
+    // 1. حذف المفتاح القديم بالكامل من ملف النماذج المخصصة لكي يختفي من القائمة القديمة
+    if (customModels[oldKey]) {
+        delete customModels[oldKey];
+    }
+    // إزالة أي مفتاح مطابق قديم
+    Object.keys(customModels).forEach(k => {
+        if (k === oldKey || k.endsWith(`_${modelNumber}`)) {
+            // تحقق من أنه نفس المفتاح القديم المراد نقله
+            if (k.startsWith(oldKey.split('_')[0])) {
+                delete customModels[k];
+            }
+        }
+    });
+
+    // 2. حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
+    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
+    customModels[newKey] = newName.trim();
+    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
+
+    // 3. تحليل وتحديث الأسئلة التابعة لهذا النموذج لنقلها للمكان الجديد بالرقم الجديد
     let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
     const parts = oldKey.split('_');
     if (oldKey.startsWith('qiyas_simulation_')) {
@@ -349,22 +368,6 @@ app.post('/api/admin/edit-model-full', (req, res) => {
         oldModelNum = Number(parts[parts.length - 1]);
     }
 
-    // 1. حذف النموذج تماماً من ملف النماذج المخصصة القديم (ليختفي تماماً من مكانه السابق)
-    if (customModels[oldKey]) {
-        delete customModels[oldKey];
-    }
-    // احتياطياً: حذف أي مفتاح يطابق القسم والنوع القديم مع هذا الرقم
-    const exactOldCustomKey = `${oldSec}_${oldType}_${oldModelNum}`;
-    if (customModels[exactOldCustomKey]) {
-        delete customModels[exactOldCustomKey];
-    }
-
-    // 2. حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
-    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
-    customModels[newKey] = newName.trim();
-    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-
-    // 3. تحديث الأسئلة التابعة لهذا النموذج لنقله بالكامل وإزالة أي بقايا تظهر في المكان القديم
     const questions = readJsonFile(QUESTIONS_FILE);
     questions.forEach(q => {
         const isMatch = (q.section === oldSec && q.type === oldType && Number(q.model) === oldModelNum) ||
@@ -377,15 +380,16 @@ app.post('/api/admin/edit-model-full', (req, res) => {
     });
     writeJsonFile(QUESTIONS_FILE, questions);
 
-    // 4. مسح حالة النموذج القديم من ملف الـ status ليتم إزالته تماماً من الواجهة القديمة
+    // 4. مسح حالة النموذج القديم من ملف الـ status لضمان عدم ظهوره في القسم القديم نهائياً
     const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    const oldStatusKey = `${oldSec}_${oldType}_${oldModelNum}`;
-    if (modelsStatus[oldStatusKey]) {
-        delete modelsStatus[oldStatusKey];
-    }
+    Object.keys(modelsStatus).forEach(stKey => {
+        if (stKey.includes(`_${oldModelNum}`) || stKey === oldKey) {
+            delete modelsStatus[stKey];
+        }
+    });
     writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
 
-    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
+    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق في إدارة النماذج وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
 });
 
 // مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
@@ -452,6 +456,7 @@ app.get('/api/admin/models-status', (req, res) => {
             mock: {}
         };
 
+        // بناء القائمة بناءً على النماذج الموجودة حصرياً في ملف custom_models لتجنب أي استنتاج خاطئ للنماذج القديمة
         Object.keys(customModels).forEach(key => {
             const lastUnderscoreIdx = key.lastIndexOf('_');
             const catPart = key.substring(0, lastUnderscoreIdx);
@@ -475,6 +480,7 @@ app.get('/api/admin/models-status', (req, res) => {
             }
         });
 
+        // حساب عدد الأسئلة لكل نموذج مسجل
         questions.forEach(q => {
             let sec = q.section === 'verbal' ? 'verbal' : 'quant';
             if (q.type === 'qiyas_simulation') {
@@ -482,30 +488,14 @@ app.get('/api/admin/models-status', (req, res) => {
             }
             const mNum = Number(q.model) || 1;
             
-            let matchedKey = '';
             Object.keys(result[sec]).forEach(uKey => {
                 const mData = result[sec][uKey];
                 if (mData.modelNumber === mNum) {
                     if (sec === 'mock' || mData.categoryType.includes(q.type)) {
-                        matchedKey = uKey;
+                        mData.questionCount++;
                     }
                 }
             });
-
-            if (!matchedKey) {
-                matchedKey = `${sec}_practice_${mNum}`;
-                if (!result[sec][matchedKey]) {
-                    result[sec][matchedKey] = {
-                        modelNumber: mNum,
-                        categoryType: `${sec}_practice`,
-                        customKey: matchedKey,
-                        questionCount: 0,
-                        isActive: modelsStatus[matchedKey]?.active ?? true
-                    };
-                }
-            }
-
-            result[sec][matchedKey].questionCount++;
         });
 
         res.json({ success: true, models: result });
