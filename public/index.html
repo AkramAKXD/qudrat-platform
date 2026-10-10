@@ -487,8 +487,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>رقم النموذج (يترقم تلقائياً بحسب عدد النماذج المضافة ويمكنك تعديله يدوياً):</label>
-                            <input type="number" id="customModelNum" min="1" required>
+                            <label>رقم النموذج (يُحدد تلقائياً بشكل تسلسلي فريد وغير قابل للتعديل):</label>
+                            <input type="number" id="customModelNum" readonly style="background: #e2e8f0; cursor: not-allowed; color: #64748b;" required>
                         </div>
                         <div class="form-group"><label>اسم النموذج المخصص (مثال: نموذج التميز، نموذج الرياض):</label><input type="text" id="customModelName" required placeholder="أدخل اسم النموذج"></div>
                         <button type="submit" style="background: var(--primary);">حفظ تسمية النموذج 💾</button>
@@ -761,7 +761,7 @@
             } catch(e) {}
         }
 
-        // دالة تحديث رقم النموذج تلقائياً في صفحة إضافة النماذج ليصبح قابلاً للتعديل وبناءً على العدد الحالي
+        // دالة تحديث رقم النموذج تلقائياً في صفحة إضافة النماذج ليصبح غير قابل للتعديل وتسلسلياً بكل فرع
         async function updateSuggestedModelNumber() {
             await loadCustomModelsCache();
             const selectedCat = document.getElementById('customModelCategory').value;
@@ -899,7 +899,7 @@
                         document.getElementById('customModelName').value = '';
                         loadCustomModelsCache().then(() => updateSuggestedModelNumber());
                     } else {
-                        showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ، تأكد من عدم تكرار رقم النموذج في نفس القسم والنوع', false);
+                        showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ', false);
                     }
                 } catch(err) {
                     showAlert('custom-model', 'حدث خطأ في الاتصال بالخادم', false);
