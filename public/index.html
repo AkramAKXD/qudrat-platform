@@ -997,7 +997,6 @@
                                     <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount}</span>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <!-- تمرير customKey الصحيح والدقيق هنا لحل مشكلة النقل والحذف -->
                                     <button type="button" onclick="openEditModelNameModal('${customKey}', ${model.modelNumber}, '${modelDisplayName}', '${model.categoryType}')" style="background: #0284c7; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">تعديل الاسم والنوع ✏️</button>
                                     <button type="button" onclick="toggleModelStatus('${sectionKey}', '${uKey}')" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}</button>
                                     <button type="button" onclick="confirmDeleteModel('${customKey}', ${model.modelNumber})" style="background: #ef4444; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">حذف 🗑️</button>
@@ -1027,7 +1026,6 @@
             });
         }
 
-        // استقبال الـ customKey الدقيق بدلاً من المفتاح المختصر
         function openEditModelNameModal(customKey, modelNum, currentName, catVal) {
             document.getElementById('editModelOldKey').value = customKey;
             document.getElementById('editModelNumVal').value = modelNum;
