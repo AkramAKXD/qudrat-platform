@@ -355,7 +355,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم وإزالته من صفحة إدارة النماذج)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (نقل آمن مع الحفاظ على النماذج الموجودة في القسم المستهدف وعدم حذفها)
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -385,10 +385,12 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             targetSectionPrefix = 'qiyas_simulation_';
         }
 
+        // حساب أعلى رقم نموذج موجود حالياً في القسم المستهدف بدقة لمنع التداخل والـحذف الخاطئ
         let maxNum = 0;
         Object.keys(customModelsMap).forEach(k => {
             if (k.startsWith(targetSectionPrefix)) {
-                const numPart = Number(k.split('_').pop());
+                const parts = k.split('_');
+                const numPart = Number(parts[parts.length - 1]);
                 if (!isNaN(numPart) && numPart > maxNum) {
                     maxNum = numPart;
                 }
@@ -396,12 +398,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         });
         const assignedModelNum = maxNum + 1;
 
-        await CustomModel.deleteOne({ key: oldKey });
-        await CustomModel.deleteMany({ key: new RegExp(`_${modelNumber}$`) });
-
-        const newKey = `${targetSectionPrefix}${assignedModelNum}`;
-        await CustomModel.create({ key: newKey, name: newName.trim() });
-
+        // تحليل معلومات النموذج القديم المراد نقله
         let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
         const parts = oldKey.split('_');
         if (oldKey.startsWith('qiyas_simulation_')) {
@@ -414,6 +411,14 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             oldModelNum = Number(parts[parts.length - 1]);
         }
 
+        // حذف المفتاح القديم المخصص للنموذج المنقول فقط
+        await CustomModel.deleteOne({ key: oldKey });
+
+        // إنشاء المفتاح الجديد بالرقم التسليلسي الصحيح دون المساس بالنماذج الأخرى الموجودة مسبقاً
+        const newKey = `${targetSectionPrefix}${assignedModelNum}`;
+        await CustomModel.create({ key: newKey, name: newName.trim() });
+
+        // نقل الأسئلة التابعة حصرياً لهذا النموذج القديم إلى الرقم والقسم الجديد
         await Question.updateMany(
             { 
                 $or: [
@@ -428,9 +433,11 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             }
         );
 
-        await ModelStatus.deleteOne({ uniqueKey: new RegExp(`_${oldModelNum}$`) });
+        // مسح حالة النموذج القديم فقط
+        await ModelStatus.deleteOne({ uniqueKey: `${oldSec}_${oldType}_${oldModelNum}` });
+        await ModelStatus.deleteOne({ uniqueKey: `qiyas_simulation_${oldModelNum}` });
 
-        res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق في إدارة النماذج وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
+        res.json({ success: true, message: `✅ تم نقل النموذج بنجاح وإضافته إلى القسم الجديد بالرقم التسلسلي (${assignedModelNum}) دون التأثير على النماذج الأخرى!` });
     } catch (e) {
         console.error('❌ Edit Model Full Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
