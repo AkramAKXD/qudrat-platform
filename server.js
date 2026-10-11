@@ -363,7 +363,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// تعديل ونقل النموذج كلياً وحذفه من المكان القديم بدقة تامة ومنع النسخ المزدوج
+// تعديل وتحديث نفس النموذج كلياً دون إنشاء نموذج جديد (تحديث النوع/القسم والاسم مع الحفاظ على الرقم ونقل الأسئلة بدقة)
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -371,18 +371,14 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
         }
 
-        // 1. حذف النموذج القديم تماماً من جدول النماذج المخصصة باستخدام الـ oldKey
-        await CustomModel.deleteOne({ key: oldKey });
-        await ModelStatus.deleteOne({ uniqueKey: oldKey });
-
-        // تحليل معلومات النموذج القديم للأسئلة
+        // تحليل معلومات النموذج القديم بدقة من الـ oldKey
         let oldSec = '', oldType = '', oldModelNum = Number(modelNumber);
         const oldParts = oldKey.split('_');
         oldModelNum = Number(oldParts.pop());
         oldType = oldParts.pop();
         oldSec = oldParts.join('_');
 
-        // 2. تحديد القسم والنوع الجديد وبادئة المفتاح الجديد
+        // تحديد القسم والنوع الجديد وبادئة المفتاح الجديد
         let targetSectionPrefix = '';
         let updatedSection = 'quant';
         let updatedType = 'practice';
@@ -401,30 +397,41 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             targetSectionPrefix = 'qiyas_simulation_';
         }
 
-        // 3. حساب أعلى رقم نموذج موجود حالياً في القسم المستهدف لمنح الرقم التسلسلي التالي الصحيح
-        const allCustomModels = await CustomModel.find({});
-        let maxNum = 0;
-        allCustomModels.forEach(m => {
-            if (m.key.startsWith(targetSectionPrefix)) {
-                const numPart = Number(m.key.split('_').pop());
-                if (!isNaN(numPart) && numPart > maxNum) {
-                    maxNum = numPart;
-                }
-            }
-        });
-        const assignedModelNum = maxNum + 1;
+        // تحديد رقم النموذج الجديد: إذا كان النقل داخل نفس القسم ونفس النوع، نحتفظ بنفس الرقم، وإذا تغير القسم/النوع نأخذ الرقم التالي المتاح
+        let assignedModelNum = oldModelNum;
+        const isSameCategoryType = (oldSec === updatedSection && oldType === updatedType);
 
-        // 4. إنشاء المفتاح الجديد بالرقم التسلسلي الجديد والاسم الجديد في القسم المستهدف
+        if (!isSameCategoryType) {
+            const allCustomModels = await CustomModel.find({});
+            let maxNum = 0;
+            allCustomModels.forEach(m => {
+                if (m.key.startsWith(targetSectionPrefix)) {
+                    const numPart = Number(m.key.split('_').pop());
+                    if (!isNaN(numPart) && numPart > maxNum) {
+                        maxNum = numPart;
+                    }
+                }
+            });
+            assignedModelNum = maxNum + 1;
+        }
+
+        // 1. حذف المفتاح القديم تماماً من جدول النماذج المخصصة والحالة لكي يختفي من المكان القديم تماماً
+        await CustomModel.deleteOne({ key: oldKey });
+        await ModelStatus.deleteOne({ uniqueKey: oldKey });
+
+        // 2. إنشاء المفتاح الجديد بالاسم والرقم الصحيح في القسم المستهدف
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
+        // للتأكد من عدم تكرار المفتاح إن وجد مسبقاً، نقوم بحذفه أولاً
+        await CustomModel.deleteOne({ key: newKey });
         await CustomModel.create({ key: newKey, name: newName.trim() });
 
-        // 5. تحديث ونقل الأسئلة الخاصة بهذا النموذج إلى القسم والنوع ورقم النموذج الجديد
+        // 3. تحديث ونقل الأسئلة الخاصة بهذا النموذج إلى القسم والنوع ورقم النموذج الجديد
         await Question.updateMany(
             { section: oldSec, type: oldType, model: oldModelNum },
             { section: updatedSection, type: updatedType, model: assignedModelNum }
         );
 
-        res.json({ success: true, message: `✅ تم نقل النموذج بنجاح تام إلى المكان الجديد برقم تسلسلي (${assignedModelNum}) وحذفه من المكان القديم!` });
+        res.json({ success: true, message: `✅ تم تحديث وتعديل النموذج بنجاح وتم نقله كلياً إلى المكان الجديد!` });
     } catch (e) {
         console.error('❌ Edit Model Full Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
