@@ -18,7 +18,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-gradient); color: #0f172a; min-height: 100vh; display: flex; overflow-x: hidden; }
 
-        /* شاشة التحميل العامة (Overlay) */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px);
@@ -34,7 +33,6 @@
         .loading-text { color: #fff; font-size: 16px; font-weight: 700; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* نافذة التأكيد أو التعديل التفاعلية (Modal) */
         .custom-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -53,7 +51,6 @@
         .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
         .modal-actions button { margin-top: 0; flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px; }
 
-        /* القائمة الجانبية */
         .sidebar {
             width: var(--sidebar-width); background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border-left: 1px solid rgba(226, 232, 240, 0.8); display: none; flex-direction: column;
@@ -76,7 +73,6 @@
         .admin-sidebar-group { background: #fffbeb; border: 1px dashed var(--admin-color); border-radius: 14px; padding: 10px; margin-top: 10px; margin-bottom: 10px; }
         .admin-sidebar-title { font-size: 13px; font-weight: 900; color: #d97706; text-align: center; margin-bottom: 8px; }
 
-        /* المحتوى الرئيسي */
         .main-content { margin-right: 0; flex-grow: 1; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: margin-right 0.3s ease; }
         body.logged-in .main-content { margin-right: var(--sidebar-width); }
 
@@ -149,12 +145,8 @@
         .model-btn { background: #f8fafc; color: #0f172a; border: 2px solid #cbd5e1; padding: 18px 12px; border-radius: 16px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .model-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .tab-btn {
-            padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none;
-        }
-        .tab-btn.active-tab {
-            background: var(--primary); color: #fff;
-        }
+        .tab-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: #e2e8f0; color: #1e293b; width: auto; margin-top: 0; box-shadow: none; }
+        .tab-btn.active-tab { background: var(--primary); color: #fff; }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
@@ -167,13 +159,11 @@
 </head>
 <body id="appBody">
 
-    <!-- شاشة التحميل العامة -->
     <div id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-text" id="loadingMessage">جاري المعالجة...</div>
     </div>
 
-    <!-- نافذة التأكيد للتنبيهات -->
     <div id="custom-confirm-modal" class="custom-modal">
         <div class="modal-box" style="max-width: 400px; text-align: center;">
             <h3>⚠️ تنبيه</h3>
@@ -185,7 +175,6 @@
         </div>
     </div>
 
-    <!-- نافذة نقل السؤال المستقلة -->
     <div id="move-question-modal" class="custom-modal">
         <div class="modal-box">
             <h3>🚚 نقل السؤال إلى نموذج آخر</h3>
@@ -205,9 +194,7 @@
                     </select>
                 </div>
                 <div class="form-group"><label>اختر النموذج المستهدف المتاح:</label>
-                    <select id="moveQTargetModel" required>
-                        <option value="">اختر النموذج...</option>
-                    </select>
+                    <select id="moveQTargetModel" required><option value="">اختر النموذج...</option></select>
                 </div>
                 <div class="modal-actions">
                     <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeMoveModal()">إلغاء</button>
@@ -217,7 +204,6 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل اسم ونوع النموذج في إدارة النماذج -->
     <div id="edit-model-modal" class="custom-modal">
         <div class="modal-box">
             <h3>✏️ تعديل وتغيير خصائص النموذج</h3>
@@ -242,7 +228,6 @@
         </div>
     </div>
 
-    <!-- نافذة تعديل السؤال الكبيرة للمشرف -->
     <div id="edit-question-modal" class="custom-modal">
         <div class="modal-box">
             <h3>✏️ تعديل تفاصيل السؤال</h3>
@@ -250,14 +235,14 @@
                 <input type="hidden" id="editQIndex">
                 <div class="form-group"><label>القسم:</label><select id="editQSection" onchange="updateEditModelDropdowns()"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                 <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="editQType" onchange="updateEditModelDropdowns()"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option><option value="qiyas_simulation">اختبار قياس المحاكي</option></select></div>
-                <div class="form-group"><label>رقم النموذج (اختر من القائمة):</label><select id="editQModel" required><option value="">اختر النموذج...</option></select></div>
+                <div class="form-group"><label>رقم النموذج:</label><select id="editQModel" required><option value="">اختر النموذج...</option></select></div>
                 
                 <div class="form-group">
                     <label>صورة السؤال:</label>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <input type="file" id="editQImageFile" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'edit')">
-                        <button type="button" onclick="document.getElementById('editQImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة من الجهاز</button>
-                        <input type="text" id="editQImage" placeholder="رابط الصورة أو مسارها" style="flex-grow: 1;">
+                        <button type="button" onclick="document.getElementById('editQImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة</button>
+                        <input type="text" id="editQImage" placeholder="رابط الصورة" style="flex-grow: 1;">
                     </div>
                     <div id="editImagePreviewContainer" style="margin-top: 8px;"></div>
                 </div>
@@ -277,11 +262,8 @@
         </div>
     </div>
 
-    <!-- القائمة الجانبية -->
     <nav class="sidebar" id="appSidebar">
-        <div class="sidebar-header">
-            <h2>🚀 منصة قدرات</h2>
-        </div>
+        <div class="sidebar-header"><h2>🚀 منصة قدرات</h2></div>
         <ul class="sidebar-menu">
             <div id="student-sidebar-group">
                 <li id="menu-student"><button onclick="navigateTo('student')">📚 لوحة الطالب والأقسام</button></li>
@@ -290,7 +272,6 @@
                 <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
             </div>
             
-            <!-- خيارات المشرف -->
             <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
                 <div class="admin-sidebar-title">👑 لوحة المشرف</div>
                 <li><button onclick="navigateTo('student-preview')">👁️ معاينة صفحة الطالب</button></li>
@@ -307,10 +288,8 @@
         </ul>
     </nav>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
         <div class="container">
-            <!-- 1. واجهة البداية -->
             <div id="landing-section" class="app-section hero-section active-view">
                 <div class="hero-badge">🌟 بوابتك الموثوقة نحو التفوق والتميز</div>
                 <div class="hero-logo">🎯</div>
@@ -327,16 +306,15 @@
                 </div>
             </div>
 
-            <!-- 2. شاشة تسجيل الدخول -->
             <div id="login-section" class="app-section">
                 <h1>🎯 مرحباً بك مجدداً!</h1>
                 <div id="login-alert" class="alert"></div>
                 <form id="loginForm">
-                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="loginEmail" required placeholder="أدخل بريدك الإلكتروني"></div>
+                    <div class="form-group"><label>البريد الإلكتروني:</label><input type="email" id="loginEmail" required placeholder="أدخل بريدك"></div>
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️</button>
                         </div>
                     </div>
                     <button type="submit">دخول للمنصة 🚀</button>
@@ -346,7 +324,6 @@
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
-            <!-- 3. شاشة استعادة كلمة المرور -->
             <div id="forgot-section" class="app-section">
                 <h1>🔑 استعادة كلمة المرور</h1>
                 <div id="forgot-alert" class="alert"></div>
@@ -358,7 +335,7 @@
                     <div class="form-group"><label>كلمة المرور الجديدة:</label>
                         <div class="password-container">
                             <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️</button>
                         </div>
                     </div>
                     <button type="button" onclick="submitNewPassword()" style="background: var(--accent);">تحديث كلمة المرور ✅</button>
@@ -366,7 +343,6 @@
                 <div class="switch-link"><span onclick="switchView('login')">العودة لتسجيل الدخول</span></div>
             </div>
 
-            <!-- 4. شاشة تسجيل حساب جديد -->
             <div id="register-section" class="app-section">
                 <h1>✨ انضم إلى نخبة المتفوقين</h1>
                 <div id="reg-alert" class="alert"></div>
@@ -376,7 +352,7 @@
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" title="إظهار/إخفاء كلمة المرور">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
                         </div>
                     </div>
                     <button type="submit">إنشاء حساب 🔥</button>
@@ -385,7 +361,6 @@
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
             </div>
 
-            <!-- 5. لوحة تحكم الطالب -->
             <div id="student-dashboard" class="app-section">
                 <h1 id="student-welcome">أهلاً بك يا بطل القمة! 🌟</h1>
                 <div class="student-video-card">
@@ -397,27 +372,20 @@
                 </div>
                 <div class="sections-stack">
                     <div class="section-big-card" onclick="navigateTo('quant')">
-                        <h3>📐 القسم الكمي</h3>
-                        <p>اصقل مهاراتك الرياضية والتحليلية</p>
+                        <h3>📐 القسم الكمي</h3><p>اصقل مهاراتك الرياضية والتحليلية</p>
                     </div>
                     <div class="section-big-card" onclick="navigateTo('verbal')">
-                        <h3>📚 القسم اللفظي</h3>
-                        <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء</p>
+                        <h3>📚 القسم اللفظي</h3><p>استكشف أسرار التناظر اللفظي واستيعاب المقروء</p>
                     </div>
                     <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: var(--accent); background: #f0fdf4;">
-                        <h3 style="color: var(--accent);">⏱️ اختبار قياس التجريبي</h3>
-                        <p>عش أجواء اختبار قياس الحقيقي</p>
+                        <h3 style="color: var(--accent);">⏱️ اختبار قياس التجريبي</h3><p>عش أجواء اختبار قياس الحقيقي</p>
                     </div>
                 </div>
             </div>
 
-            <!-- 6. صفحة القسم الكمي -->
             <div id="quant-page" class="app-section">
                 <h2>📐 القسم الكمي</h2>
-                <div class="section-detail-box">
-                    <h3>💡 دليل القسم:</h3>
-                    <p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء.</p>
-                </div>
+                <div class="section-detail-box"><h3>💡 دليل القسم:</h3><p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('quant', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب مكثف</button>
@@ -425,13 +393,9 @@
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- 7. صفحة القسم اللفظي -->
             <div id="verbal-page" class="app-section">
                 <h2>📚 القسم اللفظي</h2>
-                <div class="section-detail-box">
-                    <h3>💡 دليل القسم:</h3>
-                    <p>يركز على استيعاب المقروء، التناظر اللفظي، والخطأ السياقي.</p>
-                </div>
+                <div class="section-detail-box"><h3>💡 دليل القسم:</h3><p>يركز على استيعاب المقروء، التناظر اللفظي، والخطأ السياقي.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('verbal', 'exam')" style="background: var(--accent);">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب مكثف</button>
@@ -439,21 +403,18 @@
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة اختيار النماذج -->
             <div id="models-selection-section" class="app-section">
                 <h2 id="models-title">اختر نموذج التدريب</h2>
                 <div class="model-grid" id="modelsGridContainer"></div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة اختبار قياس -->
             <div id="qiyas-models-section" class="app-section">
                 <h2 style="color: var(--accent);">⏱️ اختبار قياس</h2>
                 <div class="model-grid" id="qiyasModelsGrid"></div>
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <!-- واجهة عدم توفر الأسئلة -->
             <div id="no-questions-section" class="app-section">
                 <div style="text-align: center; padding: 25px;">
                     <h2 id="no-q-title" style="color: #d97706;">لا توجد نماذج</h2>
@@ -462,17 +423,14 @@
                 </div>
             </div>
 
-            <!-- واجهة الأسئلة -->
             <div id="training-section" class="app-section">
                 <h2 id="training-main-title">⚡ تحدي التدريب الذكي</h2>
                 <div id="training-container"></div>
             </div>
 
-            <!-- لوحة تحكم المشرف -->
             <div id="admin-dashboard" class="app-section">
                 <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
                 
-                <!-- صندوق إضافة نموذج مخصص للاختبار -->
                 <div id="add-custom-model-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">🏷️ إضافة وتسمية نموذج جديد للاختبار</h3>
                     <div id="custom-model-alert" class="alert"></div>
@@ -486,30 +444,26 @@
                                 <option value="qiyas_simulation">اختبار محاكي لقياس</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>رقم النموذج (يُحدد تلقائياً بشكل تسلسلي فريد وغير قابل للتعديل):</label>
-                            <input type="number" id="customModelNum" readonly style="background: #e2e8f0; cursor: not-allowed; color: #64748b;" required>
-                        </div>
-                        <div class="form-group"><label>اسم النموذج المخصص (مثال: نموذج التميز، نموذج الرياض):</label><input type="text" id="customModelName" required placeholder="أدخل اسم النموذج"></div>
+                        <div class="form-group"><label>رقم النموذج (يُحدد تلقائياً):</label><input type="number" id="customModelNum" readonly style="background: #e2e8f0; cursor: not-allowed; color: #64748b;" required></div>
+                        <div class="form-group"><label>اسم النموذج المخصص:</label><input type="text" id="customModelName" required placeholder="أدخل اسم النموذج"></div>
                         <button type="submit" style="background: var(--primary);">حفظ تسمية النموذج 💾</button>
                     </form>
                 </div>
 
-                <!-- صندوق إضافة سؤال جديد -->
                 <div id="add-question-box" class="admin-tab-content" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">➕ إضافة سؤال جديد للمنصة</h3>
                     <div id="q-alert" class="alert"></div>
                     <form id="questionForm">
                         <div class="form-group"><label>القسم:</label><select id="qSection" onchange="updateModelDropdowns()"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
                         <div class="form-group"><label>نوع التدريب / الاختبار:</label><select id="qType" onchange="updateModelDropdowns()"><option value="practice">تدريب</option><option value="simulation">اختبار محاكي عادي</option></select></div>
-                        <div class="form-group"><label>اختر النموذج (النماذج المضافة مسبقاً):</label><select id="qModel" required><option value="">اختر النموذج أولاً...</option></select></div>
+                        <div class="form-group"><label>اختر النموذج:</label><select id="qModel" required><option value="">اختر النموذج أولاً...</option></select></div>
                         
                         <div class="form-group">
                             <label>صورة السؤال:</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="file" id="qImageFile" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'add')">
-                                <button type="button" onclick="document.getElementById('qImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة من الجهاز</button>
-                                <input type="text" id="qImage" placeholder="رابط الصورة أو مسارها" style="flex-grow: 1;">
+                                <button type="button" onclick="document.getElementById('qImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة</button>
+                                <input type="text" id="qImage" placeholder="رابط الصورة" style="flex-grow: 1;">
                             </div>
                             <div id="addImagePreviewContainer" style="margin-top: 8px;"></div>
                         </div>
@@ -525,20 +479,19 @@
                     </form>
                 </div>
 
-                <!-- صندوق إضافة أسئلة اختبار قياس المحاكي -->
                 <div id="qiyas-question-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
                     <h3 style="color: #0284c7; margin-bottom: 15px;">⏱️ إضافة أسئلة لاختبار قياس المحاكي</h3>
                     <div id="qiyas-q-alert" class="alert"></div>
                     <form id="qiyasQuestionForm">
                         <div class="form-group"><label>القسم:</label><select id="qiyasSection" onchange="updateQiyasModelDropdowns()"><option value="quant">كمي</option><option value="verbal">لفظي</option></select></div>
-                        <div class="form-group"><label>اختر النموذج (النماذج المضافة مسبقاً):</label><select id="qiyasModelNum" required><option value="">اختر نموذج قياس...</option></select></div>
+                        <div class="form-group"><label>اختر النموذج:</label><select id="qiyasModelNum" required><option value="">اختر نموذج قياس...</option></select></div>
                         
                         <div class="form-group">
                             <label>صورة السؤال:</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="file" id="qiyasImageFile" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'qiyas')">
-                                <button type="button" onclick="document.getElementById('qiyasImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة من الجهاز</button>
-                                <input type="text" id="qiyasImage" placeholder="رابط الصورة أو مسارها" style="flex-grow: 1;">
+                                <button type="button" onclick="document.getElementById('qiyasImageFile').click()" style="background: #0284c7; width: auto; padding: 10px 16px; margin: 0; font-size: 13px;">📁 اختيار صورة</button>
+                                <input type="text" id="qiyasImage" placeholder="رابط الصورة" style="flex-grow: 1;">
                             </div>
                             <div id="qiyasImagePreviewContainer" style="margin-top: 8px;"></div>
                         </div>
@@ -554,7 +507,6 @@
                     </form>
                 </div>
 
-                <!-- صندوق إدارة نماذج الاختبارات وتنشيطها/تعطيلها وتعديل أسمائها وأنواعها وحذفها -->
                 <div id="manage-models-box" class="admin-tab-content hidden" style="background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 20px;">📋 إدارة نماذج الاختبارات وتنشيطها وتعديل أسمائها وحذفها</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap;">
@@ -565,7 +517,6 @@
                     <div id="adminModelsListContent"></div>
                 </div>
 
-                <!-- صندوق إدارة وتعديل الأسئلة -->
                 <div id="manage-questions-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: #0d9488; margin-bottom: 20px;">🛠️ إدارة وتعديل الأسئلة</h3>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; flex-wrap: wrap;">
@@ -578,24 +529,21 @@
                         <button type="button" onclick="adminSelectSubCategory('simulation')" class="tab-btn" id="adminSubSimulation">اختبار محاكي</button>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <h4 id="adminModelsHeading" style="color: #1e293b; margin-bottom: 12px; font-size: 16px;">اختر النموذج لاستعراض وتعديل أسئلته:</h4>
+                        <h4 id="adminModelsHeading" style="color: #1e293b; margin-bottom: 12px; font-size: 16px;">اختر النموذج:</h4>
                         <div id="adminModelsGrid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;"></div>
                     </div>
                     <div id="adminFilteredQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
-                <!-- صندوق إحصائيات المنصة -->
                 <div id="platform-stats-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px; text-align: center;">
                     <h3 style="color: #7c3aed; margin-bottom: 15px;">📊 إحصائيات عامة</h3>
                     <p id="statsText" style="font-weight: 700; color: #334155; font-size: 16px;">جاري جلب إحصائيات النظام...</p>
                 </div>
 
-                <!-- صندوق الحسابات المسجلة -->
                 <div id="registered-accounts-box" class="admin-tab-content hidden" style="background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <h3 style="color: var(--primary); margin-bottom: 15px;">👥 إدارة الحسابات المسجلة</h3>
-                    <p style="color: #475569; font-size: 14px; margin-bottom: 15px;">قائمة بجميع المستخدمين المسجلين في المنصة، مع إمكانية حذف أي حساب بضغطة زر:</p>
                     <div id="accountsListContainer" style="background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #cbd5e1; min-height: 150px;">
-                        <p style="text-align: center; color: #64748b;">جاري تحميل الحسابات المسجلة...</p>
+                        <p style="text-align: center; color: #64748b;">جاري التحميل...</p>
                     </div>
                 </div>
             </div>
@@ -629,24 +577,17 @@
             document.getElementById('confirmModalText').innerText = text;
             const modal = document.getElementById('custom-confirm-modal');
             modal.classList.add('active');
-
             const confirmBtn = document.getElementById('confirmActionBtn');
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-
             newConfirmBtn.addEventListener('click', () => {
                 closeConfirmModal();
                 if (onConfirmCallback) onConfirmCallback();
             });
         }
 
-        function closeConfirmModal() {
-            document.getElementById('custom-confirm-modal').classList.remove('active');
-        }
-
-        function checkAuth() {
-            return !!sessionStorage.getItem('sessionUserEmail');
-        }
+        function closeConfirmModal() { document.getElementById('custom-confirm-modal').classList.remove('active'); }
+        function checkAuth() { return !!sessionStorage.getItem('sessionUserEmail'); }
 
         function updateAuthStateUI() {
             const isAuth = checkAuth();
@@ -656,8 +597,7 @@
 
             if (isAuth) {
                 body.classList.add('logged-in');
-                const userRole = sessionStorage.getItem('sessionUserRole');
-                if (userRole === 'admin') {
+                if (sessionStorage.getItem('sessionUserRole') === 'admin') {
                     adminSidebarSec.classList.remove('hidden');
                     studentSidebarGroup.classList.add('hidden');
                 } else {
@@ -672,25 +612,16 @@
         }
 
         function hideAlerts() {
-            document.querySelectorAll('.alert').forEach(el => {
-                el.style.display = 'none';
-                el.innerText = '';
-            });
+            document.querySelectorAll('.alert').forEach(el => { el.style.display = 'none'; el.innerText = ''; });
         }
 
         function navigateTo(view) {
-            const publicPages = ['landing', 'login', 'register', 'forgot'];
-            if (!publicPages.includes(view)) {
-                if (!checkAuth()) {
-                    alert('يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة! 🔒');
-                    switchView('login');
-                    return;
-                }
-            }
-            if (view === 'student-preview') {
-                switchView('student');
+            if (!['landing', 'login', 'register', 'forgot'].includes(view) && !checkAuth()) {
+                alert('يجب تسجيل الدخول أولاً! 🔒');
+                switchView('login');
                 return;
             }
+            if (view === 'student-preview') { switchView('student'); return; }
             switchView(view);
         }
 
@@ -701,82 +632,61 @@
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
             let targetId = '';
-            if (view === 'landing') { targetId = 'landing-section'; }
-            else if (view === 'login') { targetId = 'login-section'; }
-            else if (view === 'register') { targetId = 'register-section'; }
+            if (view === 'landing') targetId = 'landing-section';
+            else if (view === 'login') targetId = 'login-section';
+            else if (view === 'register') targetId = 'register-section';
             else if (view === 'forgot') { 
                 targetId = 'forgot-section'; 
                 document.getElementById('forgot-step-1').classList.remove('hidden');
                 document.getElementById('forgot-step-2').classList.add('hidden');
-                document.getElementById('forgotEmail').value = '';
             }
             else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
             else if (view === 'qiyas') { 
-                if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
+                if (!checkAuth()) { switchView('login'); return; }
                 targetId = 'qiyas-models-section'; 
                 document.getElementById('menu-qiyas').classList.add('active'); 
                 renderQiyasModelsGrid();
             }
-            else if (view === 'admin') { 
-                targetId = 'admin-dashboard'; 
-                loadAdminStats();
-            }
+            else if (view === 'admin') { targetId = 'admin-dashboard'; loadAdminStats(); }
 
             updateAuthStateUI();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (targetId) {
-                setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 50);
-            }
+            if (targetId) setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 50);
         }
 
         function openAdminTab(tabId) {
             navigateTo('admin');
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
-            if(tabId === 'manage-questions-box') {
-                initAdminQuestionsManagement();
-            } else if(tabId === 'registered-accounts-box') {
-                loadRegisteredAccounts();
-            } else if(tabId === 'manage-models-box') {
-                loadAdminModelsList('quant');
-            } else if(tabId === 'add-custom-model-box') {
-                loadCustomModelsCache().then(() => updateSuggestedModelNumber());
-            } else if(tabId === 'add-question-box') {
-                loadCustomModelsCache().then(() => updateModelDropdowns());
-            } else if(tabId === 'qiyas-question-box') {
-                loadCustomModelsCache().then(() => updateQiyasModelDropdowns());
-            }
+            if(tabId === 'manage-questions-box') initAdminQuestionsManagement();
+            else if(tabId === 'registered-accounts-box') loadRegisteredAccounts();
+            else if(tabId === 'manage-models-box') loadAdminModelsList('quant');
+            else if(tabId === 'add-custom-model-box') loadCustomModelsCache().then(() => updateSuggestedModelNumber());
+            else if(tabId === 'add-question-box') loadCustomModelsCache().then(() => updateModelDropdowns());
+            else if(tabId === 'qiyas-question-box') loadCustomModelsCache().then(() => updateQiyasModelDropdowns());
         }
 
         async function loadCustomModelsCache() {
             try {
                 const res = await fetch('/api/custom-models');
                 const data = await res.json();
-                if(data.success) {
-                    customModelNamesCache = data.models || {};
-                }
+                if(data.success) customModelNamesCache = data.models || {};
             } catch(e) {}
         }
 
-        // دالة تحديث رقم النموذج تلقائياً في صفحة إضافة النماذج ليصبح غير قابل للتعديل وتسلسلياً بكل فرع
         async function updateSuggestedModelNumber() {
             await loadCustomModelsCache();
             const selectedCat = document.getElementById('customModelCategory').value;
             const prefix = selectedCat + '_';
-            
             let maxNum = 0;
             Object.keys(customModelNamesCache).forEach(key => {
                 if (key.startsWith(prefix)) {
                     const numPart = Number(key.split('_').pop());
-                    if (!isNaN(numPart) && numPart > maxNum) {
-                        maxNum = numPart;
-                    }
+                    if (!isNaN(numPart) && numPart > maxNum) maxNum = numPart;
                 }
             });
-
             document.getElementById('customModelNum').value = maxNum + 1;
         }
 
@@ -786,24 +696,16 @@
             const type = document.getElementById('qType').value;
             const selectEl = document.getElementById('qModel');
             selectEl.innerHTML = '<option value="">اختر النموذج...</option>';
-
             const prefix = `${sec}_${type}_`;
-            let foundAny = false;
             Object.keys(customModelNamesCache).forEach(key => {
                 if (key.startsWith(prefix)) {
-                    foundAny = true;
                     const modelNum = key.replace(prefix, '');
-                    const modelName = customModelNamesCache[key];
                     const opt = document.createElement('option');
                     opt.value = modelNum;
-                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    opt.innerText = `${customModelNamesCache[key]} (رقم: ${modelNum})`;
                     selectEl.appendChild(opt);
                 }
             });
-
-            if (!foundAny) {
-                selectEl.innerHTML = '<option value="">لا توجد نماذج في المكان المختار</option>';
-            }
         }
 
         async function updateEditModelDropdowns() {
@@ -812,52 +714,32 @@
             const type = document.getElementById('editQType').value;
             const selectEl = document.getElementById('editQModel');
             selectEl.innerHTML = '<option value="">اختر النموذج...</option>';
-
-            let prefix = `${sec}_${type}_`;
-            if (type === 'qiyas_simulation') {
-                prefix = 'qiyas_simulation_';
-            }
-
-            let foundAny = false;
+            let prefix = type === 'qiyas_simulation' ? 'qiyas_simulation_' : `${sec}_${type}_`;
             Object.keys(customModelNamesCache).forEach(key => {
                 if (key.startsWith(prefix)) {
-                    foundAny = true;
                     const modelNum = key.replace(prefix, '');
-                    const modelName = customModelNamesCache[key];
                     const opt = document.createElement('option');
                     opt.value = modelNum;
-                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    opt.innerText = `${customModelNamesCache[key]} (رقم: ${modelNum})`;
                     selectEl.appendChild(opt);
                 }
             });
-
-            if (!foundAny) {
-                selectEl.innerHTML = '<option value="">لا توجد نماذج في المكان المختار</option>';
-            }
         }
 
         async function updateQiyasModelDropdowns() {
             await loadCustomModelsCache();
             const selectEl = document.getElementById('qiyasModelNum');
             selectEl.innerHTML = '<option value="">اختر نموذج قياس...</option>';
-
             const prefix = `qiyas_simulation_`;
-            let foundAny = false;
             Object.keys(customModelNamesCache).forEach(key => {
                 if (key.startsWith(prefix)) {
-                    foundAny = true;
                     const modelNum = key.replace(prefix, '');
-                    const modelName = customModelNamesCache[key];
                     const opt = document.createElement('option');
                     opt.value = modelNum;
-                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    opt.innerText = `${customModelNamesCache[key]} (رقم: ${modelNum})`;
                     selectEl.appendChild(opt);
                 }
             });
-
-            if (!foundAny) {
-                selectEl.innerHTML = '<option value="">لا توجد نماذج في المكان المختار</option>';
-            }
         }
 
         function handleImageUpload(event, mode) {
@@ -868,13 +750,13 @@
                 const base64Data = e.target.result;
                 if (mode === 'add') {
                     document.getElementById('qImage').value = base64Data;
-                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="معاينة الصورة"/>`;
+                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
                 } else if (mode === 'qiyas') {
                     document.getElementById('qiyasImage').value = base64Data;
-                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="معاينة الصورة"/>`;
+                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
                 } else if (mode === 'edit') {
                     document.getElementById('editQImage').value = base64Data;
-                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="معاينة الصورة"/>`;
+                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
                 }
             };
             reader.readAsDataURL(file);
@@ -885,8 +767,7 @@
             const category = document.getElementById('customModelCategory').value;
             const modelNum = document.getElementById('customModelNum').value;
             const customName = document.getElementById('customModelName').value;
-
-            showLoading('جاري حفظ تسمية النموذج...', 500, async () => {
+            showLoading('جاري الحفظ...', 500, async () => {
                 try {
                     const res = await fetch('/api/add-custom-model', {
                         method: 'POST',
@@ -895,39 +776,33 @@
                     });
                     const data = await res.json();
                     if(data.success) {
-                        showAlert('custom-model', 'تم حفظ وتنسيق النموذج بنجاح ليظهر فوراً في الإدارة! 🏷️', true);
+                        showAlert('custom-model', 'تم حفظ النموذج بنجاح! 🏷️', true);
                         document.getElementById('customModelName').value = '';
                         loadCustomModelsCache().then(() => updateSuggestedModelNumber());
                     } else {
-                        showAlert('custom-model', data.message || 'حدث خطأ أثناء الحفظ', false);
+                        showAlert('custom-model', data.message, false);
                     }
-                } catch(err) {
-                    showAlert('custom-model', 'حدث خطأ في الاتصال بالخادم', false);
-                }
+                } catch(err) { alert('خطأ في الاتصال'); }
             });
         });
 
         async function initAdminQuestionsManagement() {
-            showLoading('جاري تحميل الأسئلة...', 400, async () => {
+            showLoading('جاري التحميل...', 400, async () => {
                 try {
                     const res = await fetch('/api/questions');
                     globalQuestionsCache = await res.json();
                     adminSelectMainCategory('verbal');
-                } catch (e) {
-                    alert('تعذر جلب الأسئلة.');
-                }
+                } catch (e) { alert('تعذر جلب الأسئلة.'); }
             });
         }
 
         function adminSelectMainCategory(cat) {
             adminCurrentCat = cat;
             adminCurrentSelectedModel = null;
-
             ['verbal', 'quant', 'qiyas'].forEach(c => {
                 const btn = document.getElementById(`adminMain${c.charAt(0).toUpperCase() + c.slice(1)}`);
                 if(btn) btn.className = c === cat ? 'tab-btn active-tab' : 'tab-btn';
             });
-
             const subContainer = document.getElementById('adminSubCategoryContainer');
             if (cat === 'qiyas') {
                 subContainer.style.display = 'none';
@@ -942,7 +817,6 @@
         function adminSelectSubCategory(sub) {
             adminCurrentSub = sub;
             adminCurrentSelectedModel = null;
-
             ['Practice', 'Simulation'].forEach(s => {
                 const btn = document.getElementById(`adminSub${s}`);
                 if(btn) btn.className = s.toLowerCase() === sub ? 'tab-btn active-tab' : 'tab-btn';
@@ -957,34 +831,24 @@
 
             let targetType = adminCurrentSub;
             let targetSection = adminCurrentCat;
-            if (adminCurrentCat === 'qiyas') {
-                targetType = 'qiyas_simulation';
-                targetSection = '';
-            }
+            if (adminCurrentCat === 'qiyas') { targetType = 'qiyas_simulation'; targetSection = ''; }
 
             const matchedQuestions = globalQuestionsCache.filter(q => {
-                if (adminCurrentCat === 'qiyas') {
-                    return q.type === 'qiyas_simulation';
-                } else {
-                    return q.section === targetSection && q.type === targetType;
-                }
+                if (adminCurrentCat === 'qiyas') return q.type === 'qiyas_simulation';
+                return q.section === targetSection && q.type === targetType;
             });
 
             const availableModels = [...new Set(matchedQuestions.map(q => Number(q.model)))].sort((a, b) => a - b);
-
             if (availableModels.length === 0) {
-                modelsGrid.innerHTML = '<p style="color: #64748b; font-size: 14px;">لا توجد نماذج مضافة لها أسئلة في هذا القسم حالياً.</p>';
+                modelsGrid.innerHTML = '<p style="color: #64748b; font-size: 14px;">لا توجد نماذج مضافة.</p>';
                 return;
             }
 
             modelsGrid.innerHTML = availableModels.map(mNum => {
-                let customKey = `${adminCurrentCat}_${adminCurrentSub}_${mNum}`;
-                if(adminCurrentCat === 'qiyas') customKey = `qiyas_simulation_${mNum}`;
-                
-                let modelDisplayName = customModelNamesCache[customKey] || customModelNamesCache[`quant_practice_${mNum}`] || customModelNamesCache[`verbal_practice_${mNum}`] || `النموذج ${mNum}`;
-
+                let customKey = adminCurrentCat === 'qiyas' ? `qiyas_simulation_${mNum}` : `${adminCurrentCat}_${adminCurrentSub}_${mNum}`;
+                let modelDisplayName = customModelNamesCache[customKey] || `النموذج ${mNum}`;
                 return `
-                    <button type="button" onclick="adminSelectModel(${mNum})" class="tab-btn ${adminCurrentSelectedModel === mNum ? 'active-tab' : ''}" style="width: auto; background: ${adminCurrentSelectedModel === mNum ? 'var(--primary)' : '#e2e8f0'}; color: ${adminCurrentSelectedModel === mNum ? '#fff' : '#1e293b'};">
+                    <button type="button" onclick="adminSelectModel(${mNum})" class="tab-btn ${adminCurrentSelectedModel === mNum ? 'active-tab' : ''}" style="width: auto;">
                         📌 ${modelDisplayName} (رقم: ${mNum})
                     </button>
                 `;
@@ -1007,37 +871,27 @@
             const listContainer = document.getElementById('adminFilteredQuestionsList');
             let targetType = adminCurrentSub;
             let targetSection = adminCurrentCat;
-            if (adminCurrentCat === 'qiyas') {
-                targetType = 'qiyas_simulation';
-            }
+            if (adminCurrentCat === 'qiyas') targetType = 'qiyas_simulation';
 
             const filtered = globalQuestionsCache.filter(q => {
-                if (adminCurrentCat === 'qiyas') {
-                    return q.type === 'qiyas_simulation' && Number(q.model) === Number(adminCurrentSelectedModel);
-                } else {
-                    return q.section === targetSection && q.type === targetType && Number(q.model) === Number(adminCurrentSelectedModel);
-                }
+                if (adminCurrentCat === 'qiyas') return q.type === 'qiyas_simulation' && Number(q.model) === Number(adminCurrentSelectedModel);
+                return q.section === targetSection && q.type === targetType && Number(q.model) === Number(adminCurrentSelectedModel);
             });
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">لا توجد أسئلة في هذا النموذج.</p>';
+                listContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">لا توجد أسئلة.</p>';
                 return;
             }
-
-            let typeNames = { 'practice': 'تدريب', 'simulation': 'اختبار محاكي', 'qiyas_simulation': 'قياس محاكي' };
-            let sectionNames = { 'quant': 'كمي', 'verbal': 'لفظي' };
 
             listContainer.innerHTML = filtered.map((q) => {
                 const originalIndex = globalQuestionsCache.findIndex(item => item === q);
                 let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
-
                 return `
                     <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${sectionNames[q.section] || q.section}</span>
-                                <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">${typeNames[q.type] || q.type} (نموذج ${q.model})</span>
-                                <span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:6px; font-weight:bold; font-size:12px;">⭐ ${q.score || 1} درجة</span>
+                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">${q.section}</span>
+                                <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-size:12px;">نموذج ${q.model}</span>
                             </div>
                             <div style="display:flex; gap:8px;">
                                 <button type="button" onclick="openMoveModal(${originalIndex})" style="background:#7c3aed; width:auto; padding:6px 14px; margin:0; font-size:13px;">نقل 🚚</button>
@@ -1045,13 +899,10 @@
                                 <button type="button" onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
                             </div>
                         </div>
-                        <p style="font-weight:700; color:#1e293b; font-size:15px; margin:4px 0;">${q.question}</p>
-                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة السؤال"/>` : ''}
-                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; color:#475569; background:#f8fafc; padding:10px; border-radius:8px;">
-                            <div>أ) ${opts[0]}</div>
-                            <div>ب) ${opts[1]}</div>
-                            <div>ج) ${opts[2]}</div>
-                            <div>د) ${opts[3]}</div>
+                        <p style="font-weight:700; color:#1e293b; font-size:15px;">${q.question}</p>
+                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة"/>` : ''}
+                        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; background:#f8fafc; padding:10px; border-radius:8px;">
+                            <div>أ) ${opts[0]}</div><div>ب) ${opts[1]}</div><div>ج) ${opts[2]}</div><div>د) ${opts[3]}</div>
                         </div>
                         <div style="font-size:13px; color:#059669; font-weight:bold;">الإجابة الصحيحة: (${q.correct_answer})</div>
                     </div>
@@ -1069,44 +920,24 @@
             document.getElementById('move-question-modal').classList.add('active');
         }
 
-        function closeMoveModal() {
-            document.getElementById('move-question-modal').classList.remove('active');
-        }
+        function closeMoveModal() { document.getElementById('move-question-modal').classList.remove('active'); }
 
         async function updateMoveModelDropdowns() {
             await loadCustomModelsCache();
             const sec = document.getElementById('moveQTargetSection').value;
             const typeGroup = document.getElementById('moveQTypeGroup');
-            const typeEl = document.getElementById('moveQTargetType');
             const selectEl = document.getElementById('moveQTargetModel');
             selectEl.innerHTML = '<option value="">اختر النموذج المستهدف...</option>';
-
-            let prefix = '';
-            if (sec === 'qiyas') {
-                typeGroup.style.display = 'none';
-                prefix = 'qiyas_simulation_';
-            } else {
-                typeGroup.style.display = 'block';
-                const typeVal = typeEl.value;
-                prefix = `${sec}_${typeVal}_`;
-            }
-
-            let foundAny = false;
+            let prefix = sec === 'qiyas' ? (typeGroup.style.display = 'none', 'qiyas_simulation_') : (typeGroup.style.display = 'block', `${sec}_${document.getElementById('moveQTargetType').value}_`);
             Object.keys(customModelNamesCache).forEach(key => {
                 if (key.startsWith(prefix)) {
-                    foundAny = true;
                     const modelNum = key.replace(prefix, '');
-                    const modelName = customModelNamesCache[key];
                     const opt = document.createElement('option');
                     opt.value = modelNum;
-                    opt.innerText = `${modelName} (رقم: ${modelNum})`;
+                    opt.innerText = `${customModelNamesCache[key]} (رقم: ${modelNum})`;
                     selectEl.appendChild(opt);
                 }
             });
-
-            if (!foundAny) {
-                selectEl.innerHTML = '<option value="">⚠️ لا يوجد نموذج مضاف في هذا المكان المختار</option>';
-            }
         }
 
         document.getElementById('moveQuestionForm').addEventListener('submit', async (e) => {
@@ -1114,22 +945,11 @@
             const index = Number(document.getElementById('moveQIndex').value);
             const sec = document.getElementById('moveQTargetSection').value;
             const targetModel = document.getElementById('moveQTargetModel').value;
+            if (!targetModel) { alert('اختر نموذجاً متاحاً!'); return; }
+            let targetType = sec === 'qiyas' ? 'qiyas_simulation' : document.getElementById('moveQTargetType').value;
+            let finalSection = sec === 'qiyas' ? 'quant' : sec;
 
-            if (!targetModel) {
-                alert('عذراً، لا يوجد نموذج في المكان المختار لتتمكن من نقل السؤال إليه!');
-                return;
-            }
-
-            let targetType = 'practice';
-            let finalSection = sec;
-            if (sec === 'qiyas') {
-                finalSection = 'quant';
-                targetType = 'qiyas_simulation';
-            } else {
-                targetType = document.getElementById('moveQTargetType').value;
-            }
-
-            showLoading('جاري نقل السؤال...', 600, async () => {
+            showLoading('جاري النقل...', 600, async () => {
                 try {
                     const res = await fetch('/api/move-question', {
                         method: 'POST',
@@ -1142,126 +962,81 @@
                         const resQ = await fetch('/api/questions');
                         globalQuestionsCache = await resQ.json();
                         renderAdminModels();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء نقل السؤال');
-                    }
-                } catch(err) {
-                    alert('حدث خطأ في الاتصال بالخادم');
-                }
+                    } else alert(data.message);
+                } catch(err) { alert('خطأ في الاتصال'); }
             });
         });
 
         async function loadAdminModelsList(sectionKey) {
             ['quant', 'verbal', 'mock'].forEach(s => {
                 const btn = document.getElementById(`btnAdmin${s.charAt(0).toUpperCase() + s.slice(1)}`);
-                if(btn) {
-                    btn.className = s === sectionKey ? 'tab-btn active-tab' : 'tab-btn';
-                }
+                if(btn) btn.className = s === sectionKey ? 'tab-btn active-tab' : 'tab-btn';
             });
-
             const contentDiv = document.getElementById('adminModelsListContent');
-            contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">جاري جلب النماذج...</p>';
-
+            contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">جاري الجلب...</p>';
             try {
                 const res = await fetch('/api/admin/models-status');
                 const data = await res.json();
-
                 await loadCustomModelsCache();
-                
                 if (data.success && data.models) {
                     const sectionModels = data.models[sectionKey] || {};
                     const modelKeys = Object.keys(sectionModels);
-
                     if (modelKeys.length === 0) {
-                        contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج مضافة أو تحتوي على أسئلة في هذا القسم حالياً.</p>';
+                        contentDiv.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">لا توجد نماذج.</p>';
                         return;
                     }
-
                     contentDiv.innerHTML = modelKeys.map(uKey => {
                         const model = sectionModels[uKey];
                         const isActive = model.isActive !== false;
                         const customKey = model.customKey;
                         const modelDisplayName = customModelNamesCache[customKey] || `النموذج ${model.modelNumber}`;
-
-                        let typeBadgeText = '';
-                        let typeBadgeColor = '#64748b';
-                        if (model.categoryType.includes('practice')) {
-                            typeBadgeText = 'تدريب';
-                            typeBadgeColor = '#0284c7';
-                        } else if (model.categoryType.includes('simulation')) {
-                            typeBadgeText = 'اختبار محاكي';
-                            typeBadgeColor = '#d97706';
-                        } else {
-                            typeBadgeText = 'اختبار قياس محاكي';
-                            typeBadgeColor = '#10b981';
-                        }
-
                         return `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; margin-bottom: 10px; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
                                 <div>
-                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <strong style="font-size: 16px; color: #1e293b;">📌 الاسم: ${modelDisplayName} (رقم النموذج: ${model.modelNumber})</strong>
-                                        <span style="background: ${typeBadgeColor}; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">${typeBadgeText}</span>
-                                    </div>
-                                    <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount} سؤال</span>
-                                    <span style="font-size: 12px; font-weight: bold; color: ${isActive ? '#10b981' : '#ef4444'}; margin-top: 4px; display: inline-block;">
-                                        ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل (يحتاج إلى تنشيط)'}
-                                    </span>
+                                    <strong style="font-size: 16px; color: #1e293b;">📌 الاسم: ${modelDisplayName} (رقم: ${model.modelNumber})</strong>
+                                    <span style="display: block; font-size: 13px; color: #64748b; margin-top: 4px;">عدد الأسئلة: ${model.questionCount}</span>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <button type="button" onclick="openEditModelNameModal('${sectionKey}', ${model.modelNumber}, '${modelDisplayName}', '${model.categoryType}')" style="background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">تعديل الاسم والنوع ✏️</button>
-                                    <button type="button" onclick="toggleModelStatus('${sectionKey}', '${uKey}')" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">
-                                        ${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}
-                                    </button>
-                                    <button type="button" onclick="confirmDeleteModel('${customKey}', ${model.modelNumber})" style="background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: auto; margin: 0; box-shadow: none;">حذف النموذج 🗑️</button>
+                                    <!-- تمرير customKey الصحيح والدقيق هنا لحل مشكلة النقل والحذف -->
+                                    <button type="button" onclick="openEditModelNameModal('${customKey}', ${model.modelNumber}, '${modelDisplayName}', '${model.categoryType}')" style="background: #0284c7; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">تعديل الاسم والنوع ✏️</button>
+                                    <button type="button" onclick="toggleModelStatus('${sectionKey}', '${uKey}')" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}</button>
+                                    <button type="button" onclick="confirmDeleteModel('${customKey}', ${model.modelNumber})" style="background: #ef4444; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">حذف 🗑️</button>
                                 </div>
                             </div>
                         `;
                     }).join('');
                 }
-            } catch (e) {
-                contentDiv.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">حدث خطأ أثناء جلب النماذج.</p>';
-            }
+            } catch (e) { contentDiv.innerHTML = '<p style="color: red;">خطأ في الجلب.</p>'; }
         }
 
         function confirmDeleteModel(modelKey, modelNum) {
-            showConfirmModal(`هل أنت متأكد من رغبتك في حذف هذا النموذج نهائياً؟ (سيتم حذف الأسئلة التابعة له أيضاً)`, () => {
-                executeDeleteModel(modelKey, modelNum);
-            });
+            showConfirmModal(`هل أنت متأكد من حذف هذا النموذج نهائياً؟`, () => executeDeleteModel(modelKey, modelNum));
         }
 
         async function executeDeleteModel(modelKey, modelNum) {
-            showLoading('جاري حذف النموذج...', 600, async () => {
+            showLoading('جاري الحذف...', 600, async () => {
                 try {
-                    const res = await fetch('/api/admin/delete-model', {
+                    await fetch('/api/admin/delete-model', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ modelKey, modelNumber: modelNum })
                     });
-                    const data = await res.json();
-                    if(data.success) {
-                        loadAdminModelsList('quant');
-                        loadCustomModelsCache();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء الحذف');
-                    }
-                } catch(err) {
-                    alert('حدث خطأ في الاتصال بالخادم');
-                }
+                    loadAdminModelsList('quant');
+                    loadCustomModelsCache();
+                } catch(err) { alert('خطأ في الاتصال'); }
             });
         }
 
-        function openEditModelNameModal(sectionKey, modelNum, currentName, catVal) {
-            document.getElementById('editModelOldKey').value = `${sectionKey}_${modelNum}`;
+        // استقبال الـ customKey الدقيق بدلاً من المفتاح المختصر
+        function openEditModelNameModal(customKey, modelNum, currentName, catVal) {
+            document.getElementById('editModelOldKey').value = customKey;
             document.getElementById('editModelNumVal').value = modelNum;
             document.getElementById('editModelNameInput').value = currentName;
             document.getElementById('editModelNewCategory').value = catVal;
             document.getElementById('edit-model-modal').classList.add('active');
         }
 
-        function closeEditModelModal() {
-            document.getElementById('edit-model-modal').classList.remove('active');
-        }
+        function closeEditModelModal() { document.getElementById('edit-model-modal').classList.remove('active'); }
 
         document.getElementById('editModelForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1270,7 +1045,7 @@
             const newName = document.getElementById('editModelNameInput').value;
             const newCategory = document.getElementById('editModelNewCategory').value;
 
-            showLoading('جاري تحديث وتعديل النموذج...', 500, async () => {
+            showLoading('جاري التحديث والنقل الكامل...', 500, async () => {
                 try {
                     const res = await fetch('/api/admin/edit-model-full', {
                         method: 'POST',
@@ -1282,327 +1057,180 @@
                         closeEditModelModal();
                         loadAdminModelsList('quant');
                         loadCustomModelsCache();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء التحديث');
-                    }
-                } catch(err) {
-                    alert('حدث خطأ في الاتصال بالخادم');
-                }
+                    } else alert(data.message);
+                } catch(err) { alert('خطأ في الاتصال'); }
             });
         });
 
         async function toggleModelStatus(section, uniqueKey) {
             try {
-                const adminEmail = sessionStorage.getItem('sessionUserEmail');
-                const res = await fetch('/api/admin/toggle-model', {
+                await fetch('/api/admin/toggle-model', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ section, uniqueKey, adminEmail })
+                    body: JSON.stringify({ section, uniqueKey, adminEmail: sessionStorage.getItem('sessionUserEmail') })
                 });
-                const data = await res.json();
-                if (data.success) {
-                    loadAdminModelsList(section);
-                } else {
-                    alert(data.message || 'حدث خطأ ما');
-                }
-            } catch (e) {
-                alert('حدث خطأ في الاتصال بالخادم');
-            }
+                loadAdminModelsList(section);
+            } catch (e) { alert('خطأ في الاتصال'); }
         }
 
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
             try {
-                const resStatus = await fetch('/api/admin/models-status');
-                const dataStatus = await resStatus.json();
-                const mockModels = (dataStatus.success && dataStatus.models && dataStatus.models['mock']) ? dataStatus.models['mock'] : {};
-
-                const resCustom = await fetch('/api/custom-models');
-                const dataCustom = await resCustom.json();
-                const customNames = (dataCustom.success && dataCustom.models) ? dataCustom.models : {};
-
+                const dataStatus = await (await fetch('/api/admin/models-status')).json();
+                const mockModels = (dataStatus.success && dataStatus.models) ? dataStatus.models['mock'] || {} : {};
+                const customNames = (await (await fetch('/api/custom-models')).json()).models || {};
                 grid.innerHTML = '';
-                let hasAnyVisibleModel = false;
-
-                const modelKeys = Object.keys(mockModels);
-                for (let k of modelKeys) {
-                    const modelData = mockModels[k];
-                    if (!modelData || modelData.questionCount === 0 || modelData.isActive === false) {
-                        continue;
-                    }
-                    hasAnyVisibleModel = true;
-                    const modelNum = modelData.modelNumber;
-                    const customKey = modelData.customKey || `qiyas_simulation_${modelNum}`;
-                    const btnName = customNames[customKey] || `نموذج قياس ${modelNum}`;
-
+                let hasAny = false;
+                Object.keys(mockModels).forEach(k => {
+                    const m = mockModels[k];
+                    if (!m || m.questionCount === 0 || m.isActive === false) return;
+                    hasAny = true;
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
                     btn.style.borderColor = 'var(--accent)';
-                    btn.innerText = btnName;
-                    btn.onclick = () => selectQiyasModel(modelNum, true);
+                    btn.innerText = customNames[m.customKey] || `نموذج قياس ${m.modelNumber}`;
+                    btn.onclick = () => selectQiyasModel(m.modelNumber, true);
                     grid.appendChild(btn);
-                }
-
-                if (!hasAnyVisibleModel) {
+                });
+                if (!hasAny) {
                     document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-                    setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                    document.getElementById('no-q-title').innerText = 'لا توجد نماذج';
-                    document.getElementById('no-q-desc').innerText = 'عذراً، لا توجد نماذج اختبار قياس مضافة أو نشطة حالياً.';
+                    document.getElementById('no-questions-section').classList.add('active-view');
                 }
-            } catch (e) {
-                grid.innerHTML = '<p style="color: red; text-align: center;">تعذر جلب النماذج.</p>';
-            }
+            } catch (e) { grid.innerHTML = '<p style="color: red;">تعذر الجلب.</p>'; }
         }
 
-        async function selectQiyasModel(modelNum, isActive) {
-            showLoading('جاري جلب أسئلة قياس...', 400, async () => {
-                try {
-                    const res = await fetch('/api/questions');
-                    const allQuestions = await res.json();
-                    
-                    currentTrainingQuestions = allQuestions.filter(q => 
-                        q.type === 'qiyas_simulation' && 
-                        Number(q.model) === Number(modelNum)
-                    );
-
-                    document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-
-                    if (currentTrainingQuestions.length === 0) {
-                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                        document.getElementById('no-q-title').innerText = 'لا توجد نماذج';
-                        document.getElementById('no-q-desc').innerText = 'عذراً، هذا النموذج لا يحتوي على أسئلة حالياً.';
-                        return;
-                    }
-
-                    currentQuestionIndex = 0;
-                    setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 50);
-                    renderTrainingQuestion();
-                } catch (error) {
-                    alert("حدث خطأ في جلب الأسئلة.");
+        async function selectQiyasModel(modelNum) {
+            showLoading('جاري التحميل...', 400, async () => {
+                const allQuestions = await (await fetch('/api/questions')).json();
+                currentTrainingQuestions = allQuestions.filter(q => q.type === 'qiyas_simulation' && Number(q.model) === Number(modelNum));
+                document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+                if (currentTrainingQuestions.length === 0) {
+                    document.getElementById('no-questions-section').classList.add('active-view');
+                    return;
                 }
+                currentQuestionIndex = 0;
+                document.getElementById('training-section').classList.add('active-view');
+                renderTrainingQuestion();
             });
         }
 
         async function openModelsSelection(sectionType, mode) {
-            if (!checkAuth()) { alert('يجب تسجيل الدخول أولاً! 🔒'); switchView('login'); return; }
-            currentSectionType = sectionType; 
-            currentActionMode = mode;         
-            
+            if (!checkAuth()) { switchView('login'); return; }
+            currentSectionType = sectionType; currentActionMode = mode;
             const gridContainer = document.getElementById('modelsGridContainer');
             gridContainer.innerHTML = '<p style="color: #64748b; text-align: center; grid-column: span 3;">جاري التحميل...</p>';
-            
             document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             setTimeout(() => document.getElementById('models-selection-section').classList.add('active-view'), 50);
 
             try {
-                const resStatus = await fetch('/api/admin/models-status');
-                const dataStatus = await resStatus.json();
-                const sectionModels = (dataStatus.success && dataStatus.models && dataStatus.models[sectionType]) ? dataStatus.models[sectionType] : {};
-
-                const resCustom = await fetch('/api/custom-models');
-                const dataCustom = await resCustom.json();
-                const customNames = (dataCustom.success && dataCustom.models) ? dataCustom.models : {};
-
+                const dataStatus = await (await fetch('/api/admin/models-status')).json();
+                const sectionModels = (dataStatus.success && dataStatus.models) ? dataStatus.models[sectionType] || {} : {};
+                const customNames = (await (await fetch('/api/custom-models')).json()).models || {};
                 gridContainer.innerHTML = '';
-                let hasAnyVisibleModel = false;
-                const modeTypeKey = mode === 'exam' ? 'simulation' : 'practice';
-
-                const modelKeys = Object.keys(sectionModels);
-                for (let k of modelKeys) {
-                    const modelData = sectionModels[k];
-                    if (!modelData || modelData.questionCount === 0 || modelData.isActive === false) {
-                        continue;
-                    }
-                    hasAnyVisibleModel = true;
-                    const modelNum = modelData.modelNumber;
-                    const customKey = modelData.customKey || `${sectionType}_${modeTypeKey}_${modelNum}`;
-                    const btnName = customNames[customKey] || `النموذج ${modelNum}`;
-
+                let hasAny = false;
+                const modeKey = mode === 'exam' ? 'simulation' : 'practice';
+                Object.keys(sectionModels).forEach(k => {
+                    const m = sectionModels[k];
+                    if (!m || m.questionCount === 0 || m.isActive === false) return;
+                    hasAny = true;
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
-                    btn.innerText = btnName;
-                    btn.onclick = () => selectModel(modelNum, true);
+                    btn.innerText = customNames[m.customKey] || `النموذج ${m.modelNumber}`;
+                    btn.onclick = () => selectModel(m.modelNumber, true);
                     gridContainer.appendChild(btn);
-                }
-
-                if (!hasAnyVisibleModel) {
+                });
+                if (!hasAny) {
                     document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-                    setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                    document.getElementById('no-q-title').innerText = 'لا توجد نماذج';
-                    document.getElementById('no-q-desc').innerText = 'عذراً، لا توجد نماذج مضافة أو نشطة حالياً في هذا القسم.';
+                    document.getElementById('no-questions-section').classList.add('active-view');
                 }
-            } catch (e) {
-                gridContainer.innerHTML = '<p style="color: red; text-align: center;">تعذر جلب النماذج.</p>';
-            }
+            } catch (e) { gridContainer.innerHTML = '<p style="color: red;">تعذر الجلب.</p>'; }
         }
 
-        async function selectModel(modelNum, isActive) {
+        async function selectModel(modelNum) {
             selectedModelNum = modelNum;
-            showLoading('جاري تحميل الأسئلة...', 400, async () => {
-                try {
-                    const res = await fetch('/api/questions');
-                    const allQuestions = await res.json();
-                    
-                    currentTrainingQuestions = allQuestions.filter(q => 
-                        q.section === currentSectionType && 
-                        Number(q.model) === Number(modelNum) && 
-                        q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice')
-                    );
-
-                    document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
-
-                    if (currentTrainingQuestions.length === 0) {
-                        setTimeout(() => document.getElementById('no-questions-section').classList.add('active-view'), 50);
-                        document.getElementById('no-q-title').innerText = 'لا توجد نماذج';
-                        document.getElementById('no-q-desc').innerText = 'عذراً، هذا النموذج لا يحتوي على أسئلة حالياً.';
-                        return;
-                    }
-
-                    currentQuestionIndex = 0;
-                    setTimeout(() => document.getElementById('training-section').classList.add('active-view'), 50);
-                    renderTrainingQuestion();
-                } catch (error) {
-                    alert("حدث خطأ في جلب الأسئلة.");
+            showLoading('جاري التحميل...', 400, async () => {
+                const allQuestions = await (await fetch('/api/questions')).json();
+                currentTrainingQuestions = allQuestions.filter(q => q.section === currentSectionType && Number(q.model) === Number(modelNum) && q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice'));
+                document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+                if (currentTrainingQuestions.length === 0) {
+                    document.getElementById('no-questions-section').classList.add('active-view');
+                    return;
                 }
+                currentQuestionIndex = 0;
+                document.getElementById('training-section').classList.add('active-view');
+                renderTrainingQuestion();
             });
         }
 
         async function loadRegisteredAccounts() {
             const container = document.getElementById('accountsListContainer');
-            container.innerHTML = '<p style="text-align: center; color: #64748b;">جاري جلب الحسابات...</p>';
             try {
-                const adminEmail = sessionStorage.getItem('sessionUserEmail');
-                const res = await fetch('/api/admin/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: adminEmail })
-                });
-                const data = await res.json();
-                if(data.success && data.users) {
-                    if(data.users.length === 0) {
-                        container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد حسابات مسجلة.</p>';
-                        return;
-                    }
+                const data = await (await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') }) })).json();
+                if(data.success) {
                     container.innerHTML = data.users.map(u => `
-                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <div>
-                                <strong style="color: #1e293b;">${u.name || 'مستخدم'}</strong>
-                                <span style="color: #64748b; font-size: 13px; display: block;">${u.email} (كلمة المرور: ${u.pass})</span>
-                            </div>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold;">${u.role}</span>
-                                ${u.email !== adminEmail ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; width: auto; margin: 0; box-shadow: none;">حذف 🗑️</button>` : ''}
-                            </div>
+                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                            <div><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span></div>
+                            ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
                         </div>
                     `).join('');
-                } else {
-                    container.innerHTML = `<p style="text-align: center; color: #ef4444;">${data.message || 'تعذر جلب الحسابات.'}</p>`;
                 }
-            } catch (e) {
-                container.innerHTML = '<p style="text-align: center; color: #ef4444;">تعذر الاتصال بالخادم لجلب الحسابات.</p>';
-            }
+            } catch (e) { container.innerHTML = '<p style="color: red;">خطأ في الاتصال.</p>'; }
         }
 
         function confirmDeleteUser(userEmail) {
-            showConfirmModal(`هل أنت متأكد من رغبتك في حذف الحساب (${userEmail}) نهائياً؟`, () => {
-                executeDeleteUser(userEmail);
-            });
+            showConfirmModal(`حذف الحساب (${userEmail})؟`, () => executeDeleteUser(userEmail));
         }
 
         async function executeDeleteUser(userEmail) {
-            showLoading('جاري حذف الحساب...', 600, async () => {
-                try {
-                    const adminEmail = sessionStorage.getItem('sessionUserEmail');
-                    const res = await fetch('/api/admin/delete-user', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ adminEmail: adminEmail, userEmailToDelete: userEmail })
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        loadRegisteredAccounts();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء محاولة الحذف.');
-                    }
-                } catch (err) {
-                    alert('حدث خطأ في الاتصال بالخادم.');
-                }
+            showLoading('جاري الحذف...', 600, async () => {
+                await fetch('/api/admin/delete-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminEmail: sessionStorage.getItem('sessionUserEmail'), userEmailToDelete: userEmail }) });
+                loadRegisteredAccounts();
             });
         }
 
-        function togglePasswordVisibility(fieldId, btnElement) {
-            const passwordInput = document.getElementById(fieldId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                btnElement.innerText = '🙈';
-            } else {
-                passwordInput.type = 'password';
-                btnElement.innerText = '👁️';
-            }
+        function togglePasswordVisibility(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            btn.innerText = input.type === 'password' ? '👁️' : '🙈';
         }
 
         async function verifyForgotEmail() {
-            const email = document.getElementById('forgotEmail').value;
-            if(!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني', false); return; }
-            showLoading('جاري التحقق من البريد...', 1000, () => {
-                verifiedForgotEmail = email;
+            verifiedForgotEmail = document.getElementById('forgotEmail').value;
+            if(!verifiedForgotEmail) return;
+            showLoading('تحقق...', 800, () => {
                 document.getElementById('forgot-step-1').classList.add('hidden');
                 document.getElementById('forgot-step-2').classList.remove('hidden');
-                showAlert('forgot', 'تم التحقق بنجاح. أدخل كلمة المرور الجديدة', true);
             });
         }
 
         async function submitNewPassword() {
             const newPass = document.getElementById('newPasswordInput').value;
-            if(!newPass || newPass.length < 6) {
-                showAlert('forgot', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', false);
-                return;
-            }
-            showLoading('جاري تحديث كلمة المرور...', 1200, async () => {
-                try {
-                    const res = await fetch('/api/reset-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: verifiedForgotEmail, newPass: newPass })
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        showAlert('forgot', 'تم تحديث كلمة المرور بنجاح! سجّل دخولك', true);
-                        setTimeout(() => switchView('login'), 1200);
-                    } else {
-                        showAlert('forgot', data.message || 'حدث خطأ أثناء التحديث', false);
-                    }
-                } catch (err) {
-                    showAlert('forgot', 'حدث خطأ في الاتصال بالخادم', false);
-                }
+            showLoading('تحديث...', 1000, async () => {
+                await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
+                switchView('login');
             });
         }
 
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
-                container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 كفو يا بطل! أتممت أسئلة النموذج بنجاح تام وتألق.</h3><button onclick="navigateTo('student')" style="margin-top:20px; width:auto; padding:12px 25px;">العودة لوحة الطالب</button></div>`;
+                container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 أتممت الأسئلة بنجاح!</h3><button onclick="navigateTo('student')" style="margin-top:20px; width:auto; padding:12px 25px;">العودة</button></div>`;
                 return;
             }
             const q = currentTrainingQuestions[currentQuestionIndex];
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
-            
             container.innerHTML = `
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #64748b; font-size: 14px;">
-                        <span>السؤال ${currentQuestionIndex + 1} من ${currentTrainingQuestions.length}</span>
-                        <span style="background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;">الدرجات: ${q.score || 1}</span>
-                    </div>
-                    <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #1e293b;">${q.question}</p>
-                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة السؤال"/></div>` : ''}
+                    <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">${q.question}</p>
+                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/></div>` : ''}
                     <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">أ) ${opts[0]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">ب) ${opts[1]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">ج) ${opts[2]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; font-weight:700;">د) ${opts[3]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1;">أ) ${opts[0]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1;">ب) ${opts[1]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1;">ج) ${opts[2]}</button>
+                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1;">د) ${opts[3]}</button>
                     </div>
-                    <div id="feedback" style="margin-top: 20px; font-weight: bold; text-align: center; font-size: 17px;"></div>
+                    <div id="feedback" style="margin-top: 20px; font-weight: bold; text-align: center;"></div>
                 </div>
             `;
         }
@@ -1612,21 +1240,17 @@
             btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
             if(correctOpt.trim() === chosenOpt.trim()) {
                 btn.style.background = '#d1fae5';
-                btn.style.borderColor = '#34d399';
-                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة وممتازة! كفو عليك 🌟</span>';
+                feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة! 🌟</span>';
             } else {
                 btn.style.background = '#fee2e2';
-                btn.style.borderColor = '#f87171';
-                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الإجابة الصحيحة هي: (${correctOpt}) 💪</span>`;
+                feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الصحيحة هي: (${correctOpt})</span>`;
             }
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
         }
 
         function logout() {
-            showLoading('جاري تسجيل الخروج...', 1200, () => {
-                sessionStorage.removeItem('sessionUserEmail');
-                sessionStorage.removeItem('sessionUserRole');
-                sessionStorage.removeItem('currentView');
+            showLoading('خروج...', 1000, () => {
+                sessionStorage.clear();
                 updateAuthStateUI();
                 navigateTo('landing');
             });
@@ -1642,13 +1266,10 @@
 
         async function loadAdminStats() {
             try {
-                const res = await fetch('/api/questions');
-                const questions = await res.json();
+                const questions = await (await fetch('/api/questions')).json();
                 globalQuestionsCache = questions;
-                document.getElementById('statsText').innerText = `إجمالي عدد الأسئلة المسجلة في المنصة: ${questions.length} سؤالاً`;
-            } catch (e) {
-                document.getElementById('statsText').innerText = 'تعذر جلب إحصائيات النظام.';
-            }
+                document.getElementById('statsText').innerText = `إجمالي الأسئلة في المنصة: ${questions.length}`;
+            } catch (e) {}
         }
 
         async function openEditModal(index) {
@@ -1656,244 +1277,100 @@
             document.getElementById('editQIndex').value = index;
             document.getElementById('editQSection').value = q.section || 'quant';
             document.getElementById('editQType').value = q.type || 'practice';
-            
             await updateEditModelDropdowns();
             document.getElementById('editQModel').value = q.model || 1;
-
             document.getElementById('editQImage').value = q.image || '';
-            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة السؤال"/>` : '';
-
+            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>` : '';
             document.getElementById('editQScore').value = q.score || 1;
             document.getElementById('editQText').value = q.question || '';
-            
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
             document.getElementById('editQA').value = opts[0] || '';
             document.getElementById('editQB').value = opts[1] || '';
             document.getElementById('editQC').value = opts[2] || '';
             document.getElementById('editQD').value = opts[3] || '';
             document.getElementById('editQCorrect').value = q.correct_answer || 'أ';
-
             document.getElementById('edit-question-modal').classList.add('active');
         }
 
-        function closeEditModal() {
-            document.getElementById('edit-question-modal').classList.remove('active');
-        }
-
-        function confirmDeleteQuestion(index) {
-            showConfirmModal('هل أنت متأكد من رغبتك في حذف هذا السؤال نهائياً من المنصة؟', () => {
-                deleteQuestion(index);
-            });
-        }
+        function closeEditModal() { document.getElementById('edit-question-modal').classList.remove('active'); }
+        function confirmDeleteQuestion(index) { showConfirmModal('حذف هذا السؤال؟', () => deleteQuestion(index)); }
 
         async function deleteQuestion(index) {
-            showLoading('جاري حذف السؤال...', 500, async () => {
-                try {
-                    const res = await fetch('/api/delete-question', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ index: index })
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        const resQ = await fetch('/api/questions');
-                        globalQuestionsCache = await resQ.json();
-                        renderAdminModels();
-                        loadAdminStats();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء الحذف');
-                    }
-                } catch (e) {
-                    alert('حدث خطأ في الاتصال بالخادم');
-                }
+            showLoading('حذف...', 500, async () => {
+                await fetch('/api/delete-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index }) });
+                globalQuestionsCache = await (await fetch('/api/questions')).json();
+                renderAdminModels();
+                loadAdminStats();
             });
         }
 
         document.getElementById('editQuestionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const index = document.getElementById('editQIndex').value;
-            const targetModelVal = document.getElementById('editQModel').value;
-
-            if (!targetModelVal) {
-                alert('لا توجد نماذج في المكان المختار أو لم تقم باختيار نموذج!');
-                return;
-            }
-
             const updatedData = {
-                index: Number(index),
+                index: Number(document.getElementById('editQIndex').value),
                 section: document.getElementById('editQSection').value,
                 type: document.getElementById('editQType').value,
-                model: Number(targetModelVal),
+                model: Number(document.getElementById('editQModel').value),
                 image: document.getElementById('editQImage').value || null,
                 score: Number(document.getElementById('editQScore').value),
                 question: document.getElementById('editQText').value,
-                options: [
-                    document.getElementById('editQA').value,
-                    document.getElementById('editQB').value,
-                    document.getElementById('editQC').value,
-                    document.getElementById('editQD').value
-                ],
+                options: [document.getElementById('editQA').value, document.getElementById('editQB').value, document.getElementById('editQC').value, document.getElementById('editQD').value],
                 correct_answer: document.getElementById('editQCorrect').value
             };
-
-            showLoading('جاري حفظ التعديلات...', 600, async () => {
-                try {
-                    const res = await fetch('/api/edit-question', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updatedData)
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        closeEditModal();
-                        const resQ = await fetch('/api/questions');
-                        globalQuestionsCache = await resQ.json();
-                        renderAdminModels();
-                        loadAdminStats();
-                    } else {
-                        alert(data.message || 'حدث خطأ أثناء تعديل السؤال');
-                    }
-                } catch (err) {
-                    alert('حدث خطأ في الاتصال بالخادم');
-                }
+            showLoading('حفظ...', 600, async () => {
+                await fetch('/api/edit-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
+                closeEditModal();
+                globalQuestionsCache = await (await fetch('/api/questions')).json();
+                renderAdminModels();
             });
         });
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
-            showLoading('جاري إنشاء الحساب...', 1200, async () => {
-                try {
-                    const res = await fetch('/api/register', { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) { 
-                        showAlert('reg', data.message, true); 
-                        setTimeout(() => switchView('login'), 1200); 
-                    } else { 
-                        showAlert('reg', data.message, false); 
-                    }
-                } catch (err) {
-                    showAlert('reg', 'حدث خطأ في الاتصال بالخادم', false);
-                }
+            showLoading('تسجيل...', 1000, async () => {
+                const res = await (await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: regName.value, email: regEmail.value, pass: regPass.value }) })).json();
+                if(res.success) { showAlert('reg', res.message, true); setTimeout(() => switchView('login'), 1000); }
+                else showAlert('reg', res.message, false);
             });
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideAlerts();
-            showLoading('جاري تسجيل الدخول...', 1200, async () => {
-                try {
-                    const res = await fetch('/api/login', { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) {
-                        sessionStorage.setItem('sessionUserEmail', loginEmail.value);
-                        sessionStorage.setItem('sessionUserRole', data.role);
-                        updateAuthStateUI();
-                        if(data.role === 'admin') {
-                            openAdminTab('add-question-box');
-                        } else {
-                            navigateTo('student');
-                        }
-                    } else { 
-                        showAlert('login', data.message, false); 
-                    }
-                } catch (err) {
-                    showAlert('login', 'حدث خطأ في الاتصال بالخادم', false);
-                }
+            showLoading('دخول...', 1000, async () => {
+                const res = await (await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: loginEmail.value, pass: loginPass.value }) })).json();
+                if(res.success) {
+                    sessionStorage.setItem('sessionUserEmail', loginEmail.value);
+                    sessionStorage.setItem('sessionUserRole', res.role);
+                    updateAuthStateUI();
+                    if(res.role === 'admin') openAdminTab('add-question-box');
+                    else navigateTo('student');
+                } else showAlert('login', res.message, false);
             });
         });
 
         document.getElementById('questionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const modelVal = qModel.value;
-            if(!modelVal) {
-                showAlert('q', '⚠️ لا توجد نماذج مضافة في هذا المكان المختار!', false);
-                return;
-            }
-            showLoading('جاري حفظ السؤال...', 500, async () => {
-                try {
-                    const res = await fetch('/api/add-question', { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ 
-                            section: qSection.value, 
-                            type: qType.value, 
-                            model: modelVal,
-                            image: qImage.value || null,
-                            score: qScore.value,
-                            question: qText.value, 
-                            options: [qA.value, qB.value, qC.value, qD.value], 
-                            correct_answer: qCorrect.value 
-                        }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) { 
-                        showAlert('q', data.message, true); 
-                        questionForm.reset(); 
-                        document.getElementById('addImagePreviewContainer').innerHTML = '';
-                        updateModelDropdowns();
-                        loadAdminStats();
-                    } else {
-                        showAlert('q', data.message || 'حدث خطأ أثناء حفظ السؤال', false);
-                    }
-                } catch (err) {
-                    showAlert('q', 'حدث خطأ أثناء حفظ السؤال', false);
-                }
+            showLoading('حفظ...', 500, async () => {
+                const res = await (await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section: qSection.value, type: qType.value, model: qModel.value, image: qImage.value || null, score: qScore.value, question: qText.value, options: [qA.value, qB.value, qC.value, qD.value], correct_answer: qCorrect.value }) })).json();
+                if(res.success) { showAlert('q', res.message, true); questionForm.reset(); document.getElementById('addImagePreviewContainer').innerHTML = ''; updateModelDropdowns(); loadAdminStats(); }
+                else showAlert('q', res.message, false);
             });
         });
 
         document.getElementById('qiyasQuestionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const modelVal = qiyasModelNum.value;
-            if(!modelVal) {
-                showAlert('qiyas-q', '⚠️ لا توجد نماذج مضافة لاختبار قياس في هذا المكان!', false);
-                return;
-            }
-            showLoading('جاري حفظ سؤال قياس...', 500, async () => {
-                try {
-                    const res = await fetch('/api/add-question', { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ 
-                            section: qiyasSection.value, 
-                            type: 'qiyas_simulation', 
-                            model: modelVal,
-                            image: qiyasImage.value || null,
-                            score: qiyasScore.value,
-                            question: qiyasText.value, 
-                            options: [qiyasA.value, qiyasB.value, qiyasC.value, qiyasD.value], 
-                            correct_answer: qiyasCorrect.value 
-                        }) 
-                    });
-                    const data = await res.json();
-                    if(data.success) { 
-                        showAlert('qiyas-q', 'تم حفظ سؤال قياس المحاكي بنجاح! 🎯', true); 
-                        qiyasQuestionForm.reset(); 
-                        document.getElementById('qiyasImagePreviewContainer').innerHTML = '';
-                        updateQiyasModelDropdowns();
-                        loadAdminStats();
-                    } else {
-                        showAlert('qiyas-q', data.message || 'حدث خطأ أثناء الحفظ', false);
-                    }
-                } catch (err) {
-                    showAlert('qiyas-q', 'حدث خطأ في الاتصال بالخادم', false);
-                }
+            showLoading('حفظ...', 500, async () => {
+                const res = await (await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section: qiyasSection.value, type: 'qiyas_simulation', model: qiyasModelNum.value, image: qiyasImage.value || null, score: qiyasScore.value, question: qiyasText.value, options: [qiyasA.value, qiyasB.value, qiyasC.value, qiyasD.value], correct_answer: qiyasCorrect.value }) })).json();
+                if(res.success) { showAlert('qiyas-q', 'تم الحفظ بنجاح! 🎯', true); qiyasQuestionForm.reset(); document.getElementById('qiyasImagePreviewContainer').innerHTML = ''; updateQiyasModelDropdowns(); loadAdminStats(); }
+                else showAlert('qiyas-q', res.message, false);
             });
         });
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
-            const isAuth = checkAuth();
-            const lastView = sessionStorage.getItem('currentView') || (isAuth ? 'student' : 'landing');
-            switchView(lastView);
+            switchView(sessionStorage.getItem('currentView') || (checkAuth() ? 'student' : 'landing'));
         });
     </script>
 </body>
