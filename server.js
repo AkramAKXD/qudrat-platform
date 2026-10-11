@@ -10,11 +10,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// رابط الاتصال بقاعدة بيانات MongoDB Atlas
-const MONGO_URI = 'mongodb+srv://bydakrm767_db_user:xjkZUKddqm12a6jU@cluster0.vneutrw.mongodb.net/?appName=Cluster0';
+// رابط الاتصال بقاعدة بيانات MongoDB Atlas (يقرأ من راندر أو يستخدم الرابط المباشر)
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://bydakrm767_db_user:xjkZUKddqm12a6jU@cluster0.vneutrw.mongodb.net/?appName=Cluster0';
 
-// الاتصال بقاعدة البيانات
-mongoose.connect(MONGO_URI)
+// الاتصال بقاعدة البيانات مع إعدادات الاستقرار
+mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000
+})
     .then(() => console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!'))
     .catch(err => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err));
 
@@ -97,8 +99,8 @@ app.post('/api/register', async (req, res) => {
 
         res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
     } catch (error) {
-        console.error('❌ Register Error Details:', error); // طباعة الخطأ بالتفصيل في الـ Terminal
-        res.json({ success: false, message: '❌ حدث خطأ في الخادم: ' + error.message });
+        console.error('❌ Register Error Details:', error);
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
 
@@ -353,7 +355,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم ونقله للمكان الجديد)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم وإزالته من صفحة إدارة النماذج)
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -428,21 +430,24 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
         await ModelStatus.deleteOne({ uniqueKey: new RegExp(`_${oldModelNum}$`) });
 
-        res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
+        res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق في إدارة النماذج وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
     } catch (e) {
         console.error('❌ Edit Model Full Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
     }
 });
 
-// جلب المستخدمين الخاص بلوحة تحكم المشرف
+// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
 app.post('/api/admin/users', async (req, res) => {
     try {
         const { email } = req.body;
         const adminUser = await User.findOne({ email: (email || '').trim().toLowerCase(), role: 'admin' });
         
         if (!adminUser) {
-            return res.json({ success: false, message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' });
+            return res.json({ 
+                success: false, 
+                message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' 
+            });
         }
         
         const users = await User.find({});
@@ -461,7 +466,7 @@ app.post('/api/admin/users', async (req, res) => {
     }
 });
 
-// حذف الحساب من قبل المشرف
+// مسار حذف الحساب من قبل المشرف
 app.post('/api/admin/delete-user', async (req, res) => {
     try {
         const { adminEmail, userEmailToDelete } = req.body;
@@ -563,7 +568,6 @@ app.post('/api/admin/toggle-model', async (req, res) => {
         }
 
         if (!section || !uniqueKey) {
-            console.error('❌ Toggle Model Error: Missing data');
             return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
         }
 
@@ -586,5 +590,5 @@ app.post('/api/admin/toggle-model', async (req, res) => {
 
 // تشغيل الخادم
 app.listen(PORT, () => {
-    console.log(`🚀 السيرفر يعمل بكفاءة ودون فقدان للبيانات على الرابط: http://localhost:${PORT}`);
+    console.log(`🚀 السيرفر يعمل بكفاءة على الرابط: http://localhost:${PORT}`);
 });
