@@ -338,27 +338,20 @@ app.post('/api/add-custom-model', async (req, res) => {
     }
 });
 
-// حذف النموذج المحدد بدقة تامة باستخدام الـ Key الفريد ورقم النموذج في سياقه الصحيح
+// حذف النموذج المحدد بدقة تامة باستخدام الـ Key الفريد
 app.post('/api/admin/delete-model', async (req, res) => {
     try {
         const { modelKey, modelNumber } = req.body;
-        
-        // التحليل الدقيق لاستخراج القسم والنوع ورقم النموذج الحقيقي لمنع الحذف العشوائي
-        let targetSec = '', targetType = '', targetNum = Number(modelNumber);
         if (modelKey) {
             const parts = modelKey.split('_');
-            targetNum = Number(parts.pop());
-            targetType = parts.pop();
-            targetSec = parts.join('_');
+            const targetNum = Number(parts.pop());
+            const targetType = parts.pop();
+            const targetSec = parts.join('_');
             
-            // حذف المفتاح المحدد للنموذج حصرياً
             await CustomModel.deleteOne({ key: modelKey });
             await ModelStatus.deleteOne({ uniqueKey: modelKey });
-            
-            // حذف الأسئلة التي تطابق هذا القسم والنوع والرقم المحددين تماماً فقط
             await Question.deleteMany({ section: targetSec, type: targetType, model: targetNum });
         } else if (modelNumber) {
-            // الاحتياط في حال لم يُرسل الـ Key
             await CustomModel.deleteMany({ key: new RegExp(`_${modelNumber}$`) });
             await Question.deleteMany({ model: Number(modelNumber) });
         }
@@ -370,7 +363,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// تعديل ونقل النموذج كلياً وآمناً (بدون أي تداخل بين الأقسام)
+// تعديل ونقل النموذج كلياً وحذفه من المكان القديم بدقة تامة ومنع النسخ المزدوج
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -385,7 +378,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         oldType = oldParts.pop();
         oldSec = oldParts.join('_');
 
-        // تحديد بادئة القسم والنوع الجديد بدقة
+        // تحديد بادئة القسم والنوع الجديد بدقة مطلقة
         let targetSectionPrefix = '';
         let updatedSection = 'quant';
         let updatedType = 'practice';
@@ -417,14 +410,14 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         });
         const assignedModelNum = maxNum + 1;
 
-        // 1. حذف النموذج القديم من جدول النماذج المخصصة باستخدام الـ oldKey الدقيق حصرياً
+        // 1. حذف النموذج القديم تماماً من جدول النماذج المخصصة باستخدام الـ oldKey الدقيق حصرياً
         await CustomModel.deleteOne({ key: oldKey });
 
         // 2. إنشاء المفتاح الجديد بالرقم التسلسلي الجديد في القسم المستهدف
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
         await CustomModel.create({ key: newKey, name: newName.trim() });
 
-        // 3. نقل الأسئلة الخاصة بهذا النموذج القديم فقط إلى القسم والـ model الجديد بدقة تامة
+        // 3. نقل الأسئلة الخاصة بهذا النموذج القديم فقط إلى القسم والـ model الجديد بدقة تامة وحذفها من القديم
         await Question.updateMany(
             { section: oldSec, type: oldType, model: oldModelNum },
             { section: updatedSection, type: updatedType, model: assignedModelNum }
@@ -433,7 +426,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         // 4. حذف حالة النموذج القديم فقط
         await ModelStatus.deleteOne({ uniqueKey: oldKey });
 
-        res.json({ success: true, message: `✅ تم نقل النموذج بنجاح من مكانه القديم وإضافته للقسم الجديد برقم تسلسلي (${assignedModelNum})!` });
+        res.json({ success: true, message: `✅ تم نقل النموذج بنجاح كلي (حذف من القديم وأضيف للجديد برقم ${assignedModelNum})!` });
     } catch (e) {
         console.error('❌ Edit Model Full Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
