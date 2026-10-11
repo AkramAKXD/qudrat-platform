@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,185 +10,180 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// مسارات ملفات البيانات
-const USERS_FILE = path.join(__dirname, 'users.json');
-const QUESTIONS_FILE = path.join(__dirname, 'questions.json');
-const MODELS_STATUS_FILE = path.join(__dirname, 'models_status.json');
-const CUSTOM_MODELS_FILE = path.join(__dirname, 'custom_models.json');
+// رابط الاتصال بقاعدة بيانات MongoDB Atlas
+const MONGO_URI = 'mongodb+srv://bydakrm767_db_user:xjkZUKddqm12a6jU@cluster0.vneutrw.mongodb.net/?appName=Cluster0';
 
-// دوال قراءة وكتابة ملفات JSON مع معالجة الأخطاء
-function readJsonFile(filePath, defaultValue = []) {
+// الاتصال بقاعدة البيانات
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!'))
+    .catch(err => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err));
+
+// ==================== تعريف النماذج (Schemas) في قاعدة البيانات ====================
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    pass: { type: String, required: true },
+    role: { type: String, default: 'student' }
+});
+const User = mongoose.model('User', userSchema);
+
+const questionSchema = new mongoose.Schema({
+    id: Number,
+    section: String,
+    type: String,
+    model: Number,
+    score: Number,
+    question: String,
+    options: [String],
+    correct_answer: String,
+    image: String
+});
+const Question = mongoose.model('Question', questionSchema);
+
+const customModelSchema = new mongoose.Schema({
+    key: { type: String, unique: true },
+    name: String
+});
+const CustomModel = mongoose.model('CustomModel', customModelSchema);
+
+const modelStatusSchema = new mongoose.Schema({
+    uniqueKey: { type: String, unique: true },
+    active: Boolean
+});
+const ModelStatus = mongoose.model('ModelStatus', modelStatusSchema);
+
+// تهيئة حساب المشرف الافتراضي عند تشغيل السيرفر لأول مرة
+async function initAdmin() {
     try {
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), 'utf8');
+        const adminEmail = 'bydakrm767@gmail.com';
+        const existingAdmin = await User.findOne({ email: adminEmail });
+        if (!existingAdmin) {
+            await User.create({
+                name: 'أكرم عبيد',
+                email: adminEmail,
+                pass: 'Zain@123',
+                role: 'admin'
+            });
+            console.log('👑 تم إنشاء حساب المشرف الافتراضي بنجاح.');
         }
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error(`Error reading ${filePath}:`, error.message);
-        return defaultValue;
+    } catch (e) {
+        console.error('Error initializing admin:', e);
     }
 }
-
-function writeJsonFile(filePath, data) {
-    try {
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-        console.error(`Error writing ${filePath}:`, error.message);
-    }
-}
-
-// تهيئة الملفات عند بدء التشغيل
-if (!fs.existsSync(USERS_FILE)) {
-    writeJsonFile(USERS_FILE, [
-        { name: 'أكرم عبيد', email: 'bydakrm767@gmail.com', pass: 'Zain@123', role: 'admin' }
-    ]);
-}
-if (!fs.existsSync(QUESTIONS_FILE)) {
-    writeJsonFile(QUESTIONS_FILE, []);
-}
-if (!fs.existsSync(MODELS_STATUS_FILE)) {
-    writeJsonFile(MODELS_STATUS_FILE, {});
-}
-if (!fs.existsSync(CUSTOM_MODELS_FILE)) {
-    writeJsonFile(CUSTOM_MODELS_FILE, {});
-}
+initAdmin();
 
 // ==================== مسارات الـ API ====================
 
 // تسجيل حساب جديد
-app.post('/api/register', (req, res) => {
-    const { name, email, pass } = req.body;
-    if (!name || !email || !pass) {
-        return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول المطلوبة!' });
+app.post('/api/register', async (req, res) => {
+    try {
+        const { name, email, pass } = req.body;
+        if (!name || !email || !pass) {
+            return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول المطلوبة!' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const existingUser = await User.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقاً!' });
+        }
+
+        await User.create({
+            name: name.trim(),
+            email: normalizedEmail,
+            pass,
+            role: 'student'
+        });
+
+        res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
-
-    const users = readJsonFile(USERS_FILE);
-    const normalizedEmail = email.trim().toLowerCase();
-
-    if (users.find(u => u.email.toLowerCase() === normalizedEmail)) {
-        return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقاً!' });
-    }
-
-    users.push({ 
-        name: name.trim(), 
-        email: normalizedEmail, 
-        pass, 
-        role: 'student' 
-    });
-    
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
 });
 
 // تسجيل الدخول
-app.post('/api/login', (req, res) => {
-    const { email, pass } = req.body;
-    if (!email || !pass) {
-        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور!' });
-    }
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, pass } = req.body;
+        if (!email || !pass) {
+            return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور!' });
+        }
 
-    const users = readJsonFile(USERS_FILE);
-    const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.pass === pass);
-    
-    if (!user) {
-        return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
+        const user = await User.findOne({ 
+            email: email.trim().toLowerCase(), 
+            pass: pass 
+        });
+
+        if (!user) {
+            return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
+        }
+
+        res.json({ 
+            success: true, 
+            name: user.name, 
+            role: user.role, 
+            email: user.email 
+        });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
-    
-    res.json({ 
-        success: true, 
-        name: user.name, 
-        role: user.role, 
-        email: user.email 
-    });
 });
 
 // استعادة / تحديث كلمة المرور
-app.post('/api/reset-password', (req, res) => {
-    const { email, newPass } = req.body;
-    if (!email || !newPass) {
-        return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور الجديدة!' });
-    }
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { email, newPass } = req.body;
+        if (!email || !newPass) {
+            return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور الجديدة!' });
+        }
 
-    const users = readJsonFile(USERS_FILE);
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    
-    if (userIndex === -1) {
-        return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
+        const user = await User.findOne({ email: email.trim().toLowerCase() });
+        if (!user) {
+            return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
+        }
+
+        user.pass = newPass;
+        await user.save();
+        res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
-    
-    users[userIndex].pass = newPass;
-    writeJsonFile(USERS_FILE, users);
-    res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
 });
 
 // جلب جميع الأسئلة
-app.get('/api/questions', (req, res) => {
-    const questions = readJsonFile(QUESTIONS_FILE);
-    res.json(questions);
+app.get('/api/questions', async (req, res) => {
+    try {
+        const questions = await Question.find({});
+        res.json(questions);
+    } catch (error) {
+        res.json([]);
+    }
 });
 
 // إضافة سؤال جديد
-app.post('/api/add-question', (req, res) => {
-    const { section, type, model, score, question, options, correct_answer, image } = req.body;
-    const modelNum = Number(model);
-    
-    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-    let modelExists = false;
-
-    if (type === 'qiyas_simulation') {
-        if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
-    } else {
-        if (customModels[`${section}_${type}_${modelNum}`]) {
-            modelExists = true;
-        }
-    }
-
-    if (!modelExists) {
-        return res.json({ success: false, message: '⚠️ لا توجد نماذج في المكان المختار أو النموذج غير مُنشأ مسبقاً!' });
-    }
-
-    const questions = readJsonFile(QUESTIONS_FILE);
-    questions.push({ 
-        id: questions.length > 0 ? questions[questions.length - 1].id + 1 : 1, 
-        section: section || "quant", 
-        type: type || 'practice', 
-        model: modelNum, 
-        score: Number(score) || 1,
-        question, 
-        options, 
-        correct_answer, 
-        image: image || null 
-    });
-    
-    writeJsonFile(QUESTIONS_FILE, questions);
-    res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
-});
-
-// تعديل وحفظ السؤال
-app.post('/api/edit-question', (req, res) => {
-    const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
-    
-    if (index !== undefined && index >= 0 && index < questions.length) {
-        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-        let modelExists = false;
+app.post('/api/add-question', async (req, res) => {
+    try {
+        const { section, type, model, score, question, options, correct_answer, image } = req.body;
         const modelNum = Number(model);
 
+        const customModels = await CustomModel.find({});
+        const customModelsMap = {};
+        customModels.forEach(m => customModelsMap[m.key] = m.name);
+
+        let modelExists = false;
         if (type === 'qiyas_simulation') {
-            if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
+            if (customModelsMap[`qiyas_simulation_${modelNum}`]) modelExists = true;
         } else {
-            if (customModels[`${section}_${type}_${modelNum}`]) {
-                modelExists = true;
-            }
+            if (customModelsMap[`${section}_${type}_${modelNum}`]) modelExists = true;
         }
 
         if (!modelExists) {
-            return res.json({ success: false, message: '⚠️ عذراً، لا توجد نماذج في المكان المختار لتوجيه السؤال إليها!' });
+            return res.json({ success: false, message: '⚠️ لا توجد نماذج في المكان المختار أو النموذج غير مُنشأ مسبقاً!' });
         }
 
-        questions[index] = {
-            id: questions[index].id, 
+        const count = await Question.countDocuments();
+        await Question.create({
+            id: count > 0 ? count + 1 : 1,
             section: section || "quant",
             type: type || 'practice',
             model: modelNum,
@@ -197,258 +192,301 @@ app.post('/api/edit-question', (req, res) => {
             options,
             correct_answer,
             image: image || null
-        };
-        
-        writeJsonFile(QUESTIONS_FILE, questions);
-        return res.json({ success: true, message: '✏️ تم تعديل وحفظ السؤال بنجاح!' });
+        });
+
+        res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
+    } catch (error) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء حفظ السؤال' });
     }
-    res.json({ success: false, message: '❌ السؤال غير موجود!' });
+});
+
+// تعديل وحفظ السؤال
+app.post('/api/edit-question', async (req, res) => {
+    try {
+        const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
+        const questions = await Question.find({});
+        
+        if (index !== undefined && index >= 0 && index < questions.length) {
+            const targetQuestion = questions[index];
+            const customModels = await CustomModel.find({});
+            const customModelsMap = {};
+            customModels.forEach(m => customModelsMap[m.key] = m.name);
+
+            let modelExists = false;
+            const modelNum = Number(model);
+            if (type === 'qiyas_simulation') {
+                if (customModelsMap[`qiyas_simulation_${modelNum}`]) modelExists = true;
+            } else {
+                if (customModelsMap[`${section}_${type}_${modelNum}`]) modelExists = true;
+            }
+
+            if (!modelExists) {
+                return res.json({ success: false, message: '⚠️ عذراً، لا توجد نماذج في المكان المختار لتوجيه السؤال إليها!' });
+            }
+
+            targetQuestion.section = section || "quant";
+            targetQuestion.type = type || 'practice';
+            targetQuestion.model = modelNum;
+            targetQuestion.score = Number(score) || 1;
+            targetQuestion.question = question;
+            targetQuestion.options = options;
+            targetQuestion.correct_answer = correct_answer;
+            targetQuestion.image = image || null;
+
+            await targetQuestion.save();
+            return res.json({ success: true, message: '✏️ تم تعديل وحفظ السؤال بنجاح!' });
+        }
+        res.json({ success: false, message: '❌ السؤال غير موجود!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء تعديل السؤال' });
+    }
 });
 
 // نقل السؤال إلى نموذج آخر محدد
-app.post('/api/move-question', (req, res) => {
-    const { index, section, type, model } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
+app.post('/api/move-question', async (req, res) => {
+    try {
+        const { index, section, type, model } = req.body;
+        const questions = await Question.find({});
 
-    if (index !== undefined && index >= 0 && index < questions.length) {
-        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-        let modelExists = false;
-        const modelNum = Number(model);
+        if (index !== undefined && index >= 0 && index < questions.length) {
+            const targetQuestion = questions[index];
+            const customModels = await CustomModel.find({});
+            const customModelsMap = {};
+            customModels.forEach(m => customModelsMap[m.key] = m.name);
 
-        if (type === 'qiyas_simulation') {
-            if (customModels[`qiyas_simulation_${modelNum}`]) modelExists = true;
-        } else {
-            if (customModels[`${section}_${type}_${modelNum}`]) {
-                modelExists = true;
+            let modelExists = false;
+            const modelNum = Number(model);
+            if (type === 'qiyas_simulation') {
+                if (customModelsMap[`qiyas_simulation_${modelNum}`]) modelExists = true;
+            } else {
+                if (customModelsMap[`${section}_${type}_${modelNum}`]) modelExists = true;
             }
+
+            if (!modelExists) {
+                return res.json({ success: false, message: '⚠️ لا يوجد نموذج مضاف في المكان المختار لتتمكن من نقل السؤال إليه!' });
+            }
+
+            targetQuestion.section = section;
+            targetQuestion.type = type;
+            targetQuestion.model = modelNum;
+
+            await targetQuestion.save();
+            return res.json({ success: true, message: '🚚 تم نقل السؤال بنجاح إلى المكان المطلوب!' });
         }
-
-        if (!modelExists) {
-            return res.json({ success: false, message: '⚠️ لا يوجد نموذج مضاف في المكان المختار لتتمكن من نقل السؤال إليه!' });
-        }
-
-        questions[index].section = section;
-        questions[index].type = type;
-        questions[index].model = modelNum;
-
-        writeJsonFile(QUESTIONS_FILE, questions);
-        return res.json({ success: true, message: '🚚 تم نقل السؤال بنجاح إلى المكان المطلوب!' });
+        res.json({ success: false, message: '❌ السؤال غير موجود!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء النقل' });
     }
-    res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
 // حذف سؤال بواسطة الـ Index
-app.post('/api/delete-question', (req, res) => {
-    const { index } = req.body;
-    const questions = readJsonFile(QUESTIONS_FILE);
-    
-    if (index !== undefined && index >= 0 && index < questions.length) {
-        questions.splice(index, 1);
-        writeJsonFile(QUESTIONS_FILE, questions);
-        return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
+app.post('/api/delete-question', async (req, res) => {
+    try {
+        const { index } = req.body;
+        const questions = await Question.find({});
+        
+        if (index !== undefined && index >= 0 && index < questions.length) {
+            await questions[index].deleteOne();
+            return res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
+        }
+        res.json({ success: false, message: '❌ السؤال غير موجود!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
-    res.json({ success: false, message: '❌ السؤال غير موجود!' });
 });
 
 // جلب النماذج المخصصة والمسميات
-app.get('/api/custom-models', (req, res) => {
-    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-    res.json({ success: true, models: customModels });
+app.get('/api/custom-models', async (req, res) => {
+    try {
+        const customModels = await CustomModel.find({});
+        const modelsMap = {};
+        customModels.forEach(m => modelsMap[m.key] = m.name);
+        res.json({ success: true, models: modelsMap });
+    } catch (e) {
+        res.json({ success: true, models: {} });
+    }
 });
 
 // إضافة وتسمية نموذج جديد
-app.post('/api/add-custom-model', (req, res) => {
-    const { category, modelNumber, customName } = req.body;
-    if (!category || !modelNumber || !customName) {
-        return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول!' });
-    }
-    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-    const key = `${category}_${modelNumber}`;
+app.post('/api/add-custom-model', async (req, res) => {
+    try {
+        const { category, modelNumber, customName } = req.body;
+        if (!category || !modelNumber || !customName) {
+            return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول!' });
+        }
+        const key = `${category}_${modelNumber}`;
 
-    if (customModels[key]) {
-        return res.json({ success: false, message: '⚠️ هذا رقم النموذج موجود مسبقاً في هذا القسم والنوع!' });
-    }
+        const existing = await CustomModel.findOne({ key });
+        if (existing) {
+            return res.json({ success: false, message: '⚠️ هذا رقم النموذج موجود مسبقاً في هذا القسم والنوع!' });
+        }
 
-    customModels[key] = customName.trim();
-    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-    res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
+        await CustomModel.create({ key, name: customName.trim() });
+        res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء حفظ النموذج' });
+    }
 });
 
 // حذف النموذج بشكل كامل مع إزالة الأسئلة المرتبطة به
-app.post('/api/admin/delete-model', (req, res) => {
-    const { modelKey, modelNumber } = req.body;
-    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+app.post('/api/admin/delete-model', async (req, res) => {
+    try {
+        const { modelKey, modelNumber } = req.body;
+        if (modelKey) {
+            await CustomModel.deleteOne({ key: modelKey });
+        }
+        await CustomModel.deleteMany({ key: new RegExp(`_${modelNumber}$`) });
+        await Question.deleteMany({ model: Number(modelNumber) });
 
-    if (modelKey && customModels[modelKey]) {
-        delete customModels[modelKey];
-    } else {
-        Object.keys(customModels).forEach(k => {
-            if (k.endsWith(`_${modelNumber}`)) {
-                delete customModels[k];
+        res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
+    }
+});
+
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم ونقله للمكان الجديد)
+app.post('/api/admin/edit-model-full', async (req, res) => {
+    try {
+        const { oldKey, modelNumber, newName, newCategory } = req.body;
+        if (!oldKey || !newName || !newCategory) {
+            return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
+        }
+
+        const allCustomModels = await CustomModel.find({});
+        const customModelsMap = {};
+        allCustomModels.forEach(m => customModelsMap[m.key] = m.name);
+
+        let targetSectionPrefix = '';
+        let updatedSection = 'quant';
+        let updatedType = 'practice';
+
+        if (newCategory.startsWith('quant')) {
+            updatedSection = 'quant';
+            updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
+            targetSectionPrefix = newCategory.includes('simulation') ? 'quant_simulation_' : 'quant_practice_';
+        } else if (newCategory.startsWith('verbal')) {
+            updatedSection = 'verbal';
+            updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
+            targetSectionPrefix = newCategory.includes('simulation') ? 'verbal_simulation_' : 'verbal_practice_';
+        } else if (newCategory.startsWith('qiyas')) {
+            updatedSection = 'quant';
+            updatedType = 'qiyas_simulation';
+            targetSectionPrefix = 'qiyas_simulation_';
+        }
+
+        let maxNum = 0;
+        Object.keys(customModelsMap).forEach(k => {
+            if (k.startsWith(targetSectionPrefix)) {
+                const numPart = Number(k.split('_').pop());
+                if (!isNaN(numPart) && numPart > maxNum) {
+                    maxNum = numPart;
+                }
             }
         });
+        const assignedModelNum = maxNum + 1;
+
+        await CustomModel.deleteOne({ key: oldKey });
+        await CustomModel.deleteMany({ key: new RegExp(`_${modelNumber}$`) });
+
+        const newKey = `${targetSectionPrefix}${assignedModelNum}`;
+        await CustomModel.create({ key: newKey, name: newName.trim() });
+
+        let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
+        const parts = oldKey.split('_');
+        if (oldKey.startsWith('qiyas_simulation_')) {
+            oldSec = 'quant';
+            oldType = 'qiyas_simulation';
+            oldModelNum = Number(parts[parts.length - 1]);
+        } else {
+            oldSec = parts[0];
+            oldType = parts[1];
+            oldModelNum = Number(parts[parts.length - 1]);
+        }
+
+        await Question.updateMany(
+            { 
+                $or: [
+                    { section: oldSec, type: oldType, model: oldModelNum },
+                    { type: 'qiyas_simulation', model: oldModelNum }
+                ]
+            },
+            { 
+                section: updatedSection, 
+                type: updatedType, 
+                model: assignedModelNum 
+            }
+        );
+
+        await ModelStatus.deleteOne({ uniqueKey: new RegExp(`_${oldModelNum}$`) });
+
+        res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
     }
-    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-
-    let questions = readJsonFile(QUESTIONS_FILE);
-    questions = questions.filter(q => Number(q.model) !== Number(modelNumber));
-    writeJsonFile(QUESTIONS_FILE, questions);
-
-    res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (مع حذفه تماماً من مكانه القديم وإزالته من صفحة إدارة النماذج)
-app.post('/api/admin/edit-model-full', (req, res) => {
-    const { oldKey, modelNumber, newName, newCategory } = req.body;
-    if (!oldKey || !newName || !newCategory) {
-        return res.json({ success: false, message: '⚠️ بيانات غير مكتملة!' });
-    }
-
-    const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
-    
-    let targetSectionPrefix = '';
-    let updatedSection = 'quant';
-    let updatedType = 'practice';
-
-    if (newCategory.startsWith('quant')) {
-        updatedSection = 'quant';
-        updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
-        targetSectionPrefix = newCategory.includes('simulation') ? 'quant_simulation_' : 'quant_practice_';
-    } else if (newCategory.startsWith('verbal')) {
-        updatedSection = 'verbal';
-        updatedType = newCategory.includes('simulation') ? 'simulation' : 'practice';
-        targetSectionPrefix = newCategory.includes('simulation') ? 'verbal_simulation_' : 'verbal_practice_';
-    } else if (newCategory.startsWith('qiyas')) {
-        updatedSection = 'quant';
-        updatedType = 'qiyas_simulation';
-        targetSectionPrefix = 'qiyas_simulation_';
-    }
-
-    // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تسلسلي جديد تلقائياً
-    let maxNum = 0;
-    Object.keys(customModels).forEach(k => {
-        if (k.startsWith(targetSectionPrefix)) {
-            const numPart = Number(k.split('_').pop());
-            if (!isNaN(numPart) && numPart > maxNum) {
-                maxNum = numPart;
-            }
+// جلب المستخدمين الخاص بلوحة تحكم المشرف
+app.post('/api/admin/users', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const adminUser = await User.findOne({ email: (email || '').trim().toLowerCase(), role: 'admin' });
+        
+        if (!adminUser) {
+            return res.json({ success: false, message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' });
         }
-    });
-    const assignedModelNum = maxNum + 1;
-
-    // 1. حذف المفتاح القديم بالكامل من ملف النماذج المخصصة لكي يختفي من القائمة القديمة
-    if (customModels[oldKey]) {
-        delete customModels[oldKey];
-    }
-    // إزالة أي مفتاح مطابق قديم
-    Object.keys(customModels).forEach(k => {
-        if (k === oldKey || k.endsWith(`_${modelNumber}`)) {
-            // تحقق من أنه نفس المفتاح القديم المراد نقله
-            if (k.startsWith(oldKey.split('_')[0])) {
-                delete customModels[k];
-            }
-        }
-    });
-
-    // 2. حفظ النموذج بالاسم الجديد والرقم التسلسلي الجديد في القسم المستهدف
-    const newKey = `${targetSectionPrefix}${assignedModelNum}`;
-    customModels[newKey] = newName.trim();
-    writeJsonFile(CUSTOM_MODELS_FILE, customModels);
-
-    // 3. تحليل وتحديث الأسئلة التابعة لهذا النموذج لنقلها للمكان الجديد بالرقم الجديد
-    let oldSec = 'quant', oldType = 'practice', oldModelNum = Number(modelNumber);
-    const parts = oldKey.split('_');
-    if (oldKey.startsWith('qiyas_simulation_')) {
-        oldSec = 'quant';
-        oldType = 'qiyas_simulation';
-        oldModelNum = Number(parts[parts.length - 1]);
-    } else {
-        oldSec = parts[0];
-        oldType = parts[1];
-        oldModelNum = Number(parts[parts.length - 1]);
-    }
-
-    const questions = readJsonFile(QUESTIONS_FILE);
-    questions.forEach(q => {
-        const isMatch = (q.section === oldSec && q.type === oldType && Number(q.model) === oldModelNum) ||
-                        (oldType === 'qiyas_simulation' && q.type === 'qiyas_simulation' && Number(q.model) === oldModelNum);
-        if (isMatch) {
-            q.section = updatedSection;
-            q.type = updatedType;
-            q.model = assignedModelNum;
-        }
-    });
-    writeJsonFile(QUESTIONS_FILE, questions);
-
-    // 4. مسح حالة النموذج القديم من ملف الـ status لضمان عدم ظهوره في القسم القديم نهائياً
-    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    Object.keys(modelsStatus).forEach(stKey => {
-        if (stKey.includes(`_${oldModelNum}`) || stKey === oldKey) {
-            delete modelsStatus[stKey];
-        }
-    });
-    writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
-
-    res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق في إدارة النماذج وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
-});
-
-// مسار جلب المستخدمين الخاص بلوحة تحكم المشرف
-app.post('/api/admin/users', (req, res) => {
-    const { email } = req.body;
-    const users = readJsonFile(USERS_FILE);
-    
-    const adminUser = users.find(u => u.email.toLowerCase() === (email || '').trim().toLowerCase() && u.role === 'admin');
-    
-    if (!adminUser) {
-        return res.json({ 
-            success: false, 
-            message: '⛔ ليس لديك صلاحية المشرف للوصول إلى هذه البيانات!' 
+        
+        const users = await User.find({});
+        res.json({ 
+            success: true, 
+            users: users.map(u => ({ 
+                name: u.name, 
+                email: u.email, 
+                pass: u.pass, 
+                role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
+            })) 
         });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
-    
-    res.json({ 
-        success: true, 
-        users: users.map(u => ({ 
-            name: u.name, 
-            email: u.email, 
-            pass: u.pass, 
-            role: u.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)' 
-        })) 
-    });
 });
 
-// مسار حذف الحساب من قبل المشرف
-app.post('/api/admin/delete-user', (req, res) => {
-    const { adminEmail, userEmailToDelete } = req.body;
-    const users = readJsonFile(USERS_FILE);
+// حذف الحساب من قبل المشرف
+app.post('/api/admin/delete-user', async (req, res) => {
+    try {
+        const { adminEmail, userEmailToDelete } = req.body;
+        const adminUser = await User.findOne({ email: (adminEmail || '').trim().toLowerCase(), role: 'admin' });
+        
+        if (!adminUser) {
+            return res.json({ success: false, message: '⛔ ليس لديك صلاحية إجراء الحذف!' });
+        }
 
-    const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
-    if (!adminUser) {
-        return res.json({ success: false, message: '⛔ ليس لديك صلاحية إجراء الحذف!' });
-    }
+        if (adminEmail.trim().toLowerCase() === userEmailToDelete.trim().toLowerCase()) {
+            return res.json({ success: false, message: '⚠️ لا يمكنك حذف حساب المشرف الخاص بك!' });
+        }
 
-    if (adminEmail.trim().toLowerCase() === userEmailToDelete.trim().toLowerCase()) {
-        return res.json({ success: false, message: '⚠️ لا يمكنك حذف حساب المشرف الخاص بك!' });
-    }
-
-    const initialLength = users.length;
-    const filteredUsers = users.filter(u => u.email.toLowerCase() !== userEmailToDelete.trim().toLowerCase());
-
-    if (filteredUsers.length < initialLength) {
-        writeJsonFile(USERS_FILE, filteredUsers);
-        return res.json({ success: true, message: '🗑️ تم حذف الحساب بنجاح من النظام!' });
-    } else {
-        return res.json({ success: false, message: '❌ لم يتم العثور على الحساب المراد حذفه.' });
+        const result = await User.deleteOne({ email: userEmailToDelete.trim().toLowerCase() });
+        if (result.deletedCount > 0) {
+            return res.json({ success: true, message: '🗑️ تم حذف الحساب بنجاح من النظام!' });
+        } else {
+            return res.json({ success: false, message: '❌ لم يتم العثور على الحساب المراد حذفه.' });
+        }
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
 
 // ==================== مسارات إدارة النماذج (للمشرف) ====================
 
-app.get('/api/admin/models-status', (req, res) => {
+app.get('/api/admin/models-status', async (req, res) => {
     try {
-        const questions = readJsonFile(QUESTIONS_FILE);
-        const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-        const customModels = readJsonFile(CUSTOM_MODELS_FILE, {});
+        const questions = await Question.find({});
+        const statuses = await ModelStatus.find({});
+        const modelsStatusMap = {};
+        statuses.forEach(s => modelsStatusMap[s.uniqueKey] = s.active);
+
+        const customModels = await CustomModel.find({});
+        const customModelsMap = {};
+        customModels.forEach(m => customModelsMap[m.key] = m.name);
 
         const result = {
             quant: {},
@@ -456,8 +494,7 @@ app.get('/api/admin/models-status', (req, res) => {
             mock: {}
         };
 
-        // بناء القائمة بناءً على النماذج الموجودة حصرياً في ملف custom_models لتجنب أي استنتاج خاطئ للنماذج القديمة
-        Object.keys(customModels).forEach(key => {
+        Object.keys(customModelsMap).forEach(key => {
             const lastUnderscoreIdx = key.lastIndexOf('_');
             const catPart = key.substring(0, lastUnderscoreIdx);
             const modelNum = Number(key.substring(lastUnderscoreIdx + 1));
@@ -475,12 +512,11 @@ app.get('/api/admin/models-status', (req, res) => {
                     categoryType: catPart,
                     customKey: key,
                     questionCount: 0,
-                    isActive: modelsStatus[uniqueModelKey]?.active ?? true
+                    isActive: modelsStatusMap[uniqueModelKey] ?? true
                 };
             }
         });
 
-        // حساب عدد الأسئلة لكل نموذج مسجل
         questions.forEach(q => {
             let sec = q.section === 'verbal' ? 'verbal' : 'quant';
             if (q.type === 'qiyas_simulation') {
@@ -504,28 +540,36 @@ app.get('/api/admin/models-status', (req, res) => {
     }
 });
 
-app.post('/api/admin/toggle-model', (req, res) => {
-    const { adminEmail, section, uniqueKey } = req.body;
-    const users = readJsonFile(USERS_FILE);
+app.post('/api/admin/toggle-model', async (req, res) => {
+    try {
+        const { adminEmail, section, uniqueKey } = req.body;
+        const adminUser = await User.findOne({ email: (adminEmail || '').trim().toLowerCase(), role: 'admin' });
+        
+        if (!adminUser) {
+            return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
+        }
 
-    const adminUser = users.find(u => u.email.toLowerCase() === (adminEmail || '').trim().toLowerCase() && u.role === 'admin');
-    if (!adminUser) {
-        return res.json({ success: false, message: '⛔ ليس لديك صلاحية لتغيير حالة النموذج!' });
+        if (!section || !uniqueKey) {
+            return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
+        }
+
+        let modelStatus = await ModelStatus.findOne({ uniqueKey });
+        const currentActive = modelStatus ? modelStatus.active : true;
+
+        if (modelStatus) {
+            modelStatus.active = !currentActive;
+            await modelStatus.save();
+        } else {
+            await ModelStatus.create({ uniqueKey, active: false });
+        }
+
+        res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
+    } catch (e) {
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
-
-    if (!section || !uniqueKey) {
-        return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
-    }
-
-    const modelsStatus = readJsonFile(MODELS_STATUS_FILE, {});
-    const currentActive = modelsStatus[uniqueKey]?.active ?? true;
-    modelsStatus[uniqueKey] = { active: !currentActive };
-    
-    writeJsonFile(MODELS_STATUS_FILE, modelsStatus);
-    res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
 });
 
 // تشغيل الخادم
 app.listen(PORT, () => {
-    console.log(`🚀 السيرفر يعمل بكفاءة على الرابط: http://localhost:${PORT}`);
+    console.log(`🚀 السيرفر يعمل بكفاءة ودون فقدان للبيانات على الرابط: http://localhost:${PORT}`);
 });
