@@ -97,7 +97,8 @@ app.post('/api/register', async (req, res) => {
 
         res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
     } catch (error) {
-        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
+        console.error('❌ Register Error Details:', error); // طباعة الخطأ بالتفصيل في الـ Terminal
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم: ' + error.message });
     }
 });
 
@@ -125,6 +126,7 @@ app.post('/api/login', async (req, res) => {
             email: user.email 
         });
     } catch (error) {
+        console.error('❌ Login Error Details:', error);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
@@ -146,6 +148,7 @@ app.post('/api/reset-password', async (req, res) => {
         await user.save();
         res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
     } catch (error) {
+        console.error('❌ Reset Password Error Details:', error);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
@@ -196,6 +199,7 @@ app.post('/api/add-question', async (req, res) => {
 
         res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
     } catch (error) {
+        console.error('❌ Add Question Error Details:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء حفظ السؤال' });
     }
 });
@@ -238,6 +242,7 @@ app.post('/api/edit-question', async (req, res) => {
         }
         res.json({ success: false, message: '❌ السؤال غير موجود!' });
     } catch (e) {
+        console.error('❌ Edit Question Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء تعديل السؤال' });
     }
 });
@@ -275,6 +280,7 @@ app.post('/api/move-question', async (req, res) => {
         }
         res.json({ success: false, message: '❌ السؤال غير موجود!' });
     } catch (e) {
+        console.error('❌ Move Question Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء النقل' });
     }
 });
@@ -291,6 +297,7 @@ app.post('/api/delete-question', async (req, res) => {
         }
         res.json({ success: false, message: '❌ السؤال غير موجود!' });
     } catch (e) {
+        console.error('❌ Delete Question Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
 });
@@ -324,6 +331,7 @@ app.post('/api/add-custom-model', async (req, res) => {
         await CustomModel.create({ key, name: customName.trim() });
         res.json({ success: true, message: '✅ تم حفظ تسمية النموذج بنجاح!' });
     } catch (e) {
+        console.error('❌ Add Custom Model Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء حفظ النموذج' });
     }
 });
@@ -340,6 +348,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
 
         res.json({ success: true, message: '🗑️ تم حذف النموذج بنجاح من النظام!' });
     } catch (e) {
+        console.error('❌ Delete Model Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
 });
@@ -421,6 +430,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
         res.json({ success: true, message: `✅ تم نقل النموذج وحذفه نهائياً من مكانه السابق وإضافته للمكان الجديد بالرقم التسلسلي (${assignedModelNum})!` });
     } catch (e) {
+        console.error('❌ Edit Model Full Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التحديث' });
     }
 });
@@ -446,6 +456,7 @@ app.post('/api/admin/users', async (req, res) => {
             })) 
         });
     } catch (e) {
+        console.error('❌ Admin Users Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
@@ -471,6 +482,7 @@ app.post('/api/admin/delete-user', async (req, res) => {
             return res.json({ success: false, message: '❌ لم يتم العثور على الحساب المراد حذفه.' });
         }
     } catch (e) {
+        console.error('❌ Delete User Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
@@ -536,6 +548,7 @@ app.get('/api/admin/models-status', async (req, res) => {
 
         res.json({ success: true, models: result });
     } catch (error) {
+        console.error('❌ Models Status Error Details:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء جلب النماذج' });
     }
 });
@@ -550,6 +563,7 @@ app.post('/api/admin/toggle-model', async (req, res) => {
         }
 
         if (!section || !uniqueKey) {
+            console.error('❌ Toggle Model Error: Missing data');
             return res.json({ success: false, message: '⚠️ بيانات النموذج غير مكتملة!' });
         }
 
@@ -565,6 +579,7 @@ app.post('/api/admin/toggle-model', async (req, res) => {
 
         res.json({ success: true, message: '✅ تم تحديث حالة النموذج بنجاح!' });
     } catch (e) {
+        console.error('❌ Toggle Model Error Details:', e);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
