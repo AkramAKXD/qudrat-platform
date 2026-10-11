@@ -355,7 +355,7 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// تعديل وتغيير نوع ونموذج الاختبار بالكامل (نقل آمن: حذف نهائي من القسم القديم وإضافة صحيحة للقسم الجديد دون التأثير على البقية)
+// تعديل وتغيير نوع ونموذج الاختبار بالكامل (نقل دقيق: حذف القديم تماماً وإضافة الجديد بالرقم التسلسلي التالي في المكان الجديد)
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -385,7 +385,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             targetSectionPrefix = 'qiyas_simulation_';
         }
 
-        // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح رقم تالي صحيح
+        // حساب أعلى رقم نموذج موجود في القسم المستهدف لمنح الرقم التسلسلي التالي الصحيح
         let maxNum = 0;
         Object.keys(customModelsMap).forEach(k => {
             if (k.startsWith(targetSectionPrefix)) {
@@ -411,16 +411,14 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             oldModelNum = Number(parts[parts.length - 1]);
         }
 
-        // 1. حذف النموذج القديم من جدول النماذج المخصصة لكي يختفي تماماً من مكانه القديم
+        // 1. حذف المفتاح القديم للنموذج المراد نقله فقط من جدول النماذج المخصصة لكي يختفي من مكانه الأول
         await CustomModel.deleteOne({ key: oldKey });
-        // حماية إضافية لحذف أي مفتاح مشابه مرتبط بهذا الرقم القديم
-        await CustomModel.deleteMany({ key: new RegExp(`_${oldModelNum}$`) });
 
         // 2. إنشاء المفتاح الجديد بالرقم التسلسلي الجديد في القسم المستهدف
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
         await CustomModel.create({ key: newKey, name: newName.trim() });
 
-        // 3. تحديث الأسئلة ونقلها للقسم الجديد والرقم الجديد
+        // 3. تحديث الأسئلة التابعة لهذا النموذج ونقلها للقسم الجديد والرقم الجديد
         await Question.updateMany(
             { 
                 $or: [
@@ -435,7 +433,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             }
         );
 
-        // 4. حذف حالة النموذج القديم
+        // 4. مسح حالة النموذج القديم فقط
         await ModelStatus.deleteOne({ uniqueKey: `${oldSec}_${oldType}_${oldModelNum}` });
         await ModelStatus.deleteOne({ uniqueKey: `qiyas_simulation_${oldModelNum}` });
 
