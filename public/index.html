@@ -350,7 +350,35 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
 @keyframes qimmaFeedback{0%{filter:brightness(1)}45%{filter:brightness(1.12)}100%{filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.q-icon,button,.app-section,#qimma-page-progress{animation:none!important;transition:none!important}}
 
-</style>
+
+        /* Learning-rich sections and a consistent, purposeful icon system */
+        .qiyas-feature-icon{background:linear-gradient(145deg,#0f766e,#14b8a6)!important;color:#fff!important;border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 24px rgba(13,148,136,.2)}
+        .qiyas-feature-icon .q-icon svg{stroke:#fff!important}
+        .learning-guide{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:center;margin:20px 0 24px;padding:22px;border:1px solid #e4eee8;border-radius:22px;background:linear-gradient(135deg,#fbfefc,#f1f8f5);box-shadow:0 12px 30px rgba(15,60,55,.05)}
+        .learning-guide h3{font-size:19px;color:#164e63;margin-bottom:9px;font-weight:900}
+        .learning-guide p{font-size:14px;line-height:1.95;color:#475569;margin-bottom:10px}
+        .learning-guide ul{padding-right:20px;color:#334155;font-size:13px;line-height:2}
+        .learning-guide-visual{min-height:180px;position:relative;overflow:hidden;border-radius:17px;background:#dbeafe}
+        .learning-guide-visual img{width:100%;height:100%;min-height:180px;object-fit:cover;display:block;transition:transform .6s ease}
+        .learning-guide:hover .learning-guide-visual img{transform:scale(1.045)}
+        .learning-guide-visual:after{content:'';position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(8,35,45,.45))}
+        .learning-guide-visual span{position:absolute;z-index:1;bottom:12px;right:14px;color:white;font-weight:800;font-size:13px}
+        .skill-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:18px 0 24px}
+        .skill-card{background:#fff;border:1px solid #e6eee9;border-radius:16px;padding:16px;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+        .skill-card:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(15,60,55,.09);border-color:#a7d9c7}
+        .skill-card h4{color:#164e63;font-size:14px;margin:8px 0 5px;font-weight:900}
+        .skill-card p{font-size:12px;line-height:1.8;color:#64748b}
+        .skill-card .skill-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#e8f7ef;color:#087f5b;font-size:20px;font-weight:900}
+        .student-quote-strip{margin:22px 0;padding:18px 20px;border-radius:18px;background:linear-gradient(115deg,#123b48,#176b64);color:#fff;display:flex;align-items:center;gap:14px;box-shadow:0 12px 26px rgba(18,59,72,.16)}
+        .student-quote-strip .quote-mark{font-size:28px;color:#d5f36a;line-height:1}
+        .student-quote-strip p{font-weight:800;line-height:1.9;font-size:14px}
+        .student-quote-strip small{display:block;color:#d2e7df;font-weight:600;margin-top:3px}
+        .motivation-box{transition:transform .25s ease,box-shadow .25s ease}
+        .motivation-box:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(146,105,10,.09)}
+        .section-big-card[aria-label*="قياس"] .section-big-icon{background:linear-gradient(145deg,#0f766e,#14b8a6)!important;color:white!important;box-shadow:0 8px 20px rgba(13,148,136,.18)}
+        @media(max-width:760px){.learning-guide{grid-template-columns:1fr}.learning-guide-visual{min-height:150px}.skill-cards{grid-template-columns:1fr}.learning-guide{padding:17px}}
+
+    </style>
 </head>
 <body id="appBody">
 
@@ -598,6 +626,11 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     </div>
                 </div>
 
+                <div class="student-quote-strip" aria-live="polite">
+                    <span class="quote-mark">❝</span>
+                    <div><p id="dailyMotivationQuote">لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.</p><small>رسالة لك: الاستمرار يصنع الفرق.</small></div>
+                </div>
+
                 <div class="student-video-card" style="margin-top: 20px;">
                     <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
                 </div>
@@ -630,9 +663,14 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             <div id="quant-page" class="app-section">
                 <h2>📐 القسم الكمي</h2>
                 <div class="section-detail-box">
-                    <h3>💡 دليل القسم:</h3>
-                    <p>يغطي هذا القسم الأساسيات الرياضية، الجبر، الهندسة، والإحصاء بأسلوب تدريبي مكثف ومبسط.</p>
+                    <h3>دليل القسم الكمي</h3>
+                    <p>يقيس القسم الكمي قدرتك على فهم العلاقات الرياضية وتحليل المعطيات واختيار الحل الأكثر كفاءة. لا تعتمد على الحفظ وحده؛ افهم الفكرة، حدّد المعطيات، ثم اختر استراتيجية الحل المناسبة.</p>
                 </div>
+                <div class="learning-guide">
+                    <div><h3>كيف تتدرّب بذكاء؟</h3><p>ابدأ بالأساسيات ثم انتقل تدريجيًا إلى الأسئلة المركبة. اكتب خطواتك عند التعلّم، وبعدها درّب نفسك على الحل الذهني وإدارة الوقت.</p><ul><li><b>الجبر:</b> المعادلات، النسب، والتناسب.</li><li><b>الهندسة:</b> الزوايا، المساحات، المحيط والحجم.</li><li><b>الإحصاء والاحتمالات:</b> المتوسط والوسيط وقراءة البيانات.</li><li><b>الاستراتيجية:</b> استبعد الخيارات غير المنطقية وتحقق من الوحدات.</li></ul></div>
+                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85" alt="معادلات وأفكار رياضية على لوحة" loading="lazy"><span>فكّر • حلّل • تحقّق</span></div>
+                </div>
+                <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">∑</div><h4>افهم النمط</h4><p>ابحث عن العلاقة بين الأرقام قبل البدء بالحساب الطويل.</p></article><article class="skill-card"><div class="skill-symbol">△</div><h4>ارسم المعطيات</h4><p>الرسم البسيط يساعد على فهم المسائل الهندسية بسرعة.</p></article><article class="skill-card"><div class="skill-symbol">✓</div><h4>راجع خطأك</h4><p>دوّن سبب الخطأ وأعد حل السؤال بعد فترة لتثبيت الفكرة.</p></article></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('quant', 'exam')" style="background: #10b981;">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب مكثف</button>
@@ -643,9 +681,14 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             <div id="verbal-page" class="app-section">
                 <h2>📚 القسم اللفظي</h2>
                 <div class="section-detail-box">
-                    <h3>💡 دليل القسم:</h3>
-                    <p>يركز على استيعاب المقروء، التناظر اللفظي، والخطأ السياقي وإكمال الجمل بثقة عالية.</p>
+                    <h3>دليل القسم اللفظي</h3>
+                    <p>يساعدك القسم اللفظي على فهم النصوص والعلاقات بين الكلمات واكتشاف المعنى الدقيق في السياق. اقرأ السؤال بعناية، واستند إلى الدليل الموجود في النص بدلًا من الاعتماد على الانطباع الأول.</p>
                 </div>
+                <div class="learning-guide">
+                    <div><h3>طوّر فهمك اللغوي خطوة بخطوة</h3><p>اقرأ يوميًا نصًا قصيرًا، واستخرج فكرته الرئيسة والكلمات الجديدة. عند حل السؤال، اسأل نفسك: ما العلاقة المطلوبة؟ وما الدليل الذي يدعم اختياري؟</p><ul><li><b>استيعاب المقروء:</b> حدّد الفكرة الرئيسة والتفاصيل والاستنتاجات.</li><li><b>التناظر اللفظي:</b> صغ العلاقة بين الكلمتين في عبارة قصيرة.</li><li><b>إكمال الجمل:</b> انتبه إلى الروابط مثل «لكن» و«لذلك».</li><li><b>الخطأ السياقي:</b> اختر الكلمة التي لا تنسجم مع معنى الجملة.</li></ul></div>
+                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1455390582262-044cnej?auto=format&fit=crop&w=900&q=85" alt="دفتر وكتب أثناء الدراسة والقراءة" loading="lazy"><span>اقرأ • اربط • استنتج</span></div>
+                </div>
+                <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">Aa</div><h4>وسّع مفرداتك</h4><p>تعلّم الكلمة ضمن جملة، ولا تكتفِ بحفظ معناها المنفرد.</p></article><article class="skill-card"><div class="skill-symbol">↔</div><h4>حدّد العلاقة</h4><p>في التناظر، عبّر عن العلاقة بوضوح قبل اختيار الإجابة.</p></article><article class="skill-card"><div class="skill-symbol">¶</div><h4>استدل من النص</h4><p>فرّق بين المعلومة الصريحة والاستنتاج الذي يدعمه النص.</p></article></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('verbal', 'exam')" style="background: #10b981;">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب مكثف</button>
@@ -1710,6 +1753,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 if(/بحث|تحقق|search|find/.test(t))return 'search';
                 if(/إحصائ|تقارير|stats|chart/.test(t))return 'chart';
                 if(/حساب|مستخدم|طلاب|أعضاء|account|user/.test(t))return 'users';
+                if(/قياس محاكي|اختبار محاكي لقياس|محاكي قياس/.test(t))return 'target';
                 if(/سؤال|أسئلة|اختبار|نموذج|quiz|question|test/.test(t))return 'file';
                 if(/صورة|ملف|image|upload/.test(t))return 'image';
                 if(/تسجيل الخروج|خروج|logout/.test(t))return 'logout';
@@ -1725,7 +1769,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 if(/قياس|هدف|قدرات|target/.test(t))return 'target';
                 if(/مساعدة|help/.test(t))return 'help';
                 if(/دخول|دخول|login/.test(t))return 'shield';
-                return 'sparkle';
+                return 'book';
             }
             const emojiRE=/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}](?:\uFE0F|\uFE0E)?(?:\u200D[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}](?:\uFE0F|\uFE0E)?)*/gu;
             function iconNode(name, label='') {
@@ -1764,6 +1808,24 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             const oldAdmin=window.openAdminTab;if(typeof oldAdmin==='function')window.openAdminTab=function(...args){window.qimmaShowTransition();return oldAdmin.apply(this,args);};
         })();
 
+
+        // Gentle rotating encouragement for students.
+        (() => {
+            const quotes = [
+                'لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.',
+                'كل سؤال تحاول فهمه اليوم يقربك خطوة من هدفك.',
+                'الخطأ ليس نهاية المحاولة؛ إنه معلومة تساعدك على التقدم.',
+                'قسّم هدفك الكبير إلى خطوات صغيرة، وابدأ بخطوة الآن.',
+                'ثقتك تنمو مع التدريب، ونتيجتك تتحسن مع الاستمرار.'
+            ];
+            let index = 0;
+            const quote = document.getElementById('dailyMotivationQuote');
+            if (quote) window.setInterval(() => {
+                index = (index + 1) % quotes.length;
+                quote.style.opacity = '0';
+                window.setTimeout(() => { quote.textContent = quotes[index]; quote.style.opacity = '1'; }, 220);
+            }, 9000);
+        })();
 
         // Subtle tactile feedback for controls; no effect on their existing actions.
         document.addEventListener('pointerdown', (event) => {
