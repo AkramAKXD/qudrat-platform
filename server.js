@@ -11,9 +11,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = process.env.MONGO_URI;
 
+// الاتصال بقاعدة البيانات
 mongoose.connection.on('connected', () => console.log('✅ MongoDB متصل'));
 mongoose.connection.on('disconnected', () => console.error('⚠️ انقطع اتصال MongoDB'));
 mongoose.connection.on('error', err => console.error('❌ MongoDB:', err.message));
+
+// ==================== نماذج قاعدة البيانات ====================
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -61,13 +64,17 @@ const attemptSchema = new mongoose.Schema({
 });
 const Attempt = mongoose.models.Attempt || mongoose.model('Attempt', attemptSchema);
 
+// ==================== إنشاء حساب المشرف ====================
+
 async function initAdmin() {
     try {
         const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
         const adminPassword = process.env.ADMIN_PASSWORD;
 
         if (!adminEmail || !adminPassword) {
-            console.log('ℹ️ لم يتم إنشاء مشرف تلقائي: عرّف ADMIN_EMAIL و ADMIN_PASSWORD إذا احتجت ذلك.');
+            console.log(
+                'ℹ️ لم يتم إنشاء مشرف تلقائي: عرّف ADMIN_EMAIL و ADMIN_PASSWORD إذا احتجت ذلك.'
+            );
             return;
         }
 
@@ -88,9 +95,7 @@ async function initAdmin() {
     }
 }
 
-// ========================================
-// التسجيل
-// ========================================
+// ==================== تسجيل حساب جديد ====================
 
 app.post('/api/register', async (req, res) => {
     try {
@@ -125,7 +130,6 @@ app.post('/api/register', async (req, res) => {
         });
     } catch (error) {
         console.error('POST /api/register:', error);
-
         res.status(500).json({
             success: false,
             message: '❌ حدث خطأ في الخادم'
@@ -133,16 +137,16 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ========================================
-// تسجيل الدخول
-// ========================================
+// ==================== تسجيل الدخول ====================
 
 app.post('/api/login', async (req, res) => {
     try {
         const { email, pass } = req.body;
 
+        const normalizedEmail = String(email || '').trim().toLowerCase();
+
         const user = await User.findOne({
-            email: email.trim().toLowerCase(),
+            email: normalizedEmail,
             pass: pass
         });
 
@@ -161,7 +165,6 @@ app.post('/api/login', async (req, res) => {
         });
     } catch (error) {
         console.error('POST /api/login:', error);
-
         res.status(500).json({
             success: false,
             message: '❌ حدث خطأ في الخادم'
@@ -169,15 +172,11 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ========================================
-// التحقق من البريد الإلكتروني
-// ========================================
+// ==================== التحقق من البريد الإلكتروني ====================
 
 app.post('/api/check-email', async (req, res) => {
     try {
-        const email = String(req.body?.email || '')
-            .trim()
-            .toLowerCase();
+        const email = String(req.body?.email || '').trim().toLowerCase();
 
         if (!email) {
             return res.status(400).json({
@@ -201,7 +200,6 @@ app.post('/api/check-email', async (req, res) => {
         });
     } catch (error) {
         console.error('POST /api/check-email:', error);
-
         return res.status(500).json({
             success: false,
             message: 'تعذر التحقق من البريد حالياً.'
@@ -209,16 +207,11 @@ app.post('/api/check-email', async (req, res) => {
     }
 });
 
-// ========================================
-// إعادة تعيين كلمة المرور
-// ========================================
+// ==================== إعادة تعيين كلمة المرور ====================
 
 app.post('/api/reset-password', async (req, res) => {
     try {
-        const email = String(req.body?.email || '')
-            .trim()
-            .toLowerCase();
-
+        const email = String(req.body?.email || '').trim().toLowerCase();
         const newPass = String(req.body?.newPass || '');
 
         if (!email || !newPass || newPass.length < 6) {
@@ -246,7 +239,6 @@ app.post('/api/reset-password', async (req, res) => {
         });
     } catch (error) {
         console.error('POST /api/reset-password:', error);
-
         res.status(500).json({
             success: false,
             message: '❌ حدث خطأ في الخادم'
@@ -254,22 +246,19 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
-// ========================================
-// جلب الأسئلة
-// ========================================
+// ==================== جلب الأسئلة ====================
 
 app.get('/api/questions', async (req, res) => {
     try {
-        res.json(await Question.find({}));
+        const questions = await Question.find({});
+        res.json(questions);
     } catch (error) {
         console.error('GET /api/questions:', error);
-        res.json([]);
+        res.status(500).json([]);
     }
 });
 
-// ========================================
-// إضافة سؤال
-// ========================================
+// ==================== إضافة سؤال ====================
 
 app.post('/api/add-question', async (req, res) => {
     try {
@@ -331,17 +320,14 @@ app.post('/api/add-question', async (req, res) => {
         });
     } catch (error) {
         console.error('POST /api/add-question:', error);
-
-        res.json({
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء حفظ السؤال'
         });
     }
 });
 
-// ========================================
-// تعديل سؤال
-// ========================================
+// ==================== تعديل سؤال ====================
 
 app.post('/api/edit-question', async (req, res) => {
     try {
@@ -383,19 +369,16 @@ app.post('/api/edit-question', async (req, res) => {
             success: false,
             message: '❌ السؤال غير موجود!'
         });
-    } catch (e) {
-        console.error('POST /api/edit-question:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/edit-question:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء تعديل السؤال'
         });
     }
 });
 
-// ========================================
-// نقل سؤال
-// ========================================
+// ==================== نقل سؤال ====================
 
 app.post('/api/move-question', async (req, res) => {
     try {
@@ -421,19 +404,16 @@ app.post('/api/move-question', async (req, res) => {
             success: false,
             message: '❌ السؤال غير موجود!'
         });
-    } catch (e) {
-        console.error('POST /api/move-question:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/move-question:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء النقل'
         });
     }
 });
 
-// ========================================
-// حذف سؤال
-// ========================================
+// ==================== حذف سؤال ====================
 
 app.post('/api/delete-question', async (req, res) => {
     try {
@@ -453,19 +433,16 @@ app.post('/api/delete-question', async (req, res) => {
             success: false,
             message: '❌ السؤال غير موجود!'
         });
-    } catch (e) {
-        console.error('POST /api/delete-question:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/delete-question:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء الحذف'
         });
     }
 });
 
-// ========================================
-// جلب النماذج المخصصة
-// ========================================
+// ==================== جلب النماذج المخصصة ====================
 
 app.get('/api/custom-models', async (req, res) => {
     try {
@@ -480,23 +457,28 @@ app.get('/api/custom-models', async (req, res) => {
             success: true,
             models: modelsMap
         });
-    } catch (e) {
-        console.error('GET /api/custom-models:', e);
-
-        res.json({
-            success: true,
+    } catch (error) {
+        console.error('GET /api/custom-models:', error);
+        res.status(500).json({
+            success: false,
             models: {}
         });
     }
 });
 
-// ========================================
-// إضافة نموذج مخصص
-// ========================================
+// ==================== إضافة نموذج مخصص ====================
 
 app.post('/api/add-custom-model', async (req, res) => {
     try {
         const { category, modelNumber, customName } = req.body;
+
+        if (!category || !modelNumber || !customName) {
+            return res.json({
+                success: false,
+                message: '⚠️ يرجى إدخال بيانات النموذج كاملة!'
+            });
+        }
+
         const key = `${category}_${modelNumber}`;
 
         if (await CustomModel.findOne({ key })) {
@@ -515,57 +497,56 @@ app.post('/api/add-custom-model', async (req, res) => {
             success: true,
             message: '✅ تم حفظ النموذج بنجاح!'
         });
-    } catch (e) {
-        console.error('POST /api/add-custom-model:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/add-custom-model:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء الحفظ'
         });
     }
 });
 
-// ========================================
-// حذف نموذج
-// ========================================
+// ==================== حذف نموذج ====================
 
 app.post('/api/admin/delete-model', async (req, res) => {
     try {
         const { modelKey } = req.body;
 
-        if (modelKey) {
-            const parts = modelKey.split('_');
-            const targetNum = Number(parts.pop());
-            const targetType = parts.pop();
-            const targetSec = parts.join('_');
-
-            await CustomModel.deleteOne({ key: modelKey });
-            await ModelStatus.deleteOne({ uniqueKey: modelKey });
-
-            await Question.deleteMany({
-                section: targetSec,
-                type: targetType,
-                model: targetNum
+        if (!modelKey) {
+            return res.status(400).json({
+                success: false,
+                message: 'بيانات النموذج غير مكتملة.'
             });
         }
+
+        const parts = modelKey.split('_');
+        const targetNum = Number(parts.pop());
+        const targetType = parts.pop();
+        const targetSec = parts.join('_');
+
+        await CustomModel.deleteOne({ key: modelKey });
+        await ModelStatus.deleteOne({ uniqueKey: modelKey });
+
+        await Question.deleteMany({
+            section: targetSec,
+            type: targetType,
+            model: targetNum
+        });
 
         res.json({
             success: true,
             message: '🗑️ تم الحذف بنجاح!'
         });
-    } catch (e) {
-        console.error('POST /api/admin/delete-model:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/admin/delete-model:', error);
+        res.status(500).json({
             success: false,
-            message: '❌ حدث خطأ أثناء حذف النموذج'
+            message: '❌ حدث خطأ أثناء الحذف'
         });
     }
 });
 
-// ========================================
-// تعديل أو نقل نموذج وإعادة ترقيم النماذج
-// ========================================
+// ==================== تعديل ونقل نموذج كامل ====================
 
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
@@ -609,23 +590,27 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             updatedSection = 'quant';
             updatedType = 'qiyas_simulation';
             targetSectionPrefix = 'qiyas_simulation_';
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'فئة النموذج غير صحيحة.'
+            });
         }
 
         let assignedModelNum = oldModelNum;
 
         const isSameCategoryType =
-            oldSec === updatedSection &&
-            oldType === updatedType;
+            oldSec === updatedSection && oldType === updatedType;
 
         if (!isSameCategoryType) {
             const allCustomModels = await CustomModel.find({});
             let maxNum = 0;
 
-            allCustomModels.forEach(m => {
-                if (m.key.startsWith(targetSectionPrefix)) {
-                    const numPart = Number(m.key.split('_').pop());
+            allCustomModels.forEach(item => {
+                if (item.key.startsWith(targetSectionPrefix)) {
+                    const numPart = Number(item.key.split('_').pop());
 
-                    if (!isNaN(numPart) && numPart > maxNum) {
+                    if (!Number.isNaN(numPart) && numPart > maxNum) {
                         maxNum = numPart;
                     }
                 }
@@ -634,11 +619,11 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             assignedModelNum = maxNum + 1;
         }
 
-        // حذف النموذج من الفئة القديمة
+        // حذف مفتاح النموذج القديم
         await CustomModel.deleteOne({ key: oldKey });
         await ModelStatus.deleteOne({ uniqueKey: oldKey });
 
-        // إنشاء النموذج في الفئة الجديدة
+        // إنشاء النموذج الجديد
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
 
         await CustomModel.deleteOne({ key: newKey });
@@ -648,7 +633,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             name: newName.trim()
         });
 
-        // نقل أسئلة النموذج إلى الفئة الجديدة
+        // نقل الأسئلة التابعة للنموذج
         await Question.updateMany(
             {
                 section: oldSec,
@@ -677,19 +662,22 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
                     item,
                     number: Number(item.key.slice(oldPrefix.length))
                 }))
-                .filter(x => Number.isInteger(x.number) && x.number > 0)
+                .filter(item =>
+                    Number.isInteger(item.number) && item.number > 0
+                )
                 .sort((a, b) => a.number - b.number);
 
-            // حذف المفاتيح القديمة لتجنب تعارض الأرقام
+            // حذف المفاتيح مؤقتاً لتجنب تعارض الفهرس الفريد
             for (const entry of parsed) {
                 await CustomModel.deleteOne({
                     key: entry.item.key
                 });
             }
 
-            for (const entry of parsed) {
-                const newNumber = parsed.indexOf(entry) + 1;
-                const renumberedKey = `${oldPrefix}${newNumber}`;
+            for (let i = 0; i < parsed.length; i++) {
+                const entry = parsed[i];
+                const newNumber = i + 1;
+                const newKeyForRemaining = `${oldPrefix}${newNumber}`;
 
                 if (entry.number !== newNumber) {
                     await Question.updateMany(
@@ -704,7 +692,6 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
                     );
 
                     const oldStatusKey = entry.item.key;
-
                     const status = await ModelStatus.findOne({
                         uniqueKey: oldStatusKey
                     });
@@ -715,7 +702,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
                         });
 
                         await ModelStatus.updateOne(
-                            { uniqueKey: renumberedKey },
+                            { uniqueKey: newKeyForRemaining },
                             { $set: { active: status.active } },
                             { upsert: true }
                         );
@@ -723,7 +710,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
                 }
 
                 await CustomModel.create({
-                    key: renumberedKey,
+                    key: newKeyForRemaining,
                     name: entry.item.name
                 });
             }
@@ -733,9 +720,8 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             success: true,
             message: '✅ تم تعديل ونقل النموذج بنجاح، وإعادة ترقيم النماذج المتبقية تلقائياً!'
         });
-    } catch (e) {
-        console.error('POST /api/admin/edit-model-full:', e);
-
+    } catch (error) {
+        console.error('POST /api/admin/edit-model-full:', error);
         res.status(500).json({
             success: false,
             message: '❌ حدث خطأ أثناء التحديث'
@@ -743,21 +729,19 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
     }
 });
 
-// ========================================
-// عرض المستخدمين للمشرف
-// ========================================
+// ==================== جلب المستخدمين للمشرف ====================
 
 app.post('/api/admin/users', async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = String(req.body?.email || '').trim().toLowerCase();
 
         const admin = await User.findOne({
-            email: (email || '').trim().toLowerCase(),
+            email,
             role: 'admin'
         });
 
         if (!admin) {
-            return res.json({
+            return res.status(403).json({
                 success: false,
                 message: '⛔ ليس لديك صلاحية!'
             });
@@ -767,49 +751,59 @@ app.post('/api/admin/users', async (req, res) => {
 
         res.json({
             success: true,
-            users: users.map(u => ({
-                name: u.name,
-                email: u.email,
-                pass: u.pass,
-                role: u.role === 'admin'
+            users: users.map(user => ({
+                name: user.name,
+                email: user.email,
+                pass: user.pass,
+                role: user.role === 'admin'
                     ? 'مشرف (Admin)'
                     : 'طالب (Student)'
             }))
         });
-    } catch (e) {
-        console.error('POST /api/admin/users:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/admin/users:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ في الخادم'
         });
     }
 });
 
-// ========================================
-// حذف مستخدم
-// ========================================
+// ==================== حذف مستخدم ====================
 
 app.post('/api/admin/delete-user', async (req, res) => {
     try {
-        const { adminEmail, userEmailToDelete } = req.body;
+        const {
+            adminEmail,
+            userEmailToDelete
+        } = req.body;
+
+        const normalizedAdminEmail =
+            String(adminEmail || '').trim().toLowerCase();
+
+        const normalizedUserEmail =
+            String(userEmailToDelete || '').trim().toLowerCase();
 
         const admin = await User.findOne({
-            email: (adminEmail || '').trim().toLowerCase(),
+            email: normalizedAdminEmail,
             role: 'admin'
         });
 
         if (!admin) {
-            return res.json({
+            return res.status(403).json({
                 success: false,
                 message: '⛔ ليس لديك صلاحية!'
             });
         }
 
-        if (
-            adminEmail.trim().toLowerCase() ===
-            userEmailToDelete.trim().toLowerCase()
-        ) {
+        if (!normalizedUserEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'يرجى تحديد المستخدم.'
+            });
+        }
+
+        if (normalizedAdminEmail === normalizedUserEmail) {
             return res.json({
                 success: false,
                 message: '⚠️ لا يمكنك حذف حسابك!'
@@ -817,26 +811,23 @@ app.post('/api/admin/delete-user', async (req, res) => {
         }
 
         await User.deleteOne({
-            email: userEmailToDelete.trim().toLowerCase()
+            email: normalizedUserEmail
         });
 
         res.json({
             success: true,
             message: '🗑️ تم الحذف بنجاح!'
         });
-    } catch (e) {
-        console.error('POST /api/admin/delete-user:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/admin/delete-user:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ'
         });
     }
 });
 
-// ========================================
-// حالة النماذج
-// ========================================
+// ==================== حالة النماذج ====================
 
 app.get('/api/admin/models-status', async (req, res) => {
     try {
@@ -844,15 +835,15 @@ app.get('/api/admin/models-status', async (req, res) => {
         const statuses = await ModelStatus.find({});
         const modelsStatusMap = {};
 
-        statuses.forEach(s => {
-            modelsStatusMap[s.uniqueKey] = s.active;
+        statuses.forEach(status => {
+            modelsStatusMap[status.uniqueKey] = status.active;
         });
 
         const customModels = await CustomModel.find({});
         const customModelsMap = {};
 
-        customModels.forEach(m => {
-            customModelsMap[m.key] = m.name;
+        customModels.forEach(model => {
+            customModelsMap[model.key] = model.name;
         });
 
         const result = {
@@ -864,22 +855,24 @@ app.get('/api/admin/models-status', async (req, res) => {
         Object.keys(customModelsMap).forEach(key => {
             const lastUnderscoreIdx = key.lastIndexOf('_');
             const catPart = key.substring(0, lastUnderscoreIdx);
-            const modelNum = Number(key.substring(lastUnderscoreIdx + 1));
+            const modelNum = Number(
+                key.substring(lastUnderscoreIdx + 1)
+            );
 
-            let secKey = '';
+            let sectionKey = '';
 
             if (catPart.startsWith('quant')) {
-                secKey = 'quant';
+                sectionKey = 'quant';
             } else if (catPart.startsWith('verbal')) {
-                secKey = 'verbal';
+                sectionKey = 'verbal';
             } else if (catPart.startsWith('qiyas')) {
-                secKey = 'mock';
+                sectionKey = 'mock';
             }
 
             const uniqueModelKey = `${catPart}_${modelNum}`;
 
-            if (secKey && !result[secKey][uniqueModelKey]) {
-                result[secKey][uniqueModelKey] = {
+            if (sectionKey && !result[sectionKey][uniqueModelKey]) {
+                result[sectionKey][uniqueModelKey] = {
                     modelNumber: modelNum,
                     categoryType: catPart,
                     customKey: key,
@@ -889,23 +882,28 @@ app.get('/api/admin/models-status', async (req, res) => {
             }
         });
 
-        questions.forEach(q => {
-            let sec = q.section === 'verbal' ? 'verbal' : 'quant';
+        questions.forEach(question => {
+            let section = question.section === 'verbal'
+                ? 'verbal'
+                : 'quant';
 
-            if (q.type === 'qiyas_simulation') {
-                sec = 'mock';
+            if (question.type === 'qiyas_simulation') {
+                section = 'mock';
             }
 
-            const mNum = Number(q.model) || 1;
+            const modelNum = Number(question.model) || 1;
 
-            Object.keys(result[sec]).forEach(uKey => {
-                const mData = result[sec][uKey];
+            Object.keys(result[section]).forEach(uniqueKey => {
+                const modelData = result[section][uniqueKey];
 
                 if (
-                    mData.modelNumber === mNum &&
-                    (sec === 'mock' || mData.categoryType.includes(q.type))
+                    modelData.modelNumber === modelNum &&
+                    (
+                        section === 'mock' ||
+                        modelData.categoryType.includes(question.type)
+                    )
                 ) {
-                    mData.questionCount++;
+                    modelData.questionCount++;
                 }
             });
         });
@@ -916,29 +914,32 @@ app.get('/api/admin/models-status', async (req, res) => {
         });
     } catch (error) {
         console.error('GET /api/admin/models-status:', error);
-
-        res.json({
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ'
         });
     }
 });
 
-// ========================================
-// تفعيل أو تعطيل نموذج
-// ========================================
+// ==================== تفعيل وتعطيل نموذج ====================
 
 app.post('/api/admin/toggle-model', async (req, res) => {
     try {
-        const { adminEmail, uniqueKey } = req.body;
+        const {
+            adminEmail,
+            uniqueKey
+        } = req.body;
+
+        const normalizedEmail =
+            String(adminEmail || '').trim().toLowerCase();
 
         const admin = await User.findOne({
-            email: (adminEmail || '').trim().toLowerCase(),
+            email: normalizedEmail,
             role: 'admin'
         });
 
         if (!admin) {
-            return res.json({
+            return res.status(403).json({
                 success: false,
                 message: '⛔ ليس لديك صلاحية!'
             });
@@ -960,19 +961,16 @@ app.post('/api/admin/toggle-model', async (req, res) => {
             success: true,
             message: '✅ تم تحديث الحالة بنجاح!'
         });
-    } catch (e) {
-        console.error('POST /api/admin/toggle-model:', e);
-
-        res.json({
+    } catch (error) {
+        console.error('POST /api/admin/toggle-model:', error);
+        res.status(500).json({
             success: false,
             message: '❌ حدث خطأ'
         });
     }
 });
 
-// ========================================
-// تسجيل محاولة الطالب
-// ========================================
+// ==================== تسجيل إجابة الطالب ====================
 
 app.post('/api/attempts', async (req, res) => {
     try {
@@ -987,9 +985,8 @@ app.post('/api/attempts', async (req, res) => {
             score
         } = req.body || {};
 
-        const normalizedEmail = String(email || '')
-            .trim()
-            .toLowerCase();
+        const normalizedEmail =
+            String(email || '').trim().toLowerCase();
 
         if (!normalizedEmail) {
             return res.status(400).json({
@@ -1021,9 +1018,8 @@ app.post('/api/attempts', async (req, res) => {
         });
 
         res.json({ success: true });
-    } catch (e) {
-        console.error('POST /api/attempts:', e);
-
+    } catch (error) {
+        console.error('POST /api/attempts:', error);
         res.status(500).json({
             success: false,
             message: 'تعذر تسجيل المحاولة'
@@ -1031,15 +1027,12 @@ app.post('/api/attempts', async (req, res) => {
     }
 });
 
-// ========================================
-// إحصائيات الطالب
-// ========================================
+// ==================== إحصائيات الطالب ====================
 
 app.post('/api/student/stats', async (req, res) => {
     try {
-        const email = String(req.body?.email || '')
-            .trim()
-            .toLowerCase();
+        const email =
+            String(req.body?.email || '').trim().toLowerCase();
 
         if (!email) {
             return res.status(400).json({
@@ -1050,7 +1043,8 @@ app.post('/api/student/stats', async (req, res) => {
 
         const attempts = await Attempt.find({ email }).lean();
 
-        const correctAnswers = attempts.filter(a => a.correct).length;
+        const correctAnswers =
+            attempts.filter(attempt => attempt.correct).length;
 
         const averageScore = attempts.length
             ? Math.round(correctAnswers / attempts.length * 100)
@@ -1058,28 +1052,30 @@ app.post('/api/student/stats', async (req, res) => {
 
         const bySection = {};
 
-        attempts.forEach(a => {
-            const key = a.section || 'quant';
+        attempts.forEach(attempt => {
+            const section = attempt.section || 'quant';
 
-            bySection[key] ||= {
+            bySection[section] ||= {
                 total: 0,
                 correct: 0
             };
 
-            bySection[key].total++;
+            bySection[section].total++;
 
-            if (a.correct) {
-                bySection[key].correct++;
+            if (attempt.correct) {
+                bySection[section].correct++;
             }
         });
 
         const weakPoints = Object.entries(bySection)
-            .filter(([, v]) => v.total >= 3)
-            .map(([section, v]) => ({
+            .filter(([, value]) => value.total >= 3)
+            .map(([section, value]) => ({
                 section,
-                accuracy: Math.round(v.correct / v.total * 100)
+                accuracy: Math.round(
+                    value.correct / value.total * 100
+                )
             }))
-            .filter(x => x.accuracy < 70)
+            .filter(item => item.accuracy < 70)
             .sort((a, b) => a.accuracy - b.accuracy);
 
         res.json({
@@ -1089,9 +1085,8 @@ app.post('/api/student/stats', async (req, res) => {
             averageScore,
             weakPoints
         });
-    } catch (e) {
-        console.error('POST /api/student/stats:', e);
-
+    } catch (error) {
+        console.error('POST /api/student/stats:', error);
         res.status(500).json({
             success: false,
             message: 'تعذر تحميل إحصائيات الطالب'
@@ -1099,15 +1094,12 @@ app.post('/api/student/stats', async (req, res) => {
     }
 });
 
-// ========================================
-// إحصائيات المشرف
-// ========================================
+// ==================== تحليلات المنصة للمشرف ====================
 
 app.post('/api/admin/analytics', async (req, res) => {
     try {
-        const email = String(req.body?.email || '')
-            .trim()
-            .toLowerCase();
+        const email =
+            String(req.body?.email || '').trim().toLowerCase();
 
         const admin = await User.findOne({
             email,
@@ -1135,50 +1127,51 @@ app.post('/api/admin/analytics', async (req, res) => {
 
         const averageScore = attempts.length
             ? Math.round(
-                attempts.filter(a => a.correct).length /
+                attempts.filter(attempt => attempt.correct).length /
                 attempts.length * 100
             )
             : 0;
 
         const groups = new Map();
 
-        attempts.forEach(a => {
-            const section = a.type === 'qiyas_simulation'
+        attempts.forEach(attempt => {
+            const section = attempt.type === 'qiyas_simulation'
                 ? 'mock'
-                : (a.section || 'quant');
+                : (attempt.section || 'quant');
 
-            const key = `${section}|${Number(a.model) || 1}`;
+            const modelNum = Number(attempt.model) || 1;
+            const key = `${section}|${modelNum}`;
 
             if (!groups.has(key)) {
                 groups.set(key, {
                     section,
-                    model: Number(a.model) || 1,
+                    model: modelNum,
                     correctAnswers: 0,
                     answers: 0,
                     studentsSet: new Set()
                 });
             }
 
-            const g = groups.get(key);
+            const group = groups.get(key);
 
-            g.answers++;
+            group.answers++;
 
-            if (a.correct) {
-                g.correctAnswers++;
+            if (attempt.correct) {
+                group.correctAnswers++;
             }
 
-            g.studentsSet.add(a.email);
+            group.studentsSet.add(attempt.email);
         });
 
         const popularModels = [...groups.values()]
-            .map(g => ({
-                section: g.section,
-                model: g.model,
-                correctAnswers: g.correctAnswers,
-                answers: g.answers,
-                students: g.studentsSet.size,
+            .map(group => ({
+                section: group.section,
+                model: group.model,
+                correctAnswers: group.correctAnswers,
+                answers: group.answers,
+                students: group.studentsSet.size,
                 averageScore: Math.round(
-                    g.correctAnswers / g.answers * 100
+                    group.correctAnswers / group.answers * 100
                 )
             }))
             .sort((a, b) => b.correctAnswers - a.correctAnswers)
@@ -1193,9 +1186,8 @@ app.post('/api/admin/analytics', async (req, res) => {
             attemptsCount: attempts.length,
             popularModels
         });
-    } catch (e) {
-        console.error('POST /api/admin/analytics:', e);
-
+    } catch (error) {
+        console.error('POST /api/admin/analytics:', error);
         res.status(500).json({
             success: false,
             message: 'تعذر تحميل التحليلات'
@@ -1203,16 +1195,64 @@ app.post('/api/admin/analytics', async (req, res) => {
     }
 });
 
-// ========================================
-// تشغيل الخادم
-// ========================================
+// ==================== حذف الإحصائيات ====================
+// يحذف سجلات المحاولات فقط ولا يحذف الحسابات أو الأسئلة أو النماذج.
+
+app.post('/api/admin/delete-statistics', async (req, res) => {
+    try {
+        const email =
+            String(req.body?.email || '').trim().toLowerCase();
+
+        const scope = String(req.body?.scope || '');
+
+        if (!['students', 'platform'].includes(scope)) {
+            return res.status(400).json({
+                success: false,
+                message: 'نوع حذف الإحصائيات غير صالح.'
+            });
+        }
+
+        const admin = await User.findOne({
+            email,
+            role: 'admin'
+        }).select('_id');
+
+        if (!admin) {
+            return res.status(403).json({
+                success: false,
+                message: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.'
+            });
+        }
+
+        // كلا الخيارين يحذف سجلات المحاولات كلها.
+        // لذلك ستُصفّر إحصائيات الطلاب والأداء العام معاً.
+        const result = await Attempt.deleteMany({});
+
+        return res.json({
+            success: true,
+            scope,
+            deletedCount: result.deletedCount || 0,
+            message: scope === 'students'
+                ? 'تم تصفير إحصائيات جميع الطلاب بنجاح.'
+                : 'تم تصفير إحصائيات الأداء في المنصة بنجاح.'
+        });
+    } catch (error) {
+        console.error('POST /api/admin/delete-statistics:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'تعذر حذف الإحصائيات حالياً.'
+        });
+    }
+});
+
+// ==================== تشغيل الخادم ====================
 
 async function startServer() {
     if (!MONGO_URI) {
         console.error(
             '❌ متغير البيئة MONGO_URI غير مضبوط. أضف رابط MongoDB إلى إعدادات البيئة.'
         );
-
         process.exit(1);
     }
 
@@ -1228,10 +1268,10 @@ async function startServer() {
         app.listen(PORT, () => {
             console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`);
         });
-    } catch (err) {
+    } catch (error) {
         console.error(
             '❌ تعذر الاتصال بـ MongoDB؛ لم يتم تشغيل الخادم:',
-            err.message
+            error.message
         );
 
         process.exit(1);
