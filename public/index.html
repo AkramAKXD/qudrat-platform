@@ -1024,7 +1024,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 document.getElementById('forgot-step-1').classList.remove('hidden');
                 document.getElementById('forgot-step-2').classList.add('hidden');
             }
-            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student')?.classList.add('active'); }
+            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student')?.classList.add('active'); loadStudentStats(); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal')?.classList.add('active'); }
             else if (view === 'student-stats') { targetId = 'student-stats-section'; document.getElementById('menu-student-stats')?.classList.add('active'); loadStudentStats(); }
@@ -1629,20 +1629,55 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
         }
 
         async function verifyForgotEmail() {
-            verifiedForgotEmail = document.getElementById('forgotEmail').value;
-            if(!verifiedForgotEmail) return;
-            showLoading('تحقق...', 800, () => {
+            const emailInput = document.getElementById('forgotEmail');
+            const email = (emailInput.value || '').trim().toLowerCase();
+            if (!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني أولاً.', false); return; }
+            const button = document.querySelector('#forgot-step-1 button');
+            if (button) button.disabled = true;
+            try {
+                const response = await fetch('/api/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAlert('forgot', result.message || 'هذا البريد الإلكتروني غير مسجل لدينا.', false);
+                    return;
+                }
+                verifiedForgotEmail = email;
+                document.getElementById('forgot-alert').style.display = 'none';
                 document.getElementById('forgot-step-1').classList.add('hidden');
                 document.getElementById('forgot-step-2').classList.remove('hidden');
-            });
+            } catch (error) {
+                showAlert('forgot', 'تعذر التحقق من البريد حالياً. حاول مرة أخرى.', false);
+            } finally {
+                if (button) button.disabled = false;
+            }
         }
 
         async function submitNewPassword() {
             const newPass = document.getElementById('newPasswordInput').value;
-            showLoading('تحديث...', 1000, async () => {
-                await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
-                switchView('login');
-            });
+            if (!verifiedForgotEmail) { showAlert('forgot', 'تحقق من البريد الإلكتروني أولاً.', false); return; }
+            if (!newPass || newPass.length < 6) { showAlert('forgot', 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.', false); return; }
+            try {
+                const response = await fetch('/api/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: verifiedForgotEmail, newPass })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAlert('forgot', result.message || 'تعذر تحديث كلمة المرور.', false);
+                    return;
+                }
+                showAlert('forgot', result.message || 'تم تحديث كلمة المرور بنجاح.', true);
+                verifiedForgotEmail = '';
+                document.getElementById('newPasswordInput').value = '';
+                setTimeout(() => switchView('login'), 900);
+            } catch (error) {
+                showAlert('forgot', 'تعذر الاتصال بالخادم. حاول مرة أخرى.', false);
+            }
         }
 
         function renderTrainingQuestion() {
@@ -1735,15 +1770,23 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 const r = await fetch('/api/student/stats', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
                 const d = await r.json();
                 if (!d.success) throw new Error('stats unavailable');
-                document.getElementById('student-correct-count').textContent=d.correctAnswers ?? 0;
-                document.getElementById('student-tests-count').textContent=d.testsTaken ?? 0;
-                document.getElementById('student-average-score').textContent=(d.averageScore ?? 0)+'%';
-                document.getElementById('student-weak-points').innerHTML=(d.weakPoints?.length ? d.weakPoints.map(x=>`<p>• ${x.section==='verbal'?'اللفظي':'الكمي'} — دقة ${x.accuracy}%</p>`).join('') : '<p>لا توجد بيانات كافية بعد. ابدأ بحل التدريبات لتحديد نقاط القوة والتحسين.</p>');
+                const correctEl=document.getElementById('student-correct-count');
+                const testsEl=document.getElementById('student-tests-count');
+                const averageEl=document.getElementById('student-average-score');
+                const weakEl=document.getElementById('student-weak-points');
+                if(correctEl) correctEl.textContent=d.correctAnswers ?? 0;
+                if(testsEl) testsEl.textContent=d.testsTaken ?? 0;
+                if(averageEl) averageEl.textContent=(d.averageScore ?? 0)+'%';
+                if(weakEl) weakEl.innerHTML=(d.weakPoints?.length ? d.weakPoints.map(x=>`<p>• ${x.section==='verbal'?'اللفظي':'الكمي'} — دقة ${x.accuracy}%</p>`).join('') : '<p>لا توجد بيانات كافية بعد. ابدأ بحل التدريبات لتحديد نقاط القوة والتحسين.</p>');
             } catch(e) {
-                document.getElementById('student-correct-count').textContent='—';
-                document.getElementById('student-tests-count').textContent='—';
-                document.getElementById('student-average-score').textContent='—';
-                document.getElementById('student-weak-points').innerHTML='<p>إحصائيات المحاولات ستظهر بعد ربط تسجيل الإجابات في الخادم.</p>';
+                const correctEl=document.getElementById('student-correct-count');
+                const testsEl=document.getElementById('student-tests-count');
+                const averageEl=document.getElementById('student-average-score');
+                const weakEl=document.getElementById('student-weak-points');
+                if(correctEl) correctEl.textContent='—';
+                if(testsEl) testsEl.textContent='—';
+                if(averageEl) averageEl.textContent='—';
+                if(weakEl) weakEl.innerHTML='<p>تعذر تحميل الإحصائيات حالياً. حاول تحديث الصفحة.</p>';
             }
         }
 
