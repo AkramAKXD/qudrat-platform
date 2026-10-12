@@ -396,6 +396,31 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
         .learning-guide-visual img,.discover-card img{background:linear-gradient(135deg,#e8f3ef,#dbe8f7);object-fit:cover}
         @media(max-width:620px){.capability-ribbon{grid-template-columns:1fr}.capability-ribbon>div{grid-template-columns:42px 1fr}}
 
+
+        /* Qimma signature refresh: calm premium surfaces and meaningful student actions */
+        .student-hero-banner{position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(circle at 8% 10%,rgba(213,243,106,.28),transparent 30%),linear-gradient(125deg,#f2faf5 0%,#edf7f8 55%,#f8fbf4 100%);border-color:#dcebe2;box-shadow:0 14px 38px rgba(18,59,72,.06)}
+        .student-hero-banner:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;border:1px solid rgba(22,107,100,.09);border-radius:50%;left:-65px;top:-85px;box-shadow:0 0 0 22px rgba(22,107,100,.025),0 0 0 46px rgba(22,107,100,.02)}
+        .student-banner-img{min-height:160px;background:linear-gradient(135deg,#d9eee5,#dce9f7);border:1px solid rgba(255,255,255,.85)}
+        .qimma-next-step{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;align-items:center;margin:22px 0;padding:23px;border-radius:22px;border:1px solid #e0ebe4;background:linear-gradient(135deg,#fff 0%,#f7fbf8 100%);box-shadow:0 12px 30px rgba(18,59,72,.045)}
+        .next-step-kicker{display:inline-block;padding:5px 10px;border-radius:999px;background:#e8f6ee;color:#18745d;font-size:11px;font-weight:900;margin-bottom:9px}
+        .next-step-copy h3{font-size:21px;color:#123b48;font-weight:950;margin-bottom:7px}
+        .next-step-copy p{font-size:13px;line-height:1.9;color:#63767a}
+        .next-step-actions{display:grid;gap:10px}
+        .next-action{display:flex;align-items:center;gap:12px;text-align:right;width:100%;padding:12px 14px!important;margin:0!important;border:1px solid #e1ece6!important;border-radius:15px!important;background:#fff!important;color:#23434a!important;box-shadow:none!important;transform:none!important;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease!important}
+        .next-action:hover{transform:translateY(-2px)!important;border-color:#a7d7c3!important;box-shadow:0 10px 22px rgba(18,59,72,.08)!important}
+        .next-action-icon{width:42px;height:42px;flex:0 0 42px;border-radius:13px;display:grid;place-items:center}
+        .next-action-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+        .next-quant .next-action-icon{background:#e4f6ec;color:#167b58}.next-verbal .next-action-icon{background:#e8f0ff;color:#4268aa}
+        .next-action>span:nth-child(2){display:grid;gap:3px;flex:1}.next-action b{font-size:13px;font-weight:900}.next-action small{font-size:11px;color:#74878a;font-weight:600}
+        .next-arrow{font-size:20px;color:#8aa19b;transition:transform .2s}.next-action:hover .next-arrow{transform:translateX(-4px);color:#18745d}
+        .student-quote-strip{position:relative;overflow:hidden}.student-quote-strip p{transition:opacity .18s ease,transform .18s ease}.student-quote-strip p.quote-changing{opacity:0;transform:translateY(4px)}.student-quote-strip:after{content:"";position:absolute;left:-28px;bottom:-50px;width:120px;height:120px;border:1px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 15px rgba(255,255,255,.035),0 0 0 30px rgba(255,255,255,.025);pointer-events:none}
+        .section-big-card{background:linear-gradient(115deg,#fff,#f8fbf8);border-color:#e4ece7}
+        .section-big-card:active,.next-action:active{transform:scale(.99)!important}
+        .student-hero-banner,.qimma-next-step,.student-quote-strip{animation:softRise .55s ease both}
+        @keyframes softRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:760px){.qimma-next-step{grid-template-columns:1fr;padding:17px}.next-step-copy h3{font-size:19px}}
+        @media(prefers-reduced-motion:reduce){.student-hero-banner,.qimma-next-step,.student-quote-strip{animation:none!important}}
+
 </style>
 </head>
 <body id="appBody">
@@ -550,7 +575,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                         <div class="hero-proof"><div class="proof-avatars"><span>ط</span><span>ق</span><span>ن</span></div><div><strong>تعلّم بثقة وعلى وتيرتك</strong><small>تدريب لفظي وكمي في مكان واحد</small></div></div>
                     </div>
                     <div class="hero-visual">
-                        <div class="hero-photo-main"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1100&q=85" alt="طالب يستعد للدراسة"><div class="photo-shade"></div><div class="photo-caption"><span class="caption-icon">✦</span><div><strong>كل سؤال يقرّبك من هدفك</strong><small>خطوة صغيرة، إنجاز أكبر</small></div></div></div>
+                        <div class="hero-photo-main"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1100&q=85" alt="طالب يستعد للدراسة" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="photo-shade"></div><div class="photo-caption"><span class="caption-icon">✦</span><div><strong>كل سؤال يقرّبك من هدفك</strong><small>خطوة صغيرة، إنجاز أكبر</small></div></div></div>
                         <div class="floating-note note-score"><span class="note-symbol">↗</span><div><strong>تقدّم مستمر</strong><small>تابع تطور مستواك</small></div></div>
                         <div class="floating-note note-book"><span class="note-symbol">▤</span><div><strong>نماذج متنوعة</strong><small>لفظي · كمي</small></div></div>
                         <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
@@ -565,8 +590,8 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     <div class="discover-heading"><div><span class="eyebrow">ابدأ من هنا</span><h2>اختر طريقك إلى التميّز</h2></div><p>محتوى منظّم وتجربة بسيطة تساعدك تركز على الأهم.</p></div>
                     <div class="discover-grid">
                         <article class="discover-card"><img src="https://images.unsplash.com/photo-1455390582262-0440a436f2e3?auto=format&fit=crop&w=800&q=80" alt="كتب ودفتر للقراءة والتعلّم" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=900&q=80'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">01 / لفظي</span><h3>قوِّ مهاراتك اللفظية</h3><p>تدرّب على الفهم والاستيعاب والعلاقات اللغوية.</p><button onclick="switchView('login')">اكتشف التدريب <b>←</b></button></div></article>
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80" alt="كمي"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">02 / كمي</span><h3>فكّر بطريقة أذكى</h3><p>طوّر مهاراتك في المسائل والتفكير الرياضي.</p><button onclick="switchView('login')">ابدأ الحل <b>←</b></button></div></article>
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="محاكاة"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">03 / محاكاة</span><h3>جرّب أجواء الاختبار</h3><p>تدرّب على نماذج تساعدك تستعد بثقة.</p><button onclick="switchView('login')">شاهد النماذج <b>←</b></button></div></article>
+                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80" alt="كمي" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">02 / كمي</span><h3>فكّر بطريقة أذكى</h3><p>طوّر مهاراتك في المسائل والتفكير الرياضي.</p><button onclick="switchView('login')">ابدأ الحل <b>←</b></button></div></article>
+                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="محاكاة" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">03 / محاكاة</span><h3>جرّب أجواء الاختبار</h3><p>تدرّب على نماذج تساعدك تستعد بثقة.</p><button onclick="switchView('login')">شاهد النماذج <b>←</b></button></div></article>
                     </div>
                 </section>
                 <footer class="landing-footer"><div class="footer-brand"><span class="brand-icon">ق</span><strong>قِمّة</strong></div><span>رحلتك تبدأ بخطوة، واصل التقدّم.</span><button onclick="switchView('register')">أنشئ حسابك الآن ↗</button></footer>
@@ -633,7 +658,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                         <h2 id="student-welcome">أهلاً بك يا بطل القمة! 🌟</h2>
                         <p>ابدأ يومك بتحدٍ جديد في القسم الكمي أو اللفظي، وراقب تقدمك المستمر نحو تحقيق هدفك في اختبار القدرات.</p>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80" alt="طلاب متميزون" class="student-banner-img">
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80" alt="طلاب متميزون" class="student-banner-img" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">
                     <div class="capability-ribbon" aria-label="مهارات اختبار القدرات"><div><span class="cap-icon cap-green"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-7"/></svg></span><b>تحليل ذكي</b><small>افهم السؤال قبل الحل</small></div><div><span class="cap-icon cap-blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>إدارة الوقت</b><small>تدرّب بثقة وهدوء</small></div><div><span class="cap-icon cap-violet"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></svg></span><b>تقدّم مستمر</b><small>كل محاولة تصنع فرقًا</small></div></div>
                 </div>
 
@@ -649,6 +674,11 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     <span class="quote-mark">❝</span>
                     <div><p id="dailyMotivationQuote">لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.</p><small>رسالة لك: الاستمرار يصنع الفرق.</small></div>
                 </div>
+
+                <section class="qimma-next-step" aria-label="خطوتك التالية">
+                    <div class="next-step-copy"><span class="next-step-kicker">خطوة صغيرة اليوم تصنع فرقًا</span><h3>ماذا ستنجز اليوم؟</h3><p>اختر مسارك وابدأ بجلسة قصيرة. التقدم يبدأ بالمحاولة الأولى.</p></div>
+                    <div class="next-step-actions"><button type="button" class="next-action next-quant" onclick="navigateTo('quant')"><span class="next-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16l4-5 3 2 4-7"/><path d="M16 6h2v2"/></svg></span><span><b>تحدي كمي</b><small>حلّل الأرقام والعلاقات</small></span><span class="next-arrow">←</span></button><button type="button" class="next-action next-verbal" onclick="navigateTo('verbal')"><span class="next-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z"/><path d="M5 5v16M9 7h7M9 11h7M9 15h5"/></svg></span><span><b>تحدي لفظي</b><small>اقرأ واربط واستنتج</small></span><span class="next-arrow">←</span></button></div>
+                </section>
 
                 <div class="student-video-card" style="margin-top: 20px;">
                     <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
@@ -687,7 +717,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 </div>
                 <div class="learning-guide">
                     <div><h3>كيف تتدرّب بذكاء؟</h3><p>ابدأ بالأساسيات ثم انتقل تدريجيًا إلى الأسئلة المركبة. اكتب خطواتك عند التعلّم، وبعدها درّب نفسك على الحل الذهني وإدارة الوقت.</p><ul><li><b>الجبر:</b> المعادلات، النسب، والتناسب.</li><li><b>الهندسة:</b> الزوايا، المساحات، المحيط والحجم.</li><li><b>الإحصاء والاحتمالات:</b> المتوسط والوسيط وقراءة البيانات.</li><li><b>الاستراتيجية:</b> استبعد الخيارات غير المنطقية وتحقق من الوحدات.</li></ul></div>
-                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85" alt="معادلات وأفكار رياضية على لوحة" loading="lazy"><span>فكّر • حلّل • تحقّق</span></div>
+                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85" alt="معادلات وأفكار رياضية على لوحة" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><span>فكّر • حلّل • تحقّق</span></div>
                 </div>
                 <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">∑</div><h4>افهم النمط</h4><p>ابحث عن العلاقة بين الأرقام قبل البدء بالحساب الطويل.</p></article><article class="skill-card"><div class="skill-symbol">△</div><h4>ارسم المعطيات</h4><p>الرسم البسيط يساعد على فهم المسائل الهندسية بسرعة.</p></article><article class="skill-card"><div class="skill-symbol">✓</div><h4>راجع خطأك</h4><p>دوّن سبب الخطأ وأعد حل السؤال بعد فترة لتثبيت الفكرة.</p></article></div>
                 <div class="action-buttons-grid">
@@ -1094,13 +1124,13 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 const base64Data = e.target.result;
                 if (mode === 'add') {
                     document.getElementById('qImage').value = base64Data;
-                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
+                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
                 } else if (mode === 'qiyas') {
                     document.getElementById('qiyasImage').value = base64Data;
-                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
+                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
                 } else if (mode === 'edit') {
                     document.getElementById('editQImage').value = base64Data;
-                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>`;
+                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
                 }
             };
             reader.readAsDataURL(file);
@@ -1244,7 +1274,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                             </div>
                         </div>
                         <p style="font-weight:700; color:#1e293b; font-size:15px;">${q.question}</p>
-                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة"/>` : ''}
+                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">` : ''}
                         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; background:#f8fafc; padding:10px; border-radius:8px;">
                             <div>أ) ${opts[0]}</div><div>ب) ${opts[1]}</div><div>ج) ${opts[2]}</div><div>د) ${opts[3]}</div>
                         </div>
@@ -1585,7 +1615,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             container.innerHTML = `
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 20px;">
                     <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">${q.question}</p>
-                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/></div>` : ''}
+                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"></div>` : ''}
                     <div style="display: flex; flex-direction: column; gap: 14px;">
                         <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">أ) ${opts[0]}</button>
                         <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ب) ${opts[1]}</button>
@@ -1642,7 +1672,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             await updateEditModelDropdowns();
             document.getElementById('editQModel').value = q.model || 1;
             document.getElementById('editQImage').value = q.image || '';
-            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/>` : '';
+            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">` : '';
             document.getElementById('editQScore').value = q.score || 1;
             document.getElementById('editQText').value = q.question || '';
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
@@ -1888,6 +1918,29 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
             updateAuthStateUI();
             switchView(sessionStorage.getItem('currentView') || (checkAuth() ? 'student' : 'landing'));
         });
-    </script>
+    
+        // Rotate supportive messages without inventing or altering student performance data.
+        (function initQimmaDailyMessages(){
+            const quote=document.getElementById('dailyMotivationQuote');
+            if(!quote || quote.dataset.rotatorReady) return;
+            quote.dataset.rotatorReady='1';
+            const messages=[
+                'لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.',
+                'كل سؤال تفهمه اليوم يضيف خطوة جديدة إلى طريقك.',
+                'الهدوء والفهم أهم من السرعة وحدها؛ خذ وقتك ثم تقدّم.',
+                'الخطأ فرصة لاكتشاف فكرة جديدة، وليس نهاية المحاولة.',
+                'قسّم هدفك الكبير إلى خطوات صغيرة، وابدأ بخطوة واحدة الآن.',
+                'ثباتك على التدريب يصنع فرقًا أكبر مما تتوقع.'
+            ];
+            let index=0;
+            window.setInterval(()=>{
+                if(document.hidden) return;
+                index=(index+1)%messages.length;
+                quote.classList.add('quote-changing');
+                window.setTimeout(()=>{quote.textContent=messages[index];quote.classList.remove('quote-changing');},180);
+            },7000);
+        })();
+
+</script>
 </body>
 </html>
