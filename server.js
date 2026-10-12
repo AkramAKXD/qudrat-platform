@@ -77,14 +77,7 @@ const attemptSchema = new mongoose.Schema({
 const Attempt = mongoose.model('Attempt', attemptSchema);
 
 // ========================
-// تهيئة حساب المشرف
-// ========================
-
-// يفضّل إنشاء حساب المشرف يدويًا أو من خلال أداة آمنة.
-// لا تضع كلمة مرور ثابتة داخل الكود.
-
-// ========================
-// تسجيل حساب جديد
+// تسجيل حساب جديد[cite: 9]
 // ========================
 
 app.post('/api/register', async (req, res) => {
@@ -98,10 +91,10 @@ app.post('/api/register', async (req, res) => {
             });
         }
 
-        if (String(pass).length < 8) {
+        if (String(pass).length < 6) {
             return res.json({
                 success: false,
-                message: '⚠️ يجب أن تتكون كلمة المرور من 8 أحرف على الأقل'
+                message: '⚠️ يجب ألا تقل كلمة المرور عن 6 أحرف'
             });
         }
 
@@ -117,7 +110,7 @@ app.post('/api/register', async (req, res) => {
         await User.create({
             name: String(name).trim(),
             email: normalizedEmail,
-            pass,
+            pass: String(pass),
             role: 'student'
         });
 
@@ -135,7 +128,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // ========================
-// تسجيل الدخول
+// تسجيل الدخول (مصحح لتجنب أخطاء المطابقة)[cite: 9]
 // ========================
 
 app.post('/api/login', async (req, res) => {
@@ -149,12 +142,10 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        const user = await User.findOne({
-            email: String(email).trim().toLowerCase(),
-            pass: String(pass)
-        });
+        const normalizedEmail = String(email).trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
 
-        if (!user) {
+        if (!user || user.pass !== String(pass)) {
             return res.json({
                 success: false,
                 message: '❌ بيانات الدخول غير صحيحة!'
@@ -177,17 +168,17 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ========================
-// إعادة تعيين كلمة المرور
+// إعادة تعيين كلمة المرور[cite: 9]
 // ========================
 
 app.post('/api/reset-password', async (req, res) => {
     try {
         const { email, newPass } = req.body;
 
-        if (!email || !newPass || String(newPass).length < 8) {
+        if (!email || !newPass || String(newPass).length < 6) {
             return res.json({
                 success: false,
-                message: 'يرجى إدخال بريد صحيح وكلمة مرور من 8 أحرف على الأقل'
+                message: 'يرجى إدخال بريد صحيح وكلمة مرور من 6 أحرف على الأقل'
             });
         }
 
@@ -202,7 +193,7 @@ app.post('/api/reset-password', async (req, res) => {
             });
         }
 
-        user.pass = newPass;
+        user.pass = String(newPass);
         await user.save();
 
         res.json({
@@ -219,7 +210,7 @@ app.post('/api/reset-password', async (req, res) => {
 });
 
 // ========================
-// جلب الأسئلة
+// جلب الأسئلة[cite: 9]
 // ========================
 
 app.get('/api/questions', async (req, res) => {
@@ -233,7 +224,7 @@ app.get('/api/questions', async (req, res) => {
 });
 
 // ========================
-// إضافة سؤال
+// إضافة سؤال[cite: 9]
 // ========================
 
 app.post('/api/add-question', async (req, res) => {
@@ -250,7 +241,6 @@ app.post('/api/add-question', async (req, res) => {
         } = req.body;
 
         const modelNum = Number(model);
-
         const customModels = await CustomModel.find({});
         const customModelsMap = {};
 
@@ -305,7 +295,7 @@ app.post('/api/add-question', async (req, res) => {
 });
 
 // ========================
-// تعديل سؤال
+// تعديل سؤال[cite: 9]
 // ========================
 
 app.post('/api/edit-question', async (req, res) => {
@@ -362,7 +352,7 @@ app.post('/api/edit-question', async (req, res) => {
 });
 
 // ========================
-// نقل سؤال إلى نموذج آخر
+// نقل سؤال إلى نموذج آخر[cite: 9]
 // ========================
 
 app.post('/api/move-question', async (req, res) => {
@@ -403,7 +393,7 @@ app.post('/api/move-question', async (req, res) => {
 });
 
 // ========================
-// حذف سؤال
+// حذف سؤال[cite: 9]
 // ========================
 
 app.post('/api/delete-question', async (req, res) => {
@@ -438,7 +428,7 @@ app.post('/api/delete-question', async (req, res) => {
 });
 
 // ========================
-// جلب النماذج المخصصة
+// جلب النماذج المخصصة[cite: 9]
 // ========================
 
 app.get('/api/custom-models', async (req, res) => {
@@ -464,7 +454,7 @@ app.get('/api/custom-models', async (req, res) => {
 });
 
 // ========================
-// إضافة نموذج مخصص
+// إضافة نموذج مخصص[cite: 9]
 // ========================
 
 app.post('/api/add-custom-model', async (req, res) => {
@@ -506,7 +496,7 @@ app.post('/api/add-custom-model', async (req, res) => {
 });
 
 // ========================
-// حذف نموذج
+// حذف نموذج[cite: 9]
 // ========================
 
 app.post('/api/admin/delete-model', async (req, res) => {
@@ -548,16 +538,12 @@ app.post('/api/admin/delete-model', async (req, res) => {
 });
 
 // ========================
-// تعديل أو نقل نموذج بالكامل
+// تعديل أو نقل نموذج بالكامل[cite: 9]
 // ========================
 
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
-        const {
-            oldKey,
-            newName,
-            newCategory
-        } = req.body;
+        const { oldKey, newName, newCategory } = req.body;
 
         if (!oldKey || !newName || !newCategory) {
             return res.json({
@@ -581,7 +567,6 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             targetSectionPrefix = 'qiyas_simulation_';
         } else {
             const categoryParts = newCategory.split('_');
-
             if (categoryParts.length >= 2) {
                 updatedSection = categoryParts[0];
                 updatedType = categoryParts.slice(1).join('_');
@@ -589,10 +574,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             }
         }
 
-        const sameCategory =
-            oldSec === updatedSection &&
-            oldType === updatedType;
-
+        const sameCategory = oldSec === updatedSection && oldType === updatedType;
         let assignedModelNum = oldModelNum;
 
         if (!sameCategory) {
@@ -602,7 +584,6 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             allModels.forEach(m => {
                 if (m.key.startsWith(targetSectionPrefix)) {
                     const num = Number(m.key.split('_').pop());
-
                     if (!Number.isNaN(num) && num > maxNum) {
                         maxNum = num;
                     }
@@ -616,7 +597,6 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         await ModelStatus.deleteOne({ uniqueKey: oldKey });
 
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
-
         await CustomModel.deleteOne({ key: newKey });
 
         await CustomModel.create({
@@ -651,13 +631,12 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 });
 
 // ========================
-// إدارة المستخدمين
+// إدارة المستخدمين[cite: 9]
 // ========================
 
 app.post('/api/admin/users', async (req, res) => {
     try {
         const { email } = req.body;
-
         const admin = await User.findOne({
             email: String(email || '').trim().toLowerCase(),
             role: 'admin'
@@ -671,7 +650,6 @@ app.post('/api/admin/users', async (req, res) => {
         }
 
         const users = await User.find({});
-
         res.json({
             success: true,
             users: users.map(u => ({
@@ -690,13 +668,12 @@ app.post('/api/admin/users', async (req, res) => {
 });
 
 // ========================
-// حذف مستخدم
+// حذف مستخدم[cite: 9]
 // ========================
 
 app.post('/api/admin/delete-user', async (req, res) => {
     try {
         const { adminEmail, userEmailToDelete } = req.body;
-
         const admin = await User.findOne({
             email: String(adminEmail || '').trim().toLowerCase(),
             role: 'admin'
@@ -709,10 +686,7 @@ app.post('/api/admin/delete-user', async (req, res) => {
             });
         }
 
-        if (
-            String(adminEmail).trim().toLowerCase() ===
-            String(userEmailToDelete).trim().toLowerCase()
-        ) {
+        if (String(adminEmail).trim().toLowerCase() === String(userEmailToDelete).trim().toLowerCase()) {
             return res.json({
                 success: false,
                 message: '⚠️ لا يمكنك حذف حسابك!'
@@ -737,7 +711,7 @@ app.post('/api/admin/delete-user', async (req, res) => {
 });
 
 // ========================
-// حالة النماذج للمشرف
+// حالة النماذج للمشرف[cite: 9]
 // ========================
 
 app.get('/api/admin/models-status', async (req, res) => {
@@ -763,7 +737,6 @@ app.get('/api/admin/models-status', async (req, res) => {
             const modelNumber = Number(m.key.substring(lastIndex + 1));
 
             let sectionKey = '';
-
             if (category.startsWith('quant')) sectionKey = 'quant';
             else if (category.startsWith('verbal')) sectionKey = 'verbal';
             else if (category.startsWith('qiyas')) sectionKey = 'mock';
@@ -781,7 +754,6 @@ app.get('/api/admin/models-status', async (req, res) => {
 
         questions.forEach(q => {
             let section = q.section === 'verbal' ? 'verbal' : 'quant';
-
             if (q.type === 'qiyas_simulation') {
                 section = 'mock';
             }
@@ -789,10 +761,7 @@ app.get('/api/admin/models-status', async (req, res) => {
             Object.values(result[section]).forEach(model => {
                 if (
                     model.modelNumber === Number(q.model) &&
-                    (
-                        section === 'mock' ||
-                        model.categoryType.includes(q.type)
-                    )
+                    (section === 'mock' || model.categoryType.includes(q.type))
                 ) {
                     model.questionCount++;
                 }
@@ -813,13 +782,12 @@ app.get('/api/admin/models-status', async (req, res) => {
 });
 
 // ========================
-// تفعيل أو تعطيل نموذج
+// تفعيل أو تعطيل نموذج[cite: 9]
 // ========================
 
 app.post('/api/admin/toggle-model', async (req, res) => {
     try {
         const { adminEmail, uniqueKey } = req.body;
-
         const admin = await User.findOne({
             email: String(adminEmail || '').trim().toLowerCase(),
             role: 'admin'
@@ -833,7 +801,6 @@ app.post('/api/admin/toggle-model', async (req, res) => {
         }
 
         let status = await ModelStatus.findOne({ uniqueKey });
-
         if (status) {
             status.active = !status.active;
             await status.save();
@@ -858,7 +825,7 @@ app.post('/api/admin/toggle-model', async (req, res) => {
 });
 
 // ========================
-// تسجيل إجابة الطالب
+// تسجيل إجابة الطالب[cite: 9]
 // ========================
 
 app.post('/api/attempts', async (req, res) => {
@@ -917,13 +884,12 @@ app.post('/api/attempts', async (req, res) => {
 });
 
 // ========================
-// إحصائيات الطالب
+// إحصائيات الطالب[cite: 9]
 // ========================
 
 app.post('/api/student/stats', async (req, res) => {
     try {
         const email = String(req.body.email || '').trim().toLowerCase();
-
         const user = await User.findOne({
             email,
             role: 'student'
@@ -937,27 +903,16 @@ app.post('/api/student/stats', async (req, res) => {
         }
 
         const rows = await Attempt.find({ email });
-
         const correctAnswers = rows.filter(x => x.correct).length;
-
-        const averageScore = rows.length
-            ? Math.round((correctAnswers / rows.length) * 100)
-            : 0;
-
+        const averageScore = rows.length ? Math.round((correctAnswers / rows.length) * 100) : 0;
         const grouped = {};
 
         rows.forEach(row => {
             const key = row.section || 'quant';
-
             if (!grouped[key]) {
-                grouped[key] = {
-                    total: 0,
-                    correct: 0
-                };
+                grouped[key] = { total: 0, correct: 0 };
             }
-
             grouped[key].total++;
-
             if (row.correct) {
                 grouped[key].correct++;
             }
@@ -995,13 +950,12 @@ app.post('/api/student/stats', async (req, res) => {
 });
 
 // ========================
-// إحصائيات المشرف
+// إحصائيات المشرف[cite: 9]
 // ========================
 
 app.post('/api/admin/analytics', async (req, res) => {
     try {
         const email = String(req.body.email || '').trim().toLowerCase();
-
         const admin = await User.findOne({
             email,
             role: 'admin'
@@ -1027,10 +981,8 @@ app.post('/api/admin/analytics', async (req, res) => {
         ]);
 
         const groups = {};
-
         attempts.forEach(attempt => {
             const key = `${attempt.section || 'quant'}:${attempt.type || 'practice'}:${attempt.model || 1}`;
-
             if (!groups[key]) {
                 groups[key] = {
                     modelKey: key,
@@ -1044,13 +996,10 @@ app.post('/api/admin/analytics', async (req, res) => {
             }
 
             const group = groups[key];
-
             group.answers++;
-
             if (attempt.correct) {
                 group.correct++;
             }
-
             group.students.add(attempt.email);
         });
 
@@ -1063,17 +1012,12 @@ app.post('/api/admin/analytics', async (req, res) => {
                 answers: group.answers,
                 correctAnswers: group.correct,
                 students: group.students.size,
-                averageScore: group.answers
-                    ? Math.round((group.correct / group.answers) * 100)
-                    : 0
+                averageScore: group.answers ? Math.round((group.correct / group.answers) * 100) : 0
             }))
             .sort((a, b) => b.correctAnswers - a.correctAnswers);
 
         const averageScore = attempts.length
-            ? Math.round(
-                (attempts.filter(attempt => attempt.correct).length /
-                attempts.length) * 100
-            )
+            ? Math.round((attempts.filter(attempt => attempt.correct).length / attempts.length) * 100)
             : 0;
 
         res.json({
@@ -1095,7 +1039,7 @@ app.post('/api/admin/analytics', async (req, res) => {
 });
 
 // ========================
-// تشغيل الخادم
+// تشغيل الخادم[cite: 9]
 // ========================
 
 app.listen(PORT, () => {
