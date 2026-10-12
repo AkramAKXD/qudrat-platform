@@ -83,6 +83,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { email, pass } = req.body;
+        if (!email || !pass) return res.json({ success: false, message: '⚠️ يرجى إدخال البريد وكلمة المرور!' });
         const user = await User.findOne({ email: email.trim().toLowerCase(), pass: pass });
         if (!user) return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
         res.json({ success: true, name: user.name, role: user.role, email: user.email });
@@ -91,14 +92,26 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// المسار المصحح للتحقق من البريد واستعادة كلمة المرور بدقة
 app.post('/api/reset-password', async (req, res) => {
     try {
         const { email, newPass } = req.body;
-        const user = await User.findOne({ email: email.trim().toLowerCase() });
-        if (!user) return res.json({ success: false, message: '❌ البريد غير مسجل!' });
-        user.pass = newPass;
-        await user.save();
-        res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+        if (!email) return res.json({ success: false, message: '❌ يرجى إدخال البريد الإلكتروني!' });
+        
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
+        
+        if (!user) {
+            return res.json({ success: false, message: '❌ البريد الإلكتروني غير مسجل في النظام!' });
+        }
+
+        if (newPass) {
+            user.pass = newPass;
+            await user.save();
+            return res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+        }
+
+        res.json({ success: true, message: '✅ البريد مسجل وموجود' });
     } catch (error) {
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
@@ -240,7 +253,6 @@ app.post('/api/admin/delete-model', async (req, res) => {
     }
 });
 
-// المسار المصحح تماماً للتعديل والنقل الكلي دون بقايا
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -285,16 +297,13 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             assignedModelNum = maxNum + 1;
         }
 
-        // 1. حذف المفتاح القديم كلياً من المكان القديم لئلا تبقى أي نسخة معلقة
         await CustomModel.deleteOne({ key: oldKey });
         await ModelStatus.deleteOne({ uniqueKey: oldKey });
 
-        // 2. إنشاء المفتاح الجديد بالاسم المحدث في المكان الجديد
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
         await CustomModel.deleteOne({ key: newKey });
         await CustomModel.create({ key: newKey, name: newName.trim() });
 
-        // 3. نقل وتحديث الأسئلة التابعة لهذا النموذج للوجهة الجديدة
         await Question.updateMany(
             { section: oldSec, type: oldType, model: oldModelNum },
             { section: updatedSection, type: updatedType, model: assignedModelNum }
