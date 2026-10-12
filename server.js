@@ -14,7 +14,7 @@ const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
     console.error('❌ يرجى ضبط متغير البيئة MONGO_URI');
 } else {
-    mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 })
+    mongoose.connect(MONGO_URI)
         .then(() => console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!'))
         .catch(err => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err));
 }
@@ -70,14 +70,11 @@ const attemptSchema = new mongoose.Schema({
 const Attempt = mongoose.model('Attempt', attemptSchema);
 
 // ========================
-// المسارات (API)
+// مسارات (API) تسجيل الدخول والتسجيل
 // ========================
 
 app.post('/api/register', async (req, res) => {
     try {
-        if (mongoose.connection.readyState !== 1) {
-            return res.json({ success: false, message: '⚠️ قاعدة البيانات غير متصلة حالياً، حاول لاحقاً.' });
-        }
         const { name, email, pass } = req.body;
         if (!name || !email || !pass) {
             return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول!' });
@@ -96,15 +93,12 @@ app.post('/api/register', async (req, res) => {
         res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
     } catch (error) {
         console.error('Register error:', error);
-        res.json({ success: false, message: '❌ حدث خطأ في الخادم أثناء التسجيل' });
+        res.json({ success: false, message: '❌ خطأ في الاتصال بقاعدة البيانات' });
     }
 });
 
 app.post('/api/login', async (req, res) => {
     try {
-        if (mongoose.connection.readyState !== 1) {
-            return res.json({ success: false, message: '⚠️ قاعدة البيانات غير متصلة حالياً، حاول لاحقاً.' });
-        }
         const { email, pass } = req.body;
         if (!email || !pass) {
             return res.json({ success: false, message: 'يرجى إدخال البريد وكلمة المرور' });
@@ -124,7 +118,7 @@ app.post('/api/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.json({ success: false, message: '❌ حدث خطأ في الخادم أثناء تسجيل الدخول' });
+        res.json({ success: false, message: '❌ خطأ في الاتصال بقاعدة البيانات' });
     }
 });
 
@@ -142,7 +136,6 @@ app.post('/api/reset-password', async (req, res) => {
         await user.save();
         res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح' });
     } catch (error) {
-        console.error('Reset password error:', error);
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
