@@ -581,6 +581,95 @@ button{touch-action:manipulation;overflow-wrap:anywhere}
   .sidebar-menu { grid-template-columns:1fr!important; max-height:145px!important; }
 }
 </style>
+
+<style id="qimma-student-portrait-sidebar-only">
+/* تحسين مكان قائمة الطالب على الجوال العمودي فقط؛ لا يغيّر الخادم أو بقية التخطيط. */
+@media (max-width: 600px) and (orientation: portrait) {
+  body.logged-in #appSidebar {
+    position: sticky !important;
+    top: 0 !important;
+    inset-inline: auto !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
+    display: block !important;
+    overflow: hidden !important;
+    border-radius: 0 0 15px 15px !important;
+    background: rgba(255,255,255,.97) !important;
+    box-shadow: 0 5px 18px rgba(12,39,45,.10) !important;
+    backdrop-filter: blur(12px);
+  }
+  body.logged-in #appSidebar .sidebar-header {
+    padding: 8px 14px 5px !important;
+    text-align: center !important;
+  }
+  body.logged-in #appSidebar .sidebar-header h2 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+  }
+  body.logged-in #appSidebar .sidebar-menu {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 7px 10px 10px !important;
+    margin: 0 !important;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+  }
+  body.logged-in #appSidebar #student-sidebar-group {
+    display: contents !important;
+  }
+  body.logged-in #appSidebar #student-sidebar-group li,
+  body.logged-in #appSidebar .sidebar-menu > li {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.logged-in #appSidebar .sidebar-menu button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    min-width: max-content !important;
+    min-height: 39px !important;
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+  body.logged-in #appSidebar .sidebar-menu > li[style] {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  body.logged-in #appSidebar .sidebar-menu > li[style] button {
+    background: #fff0f0 !important;
+    color: #b91c1c !important;
+  }
+  body.logged-in .main-content {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+  }
+}
+</style>
+
 </head>
 <body id="appBody">
 
