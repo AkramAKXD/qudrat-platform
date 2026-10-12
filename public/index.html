@@ -450,6 +450,69 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
 <style id="qimma-analytics-style">
 .stats-page-head{padding:26px;border-radius:24px;background:radial-gradient(circle at 5% 5%,#d9f99d88,transparent 32%),linear-gradient(125deg,#effcf4,#eff6ff);border:1px solid #d8eade;margin-bottom:20px}.stats-kicker{color:#0f766e;font-weight:800;font-size:12px;letter-spacing:.08em}.stats-page-head h1{margin:8px 0;color:#123b48}.stats-page-head p{margin:0;color:#64748b;line-height:1.8}.student-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.student-stat-card,.stats-detail-card{padding:22px;border:1px solid #e2ece5;border-radius:22px;background:linear-gradient(150deg,#fff,#f8fbf9);box-shadow:0 12px 30px #123b480b;transition:transform .22s,box-shadow .22s}.student-stat-card:hover,.stats-detail-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px #123b4815}.student-stat-card .stat-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#dff7e8;color:#087f5b;font-size:22px;font-weight:900;margin-bottom:14px}.student-stat-card small,.student-stat-card span{display:block;color:#64748b}.student-stat-card strong{display:block;font-size:34px;color:#123b48;margin:8px 0}.student-stat-card span:last-child{font-size:12px}.stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}.stats-detail-card h3{margin:0 0 15px;color:#123b48}.stats-detail-card p{line-height:1.9;color:#64748b}.stats-detail-card button{margin:5px!important}.student-stat-card strong.pulse-stat{animation:statPulse .35s ease}@keyframes statPulse{50%{transform:scale(1.08);color:#0f766e}}@media(max-width:700px){.student-stat-grid,.stats-detail-grid{grid-template-columns:1fr}.stats-page-head{padding:20px}}
 </style>
+
+<style id="qimma-statistics-reset-responsive">
+.statistics-reset-panel{background:linear-gradient(145deg,#f8fafc,#eef6f3);padding:clamp(16px,3vw,28px);border:1px solid #dbe8e1;border-radius:24px;margin-bottom:20px;box-shadow:0 14px 36px rgba(18,59,72,.07);text-align:right}
+.statistics-reset-heading{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.statistics-reset-icon{display:grid;place-items:center;flex:0 0 54px;height:54px;border-radius:18px;background:#fee2e2;font-size:25px}
+.statistics-reset-heading h3{margin:0 0 6px;color:#123b48;font-size:clamp(20px,2.5vw,26px)}
+.statistics-reset-heading p,.statistics-reset-card p{color:#64748b;line-height:1.9;margin:0}
+.statistics-reset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.statistics-reset-card{min-width:0;background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:clamp(16px,2.4vw,24px);box-shadow:0 8px 22px rgba(15,23,42,.04)}
+.statistics-reset-card-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#e0f2fe;font-size:23px;margin-bottom:12px}
+.platform-reset-icon{background:#ede9fe}
+.statistics-reset-card h4{color:#123b48;font-size:18px;margin:0 0 9px}
+.statistics-reset-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;padding:12px 15px;border:0;border-radius:13px;color:white;font-weight:800;cursor:pointer;margin-top:18px;white-space:normal;line-height:1.5;transition:filter .2s,transform .2s}
+.statistics-reset-button:hover{filter:brightness(.96);transform:translateY(-1px)}
+.statistics-reset-button:disabled{opacity:.6;cursor:wait;transform:none}
+.students-reset{background:#b45309}.platform-reset{background:#b91c1c}
+.statistics-reset-message{margin-top:18px;padding:13px 15px;background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;color:#9a3412;line-height:1.8;overflow-wrap:anywhere}
+.statistics-reset-message.success{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}.statistics-reset-message.error{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+@media(max-width:800px){.statistics-reset-grid{grid-template-columns:1fr}.statistics-reset-panel{padding:16px;border-radius:18px}.statistics-reset-card{padding:17px}.statistics-reset-button{min-height:46px}}
+@media(max-width:420px){.statistics-reset-heading{align-items:flex-start;gap:10px}.statistics-reset-icon{flex-basis:44px;height:44px;border-radius:14px}.statistics-reset-heading p,.statistics-reset-card p{font-size:13px}.statistics-reset-card h4{font-size:16px}}
+</style>
+
+<style id="qimma-global-mobile-polish">
+/* تحسينات استجابة عامة مع الحفاظ على التصميم الحالي */
+img,video,canvas,svg{max-width:100%}
+input,select,textarea{max-width:100%;min-width:0}
+button{touch-action:manipulation;overflow-wrap:anywhere}
+.container{width:100%;min-width:0}
+.main-content,.main-content .container,.app-section{min-width:0;max-width:100%}
+#admin-dashboard .admin-tab-content{max-width:100%;overflow-wrap:anywhere}
+#admin-dashboard table{min-width:560px}
+@media(max-width:800px){
+  body.logged-in .main-content{margin-right:0!important;width:100%;padding:12px}
+  .sidebar{width:100%!important;max-width:100%;height:auto!important;max-height:42vh;overflow:visible}
+  .sidebar-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:10px;overflow-y:auto;max-height:30vh}
+  .sidebar-menu li{margin:0!important;min-width:0}
+  .sidebar-menu button{width:100%;min-width:0;font-size:13px;justify-content:flex-start;gap:7px;white-space:normal}
+  .admin-sidebar-group{grid-column:1/-1;min-width:0}
+  #student-sidebar-group{display:contents}
+  .sidebar-menu>li[style]{grid-column:1/-1}
+  #login-section,#register-section,#forgot-section,#student-dashboard,#admin-dashboard,#quant-page,#verbal-page,#models-selection-section,#qiyas-models-section,#no-questions-section,#training-section{padding:clamp(14px,4vw,24px);border-radius:18px}
+  .student-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats-detail-grid{grid-template-columns:1fr}
+  .action-buttons-grid{grid-template-columns:1fr}
+  #admin-dashboard form{width:100%;min-width:0}
+  #admin-dashboard .form-group>div{flex-wrap:wrap}
+  #admin-dashboard .form-group>div input{flex:1 1 160px}
+}
+@media(max-width:480px){
+  .sidebar-menu{grid-template-columns:1fr 1fr;padding:8px}
+  .sidebar-header{padding:15px}
+  .sidebar-header h2{font-size:19px}
+  .sidebar-menu button{padding:9px 8px;min-height:43px;font-size:12px}
+  .student-stat-grid{grid-template-columns:1fr}
+  .student-stat-card,.stats-detail-card{padding:16px}
+  .student-stat-card strong{font-size:28px}
+  .landing-topbar{gap:10px;flex-wrap:wrap}
+  .hero-buttons{display:grid;grid-template-columns:1fr;width:100%}
+  .discover-grid{grid-template-columns:1fr}
+  .model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #admin-dashboard [style*="padding: 25px"],#admin-dashboard [style*="padding: 22px"]{padding:14px!important}
+}
+</style>
 </head>
 <body id="appBody">
 
@@ -576,8 +639,9 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 <li><button onclick="openAdminTab('add-custom-model-box')">🏷️ إضافة نماذج للاختبار</button></li>
                 <li><button onclick="openAdminTab('manage-models-box')">📋 إدارة نماذج الاختبارات</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
-                <li><button onclick="openAdminTab('platform-stats-box')">📊 إحصائيات المنصة</button></li>
-                <li><button onclick="openAdminTab('registered-accounts-box')">👥 الحسابات المسجلة</button></li>
+                <li><button onclick="openAdminTab('platform-stats-box')"><span class="nav-icon">📊</span><span>إحصائيات المنصة</span></button></li>
+                <li><button onclick="openAdminTab('registered-accounts-box')"><span class="nav-icon">👥</span><span>الحسابات المسجلة</span></button></li>
+                <li id="menu-delete-statistics"><button onclick="openAdminTab('delete-statistics-box')"><span class="nav-icon">🗑️</span><span>حذف الإحصائيات</span></button></li>
             </div>
 
             <li style="margin-top: auto; padding-top: 15px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
@@ -928,6 +992,28 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                         <p style="text-align: center; color: #64748b;">جاري التحميل...</p>
                     </div>
                 </div>
+
+                <div id="delete-statistics-box" class="admin-tab-content hidden statistics-reset-panel">
+                    <div class="statistics-reset-heading">
+                        <span class="statistics-reset-icon" aria-hidden="true">🗑️</span>
+                        <div><h3>حذف الإحصائيات</h3><p>إعادة تصفير بيانات الأداء دون حذف الأسئلة أو النماذج أو حسابات الطلاب.</p></div>
+                    </div>
+                    <div class="statistics-reset-grid">
+                        <article class="statistics-reset-card">
+                            <span class="statistics-reset-card-icon" aria-hidden="true">👨‍🎓</span>
+                            <h4>إحصائيات الطلاب</h4>
+                            <p>حذف المحاولات والإحصائيات المسجلة لجميع الطلاب، لتبدأ إحصائياتهم من جديد. لن تُحذف حساباتهم.</p>
+                            <button type="button" class="statistics-reset-button students-reset" onclick="deleteStatistics('students')"><span aria-hidden="true">↻</span> تصفير إحصائيات جميع الطلاب</button>
+                        </article>
+                        <article class="statistics-reset-card">
+                            <span class="statistics-reset-card-icon platform-reset-icon" aria-hidden="true">📈</span>
+                            <h4>إحصائيات المنصة بالكامل</h4>
+                            <p>تصفير سجلات الأداء والإجابات في إحصائيات المنصة. تبقى أعداد الأسئلة والطلاب والنماذج كما هي حسب الموجود فعليًا.</p>
+                            <button type="button" class="statistics-reset-button platform-reset" onclick="deleteStatistics('platform')"><span aria-hidden="true">⌫</span> تصفير إحصائيات المنصة</button>
+                        </article>
+                    </div>
+                    <div id="delete-statistics-message" class="statistics-reset-message" role="status" aria-live="polite">⚠️ عملية الحذف نهائية وتشمل إحصائيات جميع الطلاب.</div>
+                </div>
             </div>
         </div>
     </div>
@@ -1072,15 +1158,55 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
         }
 
         function openAdminTab(tabId) {
+            if (sessionStorage.getItem('sessionUserRole') !== 'admin') {
+                alert('هذه الصفحة مخصصة للمشرف فقط.');
+                return;
+            }
             navigateTo('admin');
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
+            const tab = document.getElementById(tabId);
+            if (!tab) return;
+            tab.classList.remove('hidden');
+            document.querySelectorAll('#admin-sidebar-section li').forEach(li => li.classList.remove('active'));
+            const clickedButton = document.querySelector(`#admin-sidebar-section button[onclick*="${tabId}"]`);
+            clickedButton?.closest('li')?.classList.add('active');
             if(tabId === 'manage-questions-box') initAdminQuestionsManagement();
             else if(tabId === 'registered-accounts-box') loadRegisteredAccounts();
+            else if(tabId === 'platform-stats-box') loadAdminStats();
             else if(tabId === 'manage-models-box') loadAdminModelsList('quant');
             else if(tabId === 'add-custom-model-box') loadCustomModelsCache().then(() => updateSuggestedModelNumber());
             else if(tabId === 'add-question-box') loadCustomModelsCache().then(() => updateModelDropdowns());
             else if(tabId === 'qiyas-question-box') loadCustomModelsCache().then(() => updateQiyasModelDropdowns());
+        }
+
+        async function deleteStatistics(scope) {
+            const message = scope === 'students'
+                ? 'هل أنت متأكد من حذف إحصائيات جميع الطلاب؟ ستُحذف سجلات المحاولات فقط، ولن تُحذف الحسابات أو الأسئلة أو النماذج.'
+                : 'هل أنت متأكد من تصفير إحصائيات المنصة؟ ستُحذف سجلات المحاولات والإجابات فقط، وستبقى أعداد الأسئلة والطلاب والنماذج كما هي.';
+            if (!['students', 'platform'].includes(scope) || !confirm(message)) return;
+            const status = document.getElementById('delete-statistics-message');
+            const buttons = document.querySelectorAll('.statistics-reset-button');
+            buttons.forEach(button => { button.disabled = true; });
+            if (status) { status.className = 'statistics-reset-message'; status.textContent = '⏳ جارٍ تصفير الإحصائيات...'; }
+            try {
+                const response = await fetch('/api/admin/delete-statistics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail'), scope })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.message || 'تعذر حذف الإحصائيات.');
+                if (status) { status.className = 'statistics-reset-message success'; status.textContent = `✅ ${data.message} تم حذف ${data.deletedCount || 0} سجل إحصائي، ولم تُحذف الأسئلة أو النماذج أو حسابات الطلاب.`; }
+                await loadAdminStats();
+                if (scope === 'students') {
+                    const email = sessionStorage.getItem('sessionUserEmail');
+                    if (email) loadStudentStats();
+                }
+            } catch (error) {
+                if (status) { status.className = 'statistics-reset-message error'; status.textContent = `❌ ${error.message || 'تعذر حذف الإحصائيات.'}`; }
+            } finally {
+                buttons.forEach(button => { button.disabled = false; });
+            }
         }
 
         async function loadCustomModelsCache() {
