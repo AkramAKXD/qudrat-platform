@@ -277,10 +277,52 @@
         @media(max-width:800px){.section-big-card{gap:12px;padding:16px}.section-big-card::after{font-size:10px}.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.action-buttons-grid button{min-height:78px}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
+
+/* === Qimma Modern Interaction Layer === */
+:root{--ui-ease:cubic-bezier(.2,.75,.25,1);--ui-ring:rgba(20,105,125,.22)}
+button,[role="button"],.switch-link span{ -webkit-tap-highlight-color:transparent }
+button{position:relative;isolation:isolate;overflow:hidden;transition:transform .22s var(--ui-ease),box-shadow .22s var(--ui-ease),background-color .22s ease,border-color .22s ease,filter .22s ease!important}
+button:not(:disabled):hover{transform:translateY(-2px);filter:saturate(1.08);box-shadow:0 10px 22px rgba(16,48,57,.13)}
+button:not(:disabled):active,button.is-pressed{transform:translateY(1px) scale(.985)!important;box-shadow:0 3px 9px rgba(16,48,57,.12)!important}
+button:focus-visible,[role="button"]:focus-visible,.switch-link span:focus-visible{outline:3px solid #a3e635!important;outline-offset:3px}
+button:disabled{opacity:.58;cursor:not-allowed;filter:grayscale(.15)}
+button::after{content:"";position:absolute;inset:auto;left:var(--ripple-x,50%);top:var(--ripple-y,50%);width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.42);transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;z-index:-1}
+button.ripple-active::after{animation:buttonRipple .55s ease-out}
+@keyframes buttonRipple{0%{transform:translate(-50%,-50%) scale(0);width:8px;height:8px;opacity:.65}100%{transform:translate(-50%,-50%) scale(1);width:420px;height:420px;opacity:0}}
+button svg,button .icon,button .emoji-icon{transition:transform .25s var(--ui-ease),filter .25s ease}
+button:hover svg,button:hover .icon,button:hover .emoji-icon{transform:scale(1.1) rotate(-3deg)}
+.sidebar-menu button{border:1px solid transparent;min-height:46px;position:relative}
+.sidebar-menu button::before{content:"";position:absolute;right:0;top:10px;bottom:10px;width:3px;border-radius:5px;background:var(--accent);transform:scaleY(0);transition:transform .25s var(--ui-ease)}
+.sidebar-menu li.active button::before{transform:scaleY(1)}
+.sidebar-menu li.active button{background:linear-gradient(110deg,#e5f9a2,#d5f36a)!important;color:#123b48!important;box-shadow:0 8px 20px rgba(213,243,106,.15)!important}
+.tab-btn{border:1px solid #e1e8e9!important;border-radius:13px!important;min-height:42px}
+.tab-btn.active-tab{box-shadow:0 8px 20px rgba(22,78,99,.16)!important;border-color:var(--primary)!important}
+.model-btn{transition:transform .25s var(--ui-ease),box-shadow .25s ease,border-color .25s ease!important}
+.model-btn:hover{transform:translateY(-4px) scale(1.01)!important;box-shadow:0 16px 28px rgba(22,78,99,.13)!important}
+.section-big-card{transition:transform .28s var(--ui-ease),box-shadow .28s ease!important}
+.section-big-card:hover{transform:translateY(-5px)!important;box-shadow:0 24px 48px rgba(16,48,57,.14)!important}
+/* Buttons with an action word receive a clearer modern visual hierarchy */
+button[onclick*="toggleModelStatus"]{border:1px solid rgba(255,255,255,.38)!important;border-radius:12px!important;font-weight:900!important;min-width:100px;padding:9px 16px!important;box-shadow:0 5px 14px rgba(16,48,57,.12)!important}
+button[onclick*="toggleModelStatus"]:hover{transform:translateY(-3px) scale(1.025)!important;box-shadow:0 12px 24px rgba(16,48,57,.2)!important}
+button[onclick*="toggleModelStatus"][style*="#10b981"]{background:linear-gradient(135deg,#059669,#10b981)!important}
+button[onclick*="toggleModelStatus"][style*="#f59e0b"]{background:linear-gradient(135deg,#d97706,#f59e0b)!important}
+button[onclick*="confirmDelete"],button[onclick*="Delete"]{border-radius:11px!important}
+#page-transition-bar{position:fixed;top:0;right:0;height:3px;width:0;opacity:0;z-index:10002;background:linear-gradient(90deg,#d5f36a,#22d3ee,#164e63);box-shadow:0 0 15px rgba(34,211,238,.4);transition:width .28s ease,opacity .25s ease;pointer-events:none}
+#page-transition-bar.active{width:78%;opacity:1}
+#page-transition-bar.done{width:100%;opacity:0;transition:width .16s ease,opacity .3s ease .12s}
+.app-section.active-view{animation:sectionArrive .34s var(--ui-ease) both}
+@keyframes sectionArrive{from{opacity:0;transform:translateY(12px) scale(.996);filter:blur(2px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+#loading-overlay .spinner{width:58px;height:58px;border-width:4px;box-shadow:0 0 0 10px rgba(255,255,255,.055),0 12px 40px rgba(0,0,0,.12)}
+#loading-overlay .loading-text{letter-spacing:.1px;animation:loadingPulse 1.2s ease-in-out infinite}
+@keyframes loadingPulse{0%,100%{opacity:.7}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+@media(max-width:760px){.sidebar-menu button{min-height:44px}.main-content{padding:14px}}
+
     </style>
 </head>
 <body id="appBody">
 
+    <div id="page-transition-bar" aria-hidden="true"></div>
     <div id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-text" id="loadingMessage">جاري المعالجة...</div>
@@ -801,7 +843,9 @@
             switchView(view);
         }
 
+        let viewTransitionToken = 0;
         function switchView(view) {
+            const token = ++viewTransitionToken;
             sessionStorage.setItem('currentView', view);
             hideAlerts();
             const previousView = document.querySelector('.app-section.active-view');
@@ -811,39 +855,55 @@
             if (view === 'landing') targetId = 'landing-section';
             else if (view === 'login') targetId = 'login-section';
             else if (view === 'register') targetId = 'register-section';
-            else if (view === 'forgot') { 
-                targetId = 'forgot-section'; 
+            else if (view === 'forgot') {
+                targetId = 'forgot-section';
                 document.getElementById('forgot-step-1').classList.remove('hidden');
                 document.getElementById('forgot-step-2').classList.add('hidden');
             }
-            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student').classList.add('active'); }
-            else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant').classList.add('active'); }
-            else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal').classList.add('active'); }
-            else if (view === 'qiyas') { 
+            else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student')?.classList.add('active'); }
+            else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
+            else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal')?.classList.add('active'); }
+            else if (view === 'qiyas') {
                 if (!checkAuth()) { switchView('login'); return; }
-                targetId = 'qiyas-models-section'; 
-                document.getElementById('menu-qiyas').classList.add('active'); 
-                renderQiyasModelsGrid();
+                targetId = 'qiyas-models-section'; document.getElementById('menu-qiyas')?.classList.add('active'); renderQiyasModelsGrid();
             }
             else if (view === 'admin') { targetId = 'admin-dashboard'; loadAdminStats(); }
 
             updateAuthStateUI();
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const bar = document.getElementById('page-transition-bar');
+            if (bar) { bar.classList.remove('done'); bar.classList.add('active'); }
+            document.body.classList.add('is-navigating');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (targetId) {
-                const target = document.getElementById(targetId);
-                if (previousView && previousView !== target) {
-                    previousView.style.pointerEvents = 'none';
-                    previousView.style.opacity = '0';
-                    previousView.style.transform = 'translateY(-7px)';
-                    window.setTimeout(() => {
-                        previousView.classList.remove('active-view');
-                        previousView.style.pointerEvents = '';
-                        previousView.style.opacity = '';
-                        previousView.style.transform = '';
-                        target.classList.add('active-view');
-                    }, 100);
-                } else target.classList.add('active-view');
-            }
+
+            const activateTarget = () => {
+                if (token !== viewTransitionToken) return;
+                document.querySelectorAll('.app-section.active-view').forEach(section => {
+                    if (section !== target) {
+                        section.classList.remove('active-view');
+                        section.style.pointerEvents = '';
+                        section.style.opacity = '';
+                        section.style.transform = '';
+                    }
+                });
+                target.style.pointerEvents = '';
+                target.style.opacity = '';
+                target.style.transform = '';
+                target.classList.add('active-view');
+                target.setAttribute('aria-current', 'page');
+                window.setTimeout(() => {
+                    if (token !== viewTransitionToken) return;
+                    if (bar) { bar.classList.remove('active'); bar.classList.add('done'); }
+                    document.body.classList.remove('is-navigating');
+                }, 360);
+            };
+            if (previousView && previousView !== target) {
+                previousView.style.pointerEvents = 'none';
+                previousView.style.opacity = '0';
+                previousView.style.transform = 'translateY(-6px) scale(.995)';
+                window.setTimeout(activateTarget, 110);
+            } else activateTarget();
         }
 
         function openAdminTab(tabId) {
@@ -1577,6 +1637,29 @@
         });
         document.addEventListener('pointerup', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
         document.addEventListener('pointercancel', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
+
+        // Global micro-interactions: ripples, icon feedback and accessible button states.
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('button');
+            if (!button || button.disabled) return;
+            const rect = button.getBoundingClientRect();
+            button.style.setProperty('--ripple-x', `${event.clientX - rect.left}px`);
+            button.style.setProperty('--ripple-y', `${event.clientY - rect.top}px`);
+            button.classList.remove('ripple-active');
+            void button.offsetWidth;
+            button.classList.add('ripple-active');
+            window.setTimeout(() => button.classList.remove('ripple-active'), 600);
+            if (button.type === 'submit' && button.form && button.form.checkValidity()) {
+                button.dataset.originalText ||= button.innerHTML;
+                button.classList.add('button-processing');
+                window.setTimeout(() => button.classList.remove('button-processing'), 1400);
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.custom-modal.active').forEach(modal => modal.classList.remove('active'));
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
