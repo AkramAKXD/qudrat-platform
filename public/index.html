@@ -236,6 +236,47 @@
             .sidebar{position:relative;width:100%;height:auto;max-height:none;border-radius:0}
             .features-grid{grid-template-columns:1fr}
         }
+
+        /* Refined interactive controls: preserve the original palette and layout */
+        :root{--motion-fast:180ms;--motion-smooth:420ms cubic-bezier(.22,.75,.25,1)}
+        button,.section-big-card,.discover-card,.model-btn{ -webkit-tap-highlight-color:transparent; }
+        button:focus-visible,.section-big-card:focus-visible,.model-btn:focus-visible{outline:3px solid #a7cc4d;outline-offset:3px}
+        .sidebar-menu button{position:relative;min-height:52px;padding:10px 13px;border:1px solid transparent;overflow:hidden;}
+        .sidebar-menu button::after{content:'‹';margin-right:auto;font-size:22px;line-height:1;opacity:.5;transition:transform var(--motion-fast),opacity var(--motion-fast)}
+        .sidebar-menu button:hover::after{transform:translateX(-4px);opacity:1}
+        .sidebar-menu li.active button{border-color:rgba(255,255,255,.15);box-shadow:inset -4px 0 0 #6b8d25}
+        .sidebar-menu li:last-child button{border:1px solid rgba(239,68,68,.16);margin-top:8px}
+        .action-buttons-grid button,.hero-buttons button,.topbar-login,.landing-footer>button{position:relative;overflow:hidden;transition:transform var(--motion-fast),box-shadow var(--motion-fast),background var(--motion-fast)}
+        .action-buttons-grid button{min-height:92px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(22,78,99,.09);box-shadow:0 7px 18px rgba(22,78,99,.07);}
+        .action-buttons-grid button::first-letter{font-size:24px}
+        .action-buttons-grid button:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(22,78,99,.14)}
+        .model-btn{position:relative;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:20px;border:1px solid #e3eae2;background:linear-gradient(145deg,#fff,#f4f8f1);box-shadow:0 7px 18px rgba(16,48,57,.05);overflow:hidden}
+        .model-btn::before{content:'▤';display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:#eaf3d5;color:#5c7d22;font-size:20px;transition:transform var(--motion-smooth),background var(--motion-fast)}
+        .model-btn::after{content:'ابدأ الآن ←';font-size:10px;color:#78933e;font-weight:800;opacity:.8}
+        .model-btn:hover{background:linear-gradient(145deg,#164e63,#0f3444);color:#fff;transform:translateY(-4px);box-shadow:0 14px 26px rgba(22,78,99,.18)}
+        .model-btn:hover::before{background:#d8f66b;transform:rotate(-5deg) scale(1.06)}
+        .model-btn:hover::after{color:#d8f66b}
+        .section-big-card{position:relative;overflow:hidden;border-radius:20px;min-height:105px;border-right:4px solid #d8f66b}
+        .section-big-card::after{content:'استكشف ←';margin-right:auto;white-space:nowrap;font-size:11px;font-weight:900;color:#64852b;opacity:.85;transition:transform var(--motion-fast)}
+        .section-big-card:hover::after{transform:translateX(-4px)}
+        .section-big-icon{border-radius:17px;box-shadow:inset 0 0 0 1px rgba(22,78,99,.04);transition:transform var(--motion-smooth)}
+        .section-big-card:hover .section-big-icon{transform:rotate(-5deg) scale(1.06)}
+        .discover-card{transition:transform var(--motion-smooth),box-shadow var(--motion-smooth)}
+        .discover-card:hover{transform:translateY(-5px);box-shadow:0 18px 35px rgba(10,35,38,.16)}
+        .discover-card button{display:inline-flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.28);border-radius:10px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+        .discover-card button b{transition:transform var(--motion-fast)}
+        .discover-card button:hover b{transform:translateX(-4px)}
+        .app-section{transition:opacity .32s ease,transform .42s cubic-bezier(.22,.75,.25,1),visibility .32s ease}
+        .app-section.active-view{animation:sectionArrive .42s cubic-bezier(.22,.75,.25,1) both}
+        @keyframes sectionArrive{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .floating-note{animation:floatSoft 5s ease-in-out infinite}
+        .note-book{animation-delay:-2.5s}
+        @keyframes floatSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        button:disabled{cursor:not-allowed;opacity:.65;transform:none!important}
+        .is-pressed{transform:scale(.985)!important}
+        @media(max-width:800px){.section-big-card{gap:12px;padding:16px}.section-big-card::after{font-size:10px}.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.action-buttons-grid button{min-height:78px}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
     </style>
 </head>
 <body id="appBody">
@@ -488,21 +529,21 @@
                 </div>
 
                 <div class="sections-stack">
-                    <div class="section-big-card" onclick="navigateTo('quant')">
+                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح القسم الكمي" onclick="navigateTo('quant')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('quant')}">
                         <div class="section-big-icon">📐</div>
                         <div>
                             <h3>القسم الكمي</h3>
                             <p>اصقل مهاراتك الرياضية، الجبر، الهندسة والإحصاء بأسلوب تفاعلي.</p>
                         </div>
                     </div>
-                    <div class="section-big-card" onclick="navigateTo('verbal')">
+                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح القسم اللفظي" onclick="navigateTo('verbal')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('verbal')}">
                         <div class="section-big-icon">📚</div>
                         <div>
                             <h3>القسم اللفظي</h3>
                             <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء والخطأ السياقي.</p>
                         </div>
                     </div>
-                    <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: #10b981; background: #f0fdf4;">
+                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح اختبار قياس التجريبي" onclick="navigateTo('qiyas')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('qiyas')}" style="border-color: #10b981; background: #f0fdf4;">
                         <div class="section-big-icon" style="background: #d1fae5; color: #065f46;">⏱️</div>
                         <div>
                             <h3 style="color: #065f46;">اختبار قياس التجريبي المحاكي</h3>
@@ -763,7 +804,7 @@
         function switchView(view) {
             sessionStorage.setItem('currentView', view);
             hideAlerts();
-            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
+            const previousView = document.querySelector('.app-section.active-view');
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
             let targetId = '';
@@ -788,7 +829,21 @@
 
             updateAuthStateUI();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (targetId) setTimeout(() => document.getElementById(targetId).classList.add('active-view'), 50);
+            if (targetId) {
+                const target = document.getElementById(targetId);
+                if (previousView && previousView !== target) {
+                    previousView.style.pointerEvents = 'none';
+                    previousView.style.opacity = '0';
+                    previousView.style.transform = 'translateY(-7px)';
+                    window.setTimeout(() => {
+                        previousView.classList.remove('active-view');
+                        previousView.style.pointerEvents = '';
+                        previousView.style.opacity = '';
+                        previousView.style.transform = '';
+                        target.classList.add('active-view');
+                    }, 100);
+                } else target.classList.add('active-view');
+            }
         }
 
         function openAdminTab(tabId) {
@@ -1513,6 +1568,15 @@
                 else showAlert('qiyas-q', res.message, false);
             });
         });
+
+
+        // Subtle tactile feedback for controls; no effect on their existing actions.
+        document.addEventListener('pointerdown', (event) => {
+            const control = event.target.closest('button, .section-big-card, .model-btn');
+            if (control && !control.disabled) control.classList.add('is-pressed');
+        });
+        document.addEventListener('pointerup', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
+        document.addEventListener('pointercancel', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
