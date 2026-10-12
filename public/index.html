@@ -447,6 +447,9 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 
+<style id="qimma-analytics-style">
+.stats-page-head{padding:26px;border-radius:24px;background:radial-gradient(circle at 5% 5%,#d9f99d88,transparent 32%),linear-gradient(125deg,#effcf4,#eff6ff);border:1px solid #d8eade;margin-bottom:20px}.stats-kicker{color:#0f766e;font-weight:800;font-size:12px;letter-spacing:.08em}.stats-page-head h1{margin:8px 0;color:#123b48}.stats-page-head p{margin:0;color:#64748b;line-height:1.8}.student-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.student-stat-card,.stats-detail-card{padding:22px;border:1px solid #e2ece5;border-radius:22px;background:linear-gradient(150deg,#fff,#f8fbf9);box-shadow:0 12px 30px #123b480b;transition:transform .22s,box-shadow .22s}.student-stat-card:hover,.stats-detail-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px #123b4815}.student-stat-card .stat-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#dff7e8;color:#087f5b;font-size:22px;font-weight:900;margin-bottom:14px}.student-stat-card small,.student-stat-card span{display:block;color:#64748b}.student-stat-card strong{display:block;font-size:34px;color:#123b48;margin:8px 0}.student-stat-card span:last-child{font-size:12px}.stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}.stats-detail-card h3{margin:0 0 15px;color:#123b48}.stats-detail-card p{line-height:1.9;color:#64748b}.stats-detail-card button{margin:5px!important}.student-stat-card strong.pulse-stat{animation:statPulse .35s ease}@keyframes statPulse{50%{transform:scale(1.08);color:#0f766e}}@media(max-width:700px){.student-stat-grid,.stats-detail-grid{grid-template-columns:1fr}.stats-page-head{padding:20px}}
+</style>
 </head>
 <body id="appBody">
 
@@ -561,6 +564,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 <li id="menu-student"><button onclick="navigateTo('student')">📚 الرئيسية والأقسام</button></li>
                 <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
                 <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
+                <li id="menu-student-stats"><button onclick="navigateTo('student-stats')"><span class="nav-icon">▥</span><span>إحصائيات الطالب</span></button></li>
                 <li id="menu-qiyas"><button onclick="navigateTo('qiyas')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m8 12 2.5 2.5L16.5 9"/></svg><span>اختبار قياس المحاكي</span></button></li>
             </div>
             
@@ -594,7 +598,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                         <h1 class="hero-title">استعدّ اليوم.<br><em>وتألّق يوم الاختبار.</em></h1>
                         <p class="hero-subtitle">تدريب القدرات صار أوضح وأسهل. اختبر مستواك، تدرب على نماذج متنوعة، وتابع تقدّمك خطوة بخطوة.</p>
                         <div class="hero-buttons">
-                            <button class="primary-cta" onclick="switchView('register')">ابدأ رحلتك مجانًا <span>←</span></button>
+                            <button class="primary-cta" onclick="switchView('register')">ابدأ رحلتك <span>←</span></button>
                             <button class="secondary-cta" onclick="switchView('login')">لديّ حساب بالفعل</button>
                         </div>
                         <div class="hero-proof"><div class="proof-avatars"><span>ط</span><span>ق</span><span>ن</span></div><div><strong>تعلّم بثقة وعلى وتيرتك</strong><small>تدريب لفظي وكمي في مكان واحد</small></div></div>
@@ -788,6 +792,17 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                     <p id="no-q-desc" style="color: #475569; margin: 20px 0;">عذراً، لا توجد نماذج مضافة أو نشطة حالياً في هذا القسم.</p>
                     <button onclick="navigateTo('student')" style="width: auto; padding: 12px 30px;">العودة للوحة الرئيسية</button>
                 </div>
+            </div>
+
+            <div id="student-stats-section" class="app-section">
+                <div class="stats-page-head"><span class="stats-kicker">لوحة تقدّمك</span><h1>إحصائياتي 📊</h1><p>تابع محاولاتك، واكتشف نقاط قوتك وما يستحق مزيدًا من التدريب.</p></div>
+                <div class="student-stat-grid">
+                    <article class="student-stat-card"><span class="stat-symbol">✓</span><small>الإجابات الصحيحة</small><strong id="student-correct-count">—</strong><span>إجمالي ما أجبت عنه بشكل صحيح</span></article>
+                    <article class="student-stat-card"><span class="stat-symbol">▤</span><small>الاختبارات المكتملة</small><strong id="student-tests-count">—</strong><span>الاختبارات المسجلة في حسابك</span></article>
+                    <article class="student-stat-card"><span class="stat-symbol">%</span><small>متوسط الدقة</small><strong id="student-average-score">—</strong><span>من 100</span></article>
+                </div>
+                <div class="stats-detail-grid"><section class="stats-detail-card"><h3>🎯 نقاط تحتاج إلى تقوية</h3><div id="student-weak-points">ستظهر هنا بعد تسجيل محاولاتك.</div></section><section class="stats-detail-card"><h3>🌱 خطوتك التالية</h3><p>استمر في التدريب، وراجع الأسئلة التي أخطأت فيها. ستصبح هذه اللوحة أدق كلما سُجّلت محاولاتك.</p><button class="primary-cta" onclick="navigateTo('quant')">ابدأ تدريبًا كميًا ←</button> <button class="secondary-cta" onclick="navigateTo('verbal')">ابدأ تدريبًا لفظيًا ←</button></section></div>
+                <button class="secondary-cta" onclick="navigateTo('student')">العودة إلى الرئيسية</button>
             </div>
 
             <div id="training-section" class="app-section">
@@ -1012,6 +1027,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student')?.classList.add('active'); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal')?.classList.add('active'); }
+            else if (view === 'student-stats') { targetId = 'student-stats-section'; document.getElementById('menu-student-stats')?.classList.add('active'); loadStudentStats(); }
             else if (view === 'qiyas') {
                 if (!checkAuth()) { switchView('login'); return; }
                 targetId = 'qiyas-models-section'; document.getElementById('menu-qiyas')?.classList.add('active'); renderQiyasModelsGrid();
@@ -1655,13 +1671,17 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
         function checkAnswer(correctOpt, chosenOpt, btn) {
             const feedback = document.getElementById('feedback');
             btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
-            if(correctOpt.trim() === chosenOpt.trim()) {
-                btn.style.background = '#d1fae5';
+            const isCorrect = correctOpt.trim() === chosenOpt.trim();
+            if(isCorrect) {
+                btn.style.background = '#d1fae5'; btn.style.borderColor = '#10b981';
                 feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة! 🌟</span>';
             } else {
-                btn.style.background = '#fee2e2';
+                btn.style.background = '#fee2e2'; btn.style.borderColor = '#ef4444';
                 feedback.innerHTML = `<span style="color:#dc2626;">إجابة خاطئة، الصحيحة هي: (${correctOpt})</span>`;
             }
+            const q = currentTrainingQuestions[currentQuestionIndex] || {};
+            const email = sessionStorage.getItem('sessionUserEmail');
+            if (email) fetch('/api/attempts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,questionId:q.id,section:q.section||'quant',type:q.type||'practice',model:q.model||1,chosenAnswer:chosenOpt,correct:isCorrect,score:q.score||1})}).catch(()=>{});
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
         }
 
@@ -1685,8 +1705,46 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             try {
                 const questions = await (await fetch('/api/questions')).json();
                 globalQuestionsCache = questions;
-                document.getElementById('statsText').innerText = `إجمالي الأسئلة في المنصة: ${questions.length}`;
-            } catch (e) {}
+                const el = document.getElementById('statsText');
+                if (el) el.innerHTML = `<div class="student-stat-grid"><article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${questions.length}</strong></article><article class="student-stat-card"><small>نماذج مضافة</small><strong id="admin-model-count">…</strong></article><article class="student-stat-card"><small>عدد الطلاب</small><strong id="admin-student-count">…</strong></article></div><p style="color:#64748b">لإظهار ترتيب النماذج حسب الإجابات الصحيحة ودرجات الطلاب، يجب تسجيل محاولات الاختبارات في الخادم أولًا.</p>`;
+                const [modelsRes, usersRes] = await Promise.allSettled([
+                    fetch('/api/custom-models').then(r=>r.json()),
+                    fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})}).then(r=>r.json())
+                ]);
+                if(modelsRes.status==='fulfilled') { const e=document.getElementById('admin-model-count'); if(e)e.textContent=Object.keys(modelsRes.value.models||{}).length; }
+                if(usersRes.status==='fulfilled' && usersRes.value.success) { const e=document.getElementById('admin-student-count'); if(e)e.textContent=usersRes.value.users.filter(u=>(u.role||'').includes('Student')).length; }
+                try {
+                    const analytics = await (await fetch('/api/admin/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})})).json();
+                    if(analytics.success) {
+                        const stats=document.getElementById('statsText');
+                        stats.innerHTML=`<div class="student-stat-grid">
+                        <article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${analytics.questionCount}</strong></article>
+                        <article class="student-stat-card"><small>النماذج المضافة</small><strong>${analytics.modelCount}</strong></article>
+                        <article class="student-stat-card"><small>الطلاب</small><strong>${analytics.studentCount}</strong></article>
+                        <article class="student-stat-card"><small>متوسط الدقة</small><strong>${analytics.averageScore}%</strong></article>
+                        <article class="student-stat-card"><small>الإجابات المسجلة</small><strong>${analytics.attemptsCount}</strong></article></div>
+                        <h3 style="text-align:right;margin:22px 0 12px">النماذج الأكثر إجابات صحيحة</h3>
+                        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr><th>النموذج</th><th>إجابات صحيحة</th><th>عدد الإجابات</th><th>الطلاب</th><th>متوسط الدقة</th></tr></thead><tbody>${analytics.popularModels.map((m,i)=>`<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">${i+1}. ${m.section==='verbal'?'لفظي':m.section==='mock'?'محاكي قياس':'كمي'} — نموذج ${m.model}</td><td>${m.correctAnswers}</td><td>${m.answers}</td><td>${m.students}</td><td>${m.averageScore}%</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px">ستظهر نتائج ترتيب النماذج بعد تسجيل محاولات الطلاب.</td></tr>'}</tbody></table></div>`;
+                    }
+                } catch(e) {}
+            } catch (e) { const el=document.getElementById('statsText'); if(el)el.textContent='تعذر تحميل الإحصائيات؛ تحقق من اتصال الخادم.'; }
+        }
+        async function loadStudentStats() {
+            const email = sessionStorage.getItem('sessionUserEmail');
+            try {
+                const r = await fetch('/api/student/stats', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+                const d = await r.json();
+                if (!d.success) throw new Error('stats unavailable');
+                document.getElementById('student-correct-count').textContent=d.correctAnswers ?? 0;
+                document.getElementById('student-tests-count').textContent=d.testsTaken ?? 0;
+                document.getElementById('student-average-score').textContent=(d.averageScore ?? 0)+'%';
+                document.getElementById('student-weak-points').innerHTML=(d.weakPoints?.length ? d.weakPoints.map(x=>`<p>• ${x.section==='verbal'?'اللفظي':'الكمي'} — دقة ${x.accuracy}%</p>`).join('') : '<p>لا توجد بيانات كافية بعد. ابدأ بحل التدريبات لتحديد نقاط القوة والتحسين.</p>');
+            } catch(e) {
+                document.getElementById('student-correct-count').textContent='—';
+                document.getElementById('student-tests-count').textContent='—';
+                document.getElementById('student-average-score').textContent='—';
+                document.getElementById('student-weak-points').innerHTML='<p>إحصائيات المحاولات ستظهر بعد ربط تسجيل الإجابات في الخادم.</p>';
+            }
         }
 
         async function openEditModal(index) {
