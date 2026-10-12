@@ -69,9 +69,7 @@
         .main-content { margin-right: 0; flex-grow: 1; padding: 24px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; transition: margin-right 0.3s ease; }
         body.logged-in .main-content { margin-right: var(--sidebar-width); }
 
-        .container { 
-            max-width: 1440px; width: 100%; min-height: 0; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; overflow: visible; position: relative;
-        }
+        .container { max-width: 1440px; width: 100%; min-height: 0; padding: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; overflow: visible; position: relative; }
         
         .app-section {
             position: absolute; top: 0; right: 0; left: 0;
@@ -83,7 +81,6 @@
             opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; width: 100%;
         }
 
-        /* Landing Design */
         #landing-section{background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 22px 70px rgba(17,49,55,.08);padding:0 46px 24px;text-align:right}
         .landing-topbar{height:92px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #edf0eb}
         .brand-mark,.footer-brand{display:flex;align-items:center;gap:11px;color:#123d4b}
@@ -166,7 +163,6 @@
         .landing-footer>span{font-size:11px;color:#8c9a99}
         .landing-footer>button{width:auto;margin:0;padding:10px 14px;border-radius:10px;background:#163f4c;box-shadow:none;font-size:11px;color:#fff;cursor:pointer}
 
-        /* General Forms & Dashboards Styling */
         #login-section,#register-section,#forgot-section,#student-dashboard,#admin-dashboard,#quant-page,#verbal-page,#models-selection-section,#qiyas-models-section,#no-questions-section,#training-section{background:#fff;border:1px solid #edf0ea;border-radius:25px;padding:36px;box-shadow:0 22px 70px rgba(17,49,55,.08);min-height:450px}
         h1,h2{color:#164e63;text-align:center;margin-bottom:20px;font-weight:900}
         #login-section h1,#register-section h1,#forgot-section h1{text-align:right;font-size:27px;margin-bottom:25px}
@@ -196,7 +192,6 @@
         .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #f87171; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
 
-        /* Student Dashboard with Images & Motivation */
         .student-hero-banner { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; align-items: center; background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #bae6fd; padding: 25px; border-radius: 20px; margin-bottom: 25px; }
         .student-banner-text h2 { color: #0369a1; text-align: right; margin-bottom: 8px; font-size: 22px; }
         .student-banner-text p { color: #334155; font-size: 14px; line-height: 1.8; margin-bottom: 12px; }
@@ -234,222 +229,11 @@
             body.logged-in .main-content{margin-right:0}
             .student-hero-banner{grid-template-columns:1fr}
             .sidebar{position:relative;width:100%;height:auto;max-height:none;border-radius:0}
-            .features-grid{grid-template-columns:1fr}
         }
-
-        /* Refined interactive controls: preserve the original palette and layout */
-        :root{--motion-fast:180ms;--motion-smooth:420ms cubic-bezier(.22,.75,.25,1)}
-        button,.section-big-card,.discover-card,.model-btn{ -webkit-tap-highlight-color:transparent; }
-        button:focus-visible,.section-big-card:focus-visible,.model-btn:focus-visible{outline:3px solid #a7cc4d;outline-offset:3px}
-        .sidebar-menu button{position:relative;min-height:52px;padding:10px 13px;border:1px solid transparent;overflow:hidden;}
-        .sidebar-menu button::after{content:'‹';margin-right:auto;font-size:22px;line-height:1;opacity:.5;transition:transform var(--motion-fast),opacity var(--motion-fast)}
-        .sidebar-menu button:hover::after{transform:translateX(-4px);opacity:1}
-        .sidebar-menu li.active button{border-color:rgba(255,255,255,.15);box-shadow:inset -4px 0 0 #6b8d25}
-        .sidebar-menu li:last-child button{border:1px solid rgba(239,68,68,.16);margin-top:8px}
-        .action-buttons-grid button,.hero-buttons button,.topbar-login,.landing-footer>button{position:relative;overflow:hidden;transition:transform var(--motion-fast),box-shadow var(--motion-fast),background var(--motion-fast)}
-        .action-buttons-grid button{min-height:92px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(22,78,99,.09);box-shadow:0 7px 18px rgba(22,78,99,.07);}
-        .action-buttons-grid button::first-letter{font-size:24px}
-        .action-buttons-grid button:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(22,78,99,.14)}
-        .model-btn{position:relative;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:20px;border:1px solid #e3eae2;background:linear-gradient(145deg,#fff,#f4f8f1);box-shadow:0 7px 18px rgba(16,48,57,.05);overflow:hidden}
-        .model-btn::before{content:'▤';display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:#eaf3d5;color:#5c7d22;font-size:20px;transition:transform var(--motion-smooth),background var(--motion-fast)}
-        .model-btn::after{content:'ابدأ الآن ←';font-size:10px;color:#78933e;font-weight:800;opacity:.8}
-        .model-btn:hover{background:linear-gradient(145deg,#164e63,#0f3444);color:#fff;transform:translateY(-4px);box-shadow:0 14px 26px rgba(22,78,99,.18)}
-        .model-btn:hover::before{background:#d8f66b;transform:rotate(-5deg) scale(1.06)}
-        .model-btn:hover::after{color:#d8f66b}
-        .section-big-card{position:relative;overflow:hidden;border-radius:20px;min-height:105px;border-right:4px solid #d8f66b}
-        .section-big-card::after{content:'استكشف ←';margin-right:auto;white-space:nowrap;font-size:11px;font-weight:900;color:#64852b;opacity:.85;transition:transform var(--motion-fast)}
-        .section-big-card:hover::after{transform:translateX(-4px)}
-        .section-big-icon{border-radius:17px;box-shadow:inset 0 0 0 1px rgba(22,78,99,.04);transition:transform var(--motion-smooth)}
-        .section-big-card:hover .section-big-icon{transform:rotate(-5deg) scale(1.06)}
-        .discover-card{transition:transform var(--motion-smooth),box-shadow var(--motion-smooth)}
-        .discover-card:hover{transform:translateY(-5px);box-shadow:0 18px 35px rgba(10,35,38,.16)}
-        .discover-card button{display:inline-flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.28);border-radius:10px;background:rgba(255,255,255,.08);backdrop-filter:blur(8px)}
-        .discover-card button b{transition:transform var(--motion-fast)}
-        .discover-card button:hover b{transform:translateX(-4px)}
-        .app-section{transition:opacity .32s ease,transform .42s cubic-bezier(.22,.75,.25,1),visibility .32s ease}
-        .app-section.active-view{animation:sectionArrive .42s cubic-bezier(.22,.75,.25,1) both}
-        @keyframes sectionArrive{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
-        .floating-note{animation:floatSoft 5s ease-in-out infinite}
-        .note-book{animation-delay:-2.5s}
-        @keyframes floatSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-        button:disabled{cursor:not-allowed;opacity:.65;transform:none!important}
-        .is-pressed{transform:scale(.985)!important}
-        @media(max-width:800px){.section-big-card{gap:12px;padding:16px}.section-big-card::after{font-size:10px}.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.action-buttons-grid button{min-height:78px}}
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-
-
-/* === Qimma Modern Interaction Layer === */
-:root{--ui-ease:cubic-bezier(.2,.75,.25,1);--ui-ring:rgba(20,105,125,.22)}
-button,[role="button"],.switch-link span{ -webkit-tap-highlight-color:transparent }
-button{position:relative;isolation:isolate;overflow:hidden;transition:transform .22s var(--ui-ease),box-shadow .22s var(--ui-ease),background-color .22s ease,border-color .22s ease,filter .22s ease!important}
-button:not(:disabled):hover{transform:translateY(-2px);filter:saturate(1.08);box-shadow:0 10px 22px rgba(16,48,57,.13)}
-button:not(:disabled):active,button.is-pressed{transform:translateY(1px) scale(.985)!important;box-shadow:0 3px 9px rgba(16,48,57,.12)!important}
-button:focus-visible,[role="button"]:focus-visible,.switch-link span:focus-visible{outline:3px solid #a3e635!important;outline-offset:3px}
-button:disabled{opacity:.58;cursor:not-allowed;filter:grayscale(.15)}
-button::after{content:"";position:absolute;inset:auto;left:var(--ripple-x,50%);top:var(--ripple-y,50%);width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.42);transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;z-index:-1}
-button.ripple-active::after{animation:buttonRipple .55s ease-out}
-@keyframes buttonRipple{0%{transform:translate(-50%,-50%) scale(0);width:8px;height:8px;opacity:.65}100%{transform:translate(-50%,-50%) scale(1);width:420px;height:420px;opacity:0}}
-button svg,button .icon,button .emoji-icon{transition:transform .25s var(--ui-ease),filter .25s ease}
-button:hover svg,button:hover .icon,button:hover .emoji-icon{transform:scale(1.1) rotate(-3deg)}
-.sidebar-menu button{border:1px solid transparent;min-height:46px;position:relative}
-.sidebar-menu button::before{content:"";position:absolute;right:0;top:10px;bottom:10px;width:3px;border-radius:5px;background:var(--accent);transform:scaleY(0);transition:transform .25s var(--ui-ease)}
-.sidebar-menu li.active button::before{transform:scaleY(1)}
-.sidebar-menu li.active button{background:linear-gradient(110deg,#e5f9a2,#d5f36a)!important;color:#123b48!important;box-shadow:0 8px 20px rgba(213,243,106,.15)!important}
-.tab-btn{border:1px solid #e1e8e9!important;border-radius:13px!important;min-height:42px}
-.tab-btn.active-tab{box-shadow:0 8px 20px rgba(22,78,99,.16)!important;border-color:var(--primary)!important}
-.model-btn{transition:transform .25s var(--ui-ease),box-shadow .25s ease,border-color .25s ease!important}
-.model-btn:hover{transform:translateY(-4px) scale(1.01)!important;box-shadow:0 16px 28px rgba(22,78,99,.13)!important}
-.section-big-card{transition:transform .28s var(--ui-ease),box-shadow .28s ease!important}
-.section-big-card:hover{transform:translateY(-5px)!important;box-shadow:0 24px 48px rgba(16,48,57,.14)!important}
-/* Buttons with an action word receive a clearer modern visual hierarchy */
-button[onclick*="toggleModelStatus"]{border:1px solid rgba(255,255,255,.38)!important;border-radius:12px!important;font-weight:900!important;min-width:100px;padding:9px 16px!important;box-shadow:0 5px 14px rgba(16,48,57,.12)!important}
-button[onclick*="toggleModelStatus"]:hover{transform:translateY(-3px) scale(1.025)!important;box-shadow:0 12px 24px rgba(16,48,57,.2)!important}
-button[onclick*="toggleModelStatus"][style*="#10b981"]{background:linear-gradient(135deg,#059669,#10b981)!important}
-button[onclick*="toggleModelStatus"][style*="#f59e0b"]{background:linear-gradient(135deg,#d97706,#f59e0b)!important}
-button[onclick*="confirmDelete"],button[onclick*="Delete"]{border-radius:11px!important}
-#page-transition-bar{position:fixed;top:0;right:0;height:3px;width:0;opacity:0;z-index:10002;background:linear-gradient(90deg,#d5f36a,#22d3ee,#164e63);box-shadow:0 0 15px rgba(34,211,238,.4);transition:width .28s ease,opacity .25s ease;pointer-events:none}
-#page-transition-bar.active{width:78%;opacity:1}
-#page-transition-bar.done{width:100%;opacity:0;transition:width .16s ease,opacity .3s ease .12s}
-.app-section.active-view{animation:sectionArrive .34s var(--ui-ease) both}
-@keyframes sectionArrive{from{opacity:0;transform:translateY(12px) scale(.996);filter:blur(2px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-#loading-overlay .spinner{width:58px;height:58px;border-width:4px;box-shadow:0 0 0 10px rgba(255,255,255,.055),0 12px 40px rgba(0,0,0,.12)}
-#loading-overlay .loading-text{letter-spacing:.1px;animation:loadingPulse 1.2s ease-in-out infinite}
-@keyframes loadingPulse{0%,100%{opacity:.7}50%{opacity:1}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
-@media(max-width:760px){.sidebar-menu button{min-height:44px}.main-content{padding:14px}}
-
-    
-/* Qimma modern icon system and refined micro-interactions */
-:root{--ui-ease:cubic-bezier(.2,.75,.25,1);--ui-line:rgba(20,65,76,.10);--ui-shadow:0 12px 30px rgba(15,52,68,.09)}
-.q-icon{width:1.22em;height:1.22em;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;vertical-align:-.22em;color:currentColor;transition:transform .28s var(--ui-ease),color .2s ease,filter .2s ease}
-.q-icon svg{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-button .q-icon{width:1.28em;height:1.28em;margin-inline:2px}
-.sidebar-menu button .q-icon{width:23px;height:23px;padding:3px;border-radius:8px;background:rgba(255,255,255,.07);box-sizing:content-box}
-.sidebar-menu li.active button .q-icon{background:rgba(18,59,72,.09)}
-button:hover .q-icon,.discover-card button:hover .q-icon{transform:translateY(-2px) scale(1.1);filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}
-.icon-tile,.caption-icon,.stat-icon,.section-big-icon,.motivation-icon{transition:transform .32s var(--ui-ease),box-shadow .32s ease,background .32s ease}
-.icon-tile:hover,.caption-icon:hover,.stat-icon:hover,.section-big-icon:hover{transform:translateY(-3px) rotate(-3deg);box-shadow:0 12px 24px rgba(18,59,72,.14)}
-button{border:1px solid rgba(19,65,77,.08)!important;box-shadow:0 5px 15px rgba(15,52,68,.07);background-image:linear-gradient(145deg,rgba(255,255,255,.06),transparent)!important}
-button:not(:disabled):focus-visible{box-shadow:0 0 0 4px rgba(163,230,53,.2),0 8px 22px rgba(15,52,68,.12)!important}
-button:not(:disabled):active .q-icon{transform:scale(.88)}
-.sidebar-menu button{box-shadow:none!important;border-color:transparent!important}
-.sidebar-menu button:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)!important}
-button[onclick*="toggleModelStatus"]{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border-radius:14px!important;letter-spacing:.1px;position:relative}
-button[onclick*="toggleModelStatus"]::before{content:"";width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 0 0 4px rgba(255,255,255,.16);flex:0 0 auto}
-button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease-in-out infinite}
-@keyframes statusPulse{50%{box-shadow:0 0 0 7px rgba(255,255,255,.05);transform:scale(.86)}}
-/* page transition progress */
-#qimma-page-progress{position:fixed;top:0;right:0;width:100%;height:3px;z-index:10001;pointer-events:none;opacity:0;background:rgba(213,243,106,.22);overflow:hidden;transition:opacity .2s ease}
-#qimma-page-progress::after{content:"";position:absolute;top:0;right:0;width:38%;height:100%;border-radius:8px;background:linear-gradient(90deg,#d5f36a,#8dd7c4,#d5f36a);box-shadow:0 0 12px rgba(213,243,106,.6);transform:translateX(120%)}
-#qimma-page-progress.active{opacity:1}#qimma-page-progress.active::after{animation:qimmaProgress 1s var(--ui-ease) infinite}
-@keyframes qimmaProgress{to{transform:translateX(-320%)}}
-.app-section.active-view{animation:qimmaPageEnter .42s var(--ui-ease) both}
-@keyframes qimmaPageEnter{from{opacity:0;transform:translateY(10px) scale(.995);filter:blur(2px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-/* animated feedback for interactive controls */
-.q-feedback{animation:qimmaFeedback .32s var(--ui-ease)}
-@keyframes qimmaFeedback{0%{filter:brightness(1)}45%{filter:brightness(1.12)}100%{filter:brightness(1)}}
-@media(prefers-reduced-motion:reduce){.q-icon,button,.app-section,#qimma-page-progress{animation:none!important;transition:none!important}}
-
-
-        /* Learning-rich sections and a consistent, purposeful icon system */
-        .qiyas-feature-icon{background:linear-gradient(145deg,#0f766e,#14b8a6)!important;color:#fff!important;border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 24px rgba(13,148,136,.2)}
-        .qiyas-feature-icon .q-icon svg{stroke:#fff!important}
-        .learning-guide{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:center;margin:20px 0 24px;padding:22px;border:1px solid #e4eee8;border-radius:22px;background:linear-gradient(135deg,#fbfefc,#f1f8f5);box-shadow:0 12px 30px rgba(15,60,55,.05)}
-        .learning-guide h3{font-size:19px;color:#164e63;margin-bottom:9px;font-weight:900}
-        .learning-guide p{font-size:14px;line-height:1.95;color:#475569;margin-bottom:10px}
-        .learning-guide ul{padding-right:20px;color:#334155;font-size:13px;line-height:2}
-        .learning-guide-visual{min-height:180px;position:relative;overflow:hidden;border-radius:17px;background:#dbeafe}
-        .learning-guide-visual img{width:100%;height:100%;min-height:180px;object-fit:cover;display:block;transition:transform .6s ease}
-        .learning-guide:hover .learning-guide-visual img{transform:scale(1.045)}
-        .learning-guide-visual:after{content:'';position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(8,35,45,.45))}
-        .learning-guide-visual span{position:absolute;z-index:1;bottom:12px;right:14px;color:white;font-weight:800;font-size:13px}
-        .skill-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:18px 0 24px}
-        .skill-card{background:#fff;border:1px solid #e6eee9;border-radius:16px;padding:16px;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
-        .skill-card:hover{transform:translateY(-4px);box-shadow:0 14px 28px rgba(15,60,55,.09);border-color:#a7d9c7}
-        .skill-card h4{color:#164e63;font-size:14px;margin:8px 0 5px;font-weight:900}
-        .skill-card p{font-size:12px;line-height:1.8;color:#64748b}
-        .skill-card .skill-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#e8f7ef;color:#087f5b;font-size:20px;font-weight:900}
-        .student-quote-strip{margin:22px 0;padding:18px 20px;border-radius:18px;background:linear-gradient(115deg,#123b48,#176b64);color:#fff;display:flex;align-items:center;gap:14px;box-shadow:0 12px 26px rgba(18,59,72,.16)}
-        .student-quote-strip .quote-mark{font-size:28px;color:#d5f36a;line-height:1}
-        .student-quote-strip p{font-weight:800;line-height:1.9;font-size:14px}
-        .student-quote-strip small{display:block;color:#d2e7df;font-weight:600;margin-top:3px}
-        .motivation-box{transition:transform .25s ease,box-shadow .25s ease}
-        .motivation-box:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(146,105,10,.09)}
-        .section-big-card[aria-label*="قياس"] .section-big-icon{background:linear-gradient(145deg,#0f766e,#14b8a6)!important;color:white!important;box-shadow:0 8px 20px rgba(13,148,136,.18)}
-        @media(max-width:760px){.learning-guide{grid-template-columns:1fr}.learning-guide-visual{min-height:150px}.skill-cards{grid-template-columns:1fr}.learning-guide{padding:17px}}
-
-    
-        /* Qimma refinements: accessible eye controls, capability badges, distinctive assessment icon */
-        .toggle-password{width:38px;height:38px;border-radius:11px!important;background:#f1f7f5!important;color:#287b72!important;border:1px solid #dcebe6!important}
-        .toggle-password:hover{background:#e1f4ed!important;transform:translateY(-50%) scale(1.04)!important}
-        .password-eye-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
-        .toggle-password.is-visible .password-eye-icon path{stroke:#0f766e}
-        .nav-feature-icon{width:21px;height:21px;flex:0 0 21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
-        .sidebar-menu button{display:flex;align-items:center;gap:11px}
-        .capability-ribbon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 24px}
-        .capability-ribbon>div{display:grid;grid-template-columns:42px 1fr;column-gap:10px;align-items:center;padding:14px;border:1px solid #e3eee9;border-radius:16px;background:linear-gradient(145deg,#fff,#f7fbf9);transition:transform .22s,border-color .22s,box-shadow .22s}
-        .capability-ribbon>div:hover{transform:translateY(-3px);border-color:#b7d8ca;box-shadow:0 12px 25px rgba(20,83,65,.08)}
-        .capability-ribbon .cap-icon{grid-row:span 2;width:42px;height:42px;border-radius:13px;display:grid;place-items:center}
-        .capability-ribbon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-        .cap-green{background:#e1f7ec;color:#15805d}.cap-blue{background:#e5f1ff;color:#2866a6}.cap-violet{background:#f0eaff;color:#7450ae}
-        .capability-ribbon b{font-size:13px;color:#23434a}.capability-ribbon small{font-size:11px;color:#72878a;line-height:1.5}
-        .learning-guide-visual img,.discover-card img{background:linear-gradient(135deg,#e8f3ef,#dbe8f7);object-fit:cover}
-        @media(max-width:620px){.capability-ribbon{grid-template-columns:1fr}.capability-ribbon>div{grid-template-columns:42px 1fr}}
-
-
-        /* Qimma signature refresh: calm premium surfaces and meaningful student actions */
-        .student-hero-banner{position:relative;overflow:hidden;isolation:isolate;background:radial-gradient(circle at 8% 10%,rgba(213,243,106,.28),transparent 30%),linear-gradient(125deg,#f2faf5 0%,#edf7f8 55%,#f8fbf4 100%);border-color:#dcebe2;box-shadow:0 14px 38px rgba(18,59,72,.06)}
-        .student-hero-banner:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;border:1px solid rgba(22,107,100,.09);border-radius:50%;left:-65px;top:-85px;box-shadow:0 0 0 22px rgba(22,107,100,.025),0 0 0 46px rgba(22,107,100,.02)}
-        .student-banner-img{min-height:160px;background:linear-gradient(135deg,#d9eee5,#dce9f7);border:1px solid rgba(255,255,255,.85)}
-        .qimma-next-step{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;align-items:center;margin:22px 0;padding:23px;border-radius:22px;border:1px solid #e0ebe4;background:linear-gradient(135deg,#fff 0%,#f7fbf8 100%);box-shadow:0 12px 30px rgba(18,59,72,.045)}
-        .next-step-kicker{display:inline-block;padding:5px 10px;border-radius:999px;background:#e8f6ee;color:#18745d;font-size:11px;font-weight:900;margin-bottom:9px}
-        .next-step-copy h3{font-size:21px;color:#123b48;font-weight:950;margin-bottom:7px}
-        .next-step-copy p{font-size:13px;line-height:1.9;color:#63767a}
-        .next-step-actions{display:grid;gap:10px}
-        .next-action{display:flex;align-items:center;gap:12px;text-align:right;width:100%;padding:12px 14px!important;margin:0!important;border:1px solid #e1ece6!important;border-radius:15px!important;background:#fff!important;color:#23434a!important;box-shadow:none!important;transform:none!important;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease!important}
-        .next-action:hover{transform:translateY(-2px)!important;border-color:#a7d7c3!important;box-shadow:0 10px 22px rgba(18,59,72,.08)!important}
-        .next-action-icon{width:42px;height:42px;flex:0 0 42px;border-radius:13px;display:grid;place-items:center}
-        .next-action-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-        .next-quant .next-action-icon{background:#e4f6ec;color:#167b58}.next-verbal .next-action-icon{background:#e8f0ff;color:#4268aa}
-        .next-action>span:nth-child(2){display:grid;gap:3px;flex:1}.next-action b{font-size:13px;font-weight:900}.next-action small{font-size:11px;color:#74878a;font-weight:600}
-        .next-arrow{font-size:20px;color:#8aa19b;transition:transform .2s}.next-action:hover .next-arrow{transform:translateX(-4px);color:#18745d}
-        .student-quote-strip{position:relative;overflow:hidden}.student-quote-strip p{transition:opacity .18s ease,transform .18s ease}.student-quote-strip p.quote-changing{opacity:0;transform:translateY(4px)}.student-quote-strip:after{content:"";position:absolute;left:-28px;bottom:-50px;width:120px;height:120px;border:1px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 15px rgba(255,255,255,.035),0 0 0 30px rgba(255,255,255,.025);pointer-events:none}
-        .section-big-card{background:linear-gradient(115deg,#fff,#f8fbf8);border-color:#e4ece7}
-        .section-big-card:active,.next-action:active{transform:scale(.99)!important}
-        .student-hero-banner,.qimma-next-step,.student-quote-strip{animation:softRise .55s ease both}
-        @keyframes softRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        @media(max-width:760px){.qimma-next-step{grid-template-columns:1fr;padding:17px}.next-step-copy h3{font-size:19px}}
-        @media(prefers-reduced-motion:reduce){.student-hero-banner,.qimma-next-step,.student-quote-strip{animation:none!important}}
-
-</style>
-
-<style id="qimma-extra-polish">
-:root{--qm-ink:#153b35;--qm-mint:#19b88a;--qm-gold:#e5b85c;--qm-glass:rgba(255,255,255,.88)}
-html{scroll-behavior:smooth;scroll-padding-top:24px}
-body{background-image:radial-gradient(ellipse at 8% 0%,rgba(25,184,138,.055),transparent 34%),radial-gradient(ellipse at 95% 90%,rgba(229,184,92,.06),transparent 30%)}
-button,a,.model-btn,[role="button"]{transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,filter .22s ease,border-color .22s ease}
-button:active,.model-btn:active,[role="button"]:active{transform:scale(.975)}
-button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px solid rgba(25,184,138,.5);outline-offset:3px}
-#qm-scroll-progress{position:fixed;top:0;right:0;height:3px;width:0;z-index:10050;background:linear-gradient(90deg,#19b88a,#8de4c7,#e5b85c);box-shadow:0 0 12px rgba(25,184,138,.3);transition:width .08s linear;pointer-events:none}
-#qm-back-top{position:fixed;bottom:24px;left:24px;z-index:10020;width:46px;height:46px;border:1px solid rgba(25,184,138,.22);border-radius:16px;background:rgba(255,255,255,.92);color:#087e61;box-shadow:0 8px 28px rgba(16,65,53,.13);display:grid;place-items:center;opacity:0;visibility:hidden;transform:translateY(12px);backdrop-filter:blur(12px);cursor:pointer}
-#qm-back-top.visible{opacity:1;visibility:visible;transform:translateY(0)}
-#qm-back-top:hover{background:#e8fbf4;box-shadow:0 12px 30px rgba(16,65,53,.18)}
-#qm-back-top svg{width:21px;height:21px}
-#qm-toast-stack{position:fixed;top:22px;left:22px;z-index:10060;display:grid;gap:10px;pointer-events:none}
-.qm-toast{display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 36px));padding:12px 16px;border:1px solid rgba(25,184,138,.18);border-radius:16px;background:rgba(255,255,255,.96);color:#153b35;box-shadow:0 14px 40px rgba(20,54,46,.14);font-size:14px;animation:qm-toast-in .3s ease both;backdrop-filter:blur(12px)}
-.qm-toast svg{width:20px;height:20px;flex:none;color:#12a77c}.qm-toast.out{animation:qm-toast-out .25s ease both}
-@keyframes qm-toast-in{from{opacity:0;transform:translateX(-12px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes qm-toast-out{to{opacity:0;transform:translateX(-10px) scale(.97)}}
-/* Elegant hover treatment for content cards without changing their layout. */
-.stat-card,.section-big-card,.model-card,.feature-card,.info-card{transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
-@media(hover:hover){.stat-card:hover,.section-big-card:hover,.model-card:hover,.feature-card:hover,.info-card:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(19,69,56,.10);border-color:rgba(25,184,138,.28)}}
-@media(max-width:600px){#qm-back-top{bottom:14px;left:14px;width:42px;height:42px;border-radius:14px}#qm-toast-stack{top:12px;left:12px;right:12px}.qm-toast{max-width:100%}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-</style>
-
-<style id="qimma-analytics-style">
-.stats-page-head{padding:26px;border-radius:24px;background:radial-gradient(circle at 5% 5%,#d9f99d88,transparent 32%),linear-gradient(125deg,#effcf4,#eff6ff);border:1px solid #d8eade;margin-bottom:20px}.stats-kicker{color:#0f766e;font-weight:800;font-size:12px;letter-spacing:.08em}.stats-page-head h1{margin:8px 0;color:#123b48}.stats-page-head p{margin:0;color:#64748b;line-height:1.8}.student-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.student-stat-card,.stats-detail-card{padding:22px;border:1px solid #e2ece5;border-radius:22px;background:linear-gradient(150deg,#fff,#f8fbf9);box-shadow:0 12px 30px #123b480b;transition:transform .22s,box-shadow .22s}.student-stat-card:hover,.stats-detail-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px #123b4815}.student-stat-card .stat-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#dff7e8;color:#087f5b;font-size:22px;font-weight:900;margin-bottom:14px}.student-stat-card small,.student-stat-card span{display:block;color:#64748b}.student-stat-card strong{display:block;font-size:34px;color:#123b48;margin:8px 0}.student-stat-card span:last-child{font-size:12px}.stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}.stats-detail-card h3{margin:0 0 15px;color:#123b48}.stats-detail-card p{line-height:1.9;color:#64748b}.stats-detail-card button{margin:5px!important}.student-stat-card strong.pulse-stat{animation:statPulse .35s ease}@keyframes statPulse{50%{transform:scale(1.08);color:#0f766e}}@media(max-width:700px){.student-stat-grid,.stats-detail-grid{grid-template-columns:1fr}.stats-page-head{padding:20px}}
-</style>
+    </style>
+    <style id="qimma-analytics-style">
+        .stats-page-head{padding:26px;border-radius:24px;background:radial-gradient(circle at 5% 5%,#d9f99d88,transparent 32%),linear-gradient(125deg,#effcf4,#eff6ff);border:1px solid #d8eade;margin-bottom:20px}.stats-kicker{color:#0f766e;font-weight:800;font-size:12px;letter-spacing:.08em}.stats-page-head h1{margin:8px 0;color:#123b48}.stats-page-head p{margin:0;color:#64748b;line-height:1.8}.student-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.student-stat-card,.stats-detail-card{padding:22px;border:1px solid #e2ece5;border-radius:22px;background:linear-gradient(150deg,#fff,#f8fbf9);box-shadow:0 12px 30px #123b480b;transition:transform .22s,box-shadow .22s}.student-stat-card:hover,.stats-detail-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px #123b4815}.student-stat-card .stat-symbol{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#dff7e8;color:#087f5b;font-size:22px;font-weight:900;margin-bottom:14px}.student-stat-card small,.student-stat-card span{display:block;color:#64748b}.student-stat-card strong{display:block;font-size:34px;color:#123b48;margin:8px 0}.student-stat-card span:last-child{font-size:12px}.stats-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}.stats-detail-card h3{margin:0 0 15px;color:#123b48}.stats-detail-card p{line-height:1.9;color:#64748b}.stats-detail-card button{margin:5px!important}
+    </style>
 </head>
 <body id="appBody">
 
@@ -564,15 +348,15 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 <li id="menu-student"><button onclick="navigateTo('student')">📚 الرئيسية والأقسام</button></li>
                 <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
                 <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
-                <li id="menu-student-stats"><button onclick="navigateTo('student-stats')"><span class="nav-icon">▥</span><span>إحصائيات الطالب</span></button></li>
-                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m8 12 2.5 2.5L16.5 9"/></svg><span>اختبار قياس المحاكي</span></button></li>
+                <li id="menu-student-stats"><button onclick="navigateTo('student-stats')"><span>▥</span><span>إحصائيات الطالب</span></button></li>
+                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')"><span>⏱️</span><span>اختبار قياس المحاكي</span></button></li>
             </div>
             
             <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
                 <div class="admin-sidebar-title">👑 لوحة المشرف</div>
                 <li><button onclick="navigateTo('student-preview')">👁️ معاينة الطالب</button></li>
                 <li><button onclick="openAdminTab('add-question-box')">➕ إضافة سؤال جديد</button></li>
-                <li><button onclick="openAdminTab('qiyas-question-box')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 6h13M8 10h8M8 13h5"/></svg><span>أسئلة قياس المحاكي</span></button></li>
+                <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
                 <li><button onclick="openAdminTab('add-custom-model-box')">🏷️ إضافة نماذج للاختبار</button></li>
                 <li><button onclick="openAdminTab('manage-models-box')">📋 إدارة نماذج الاختبارات</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
@@ -601,26 +385,6 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                             <button class="primary-cta" onclick="switchView('register')">ابدأ رحلتك <span>←</span></button>
                             <button class="secondary-cta" onclick="switchView('login')">لديّ حساب بالفعل</button>
                         </div>
-                        <div class="hero-proof"><div class="proof-avatars"><span>ط</span><span>ق</span><span>ن</span></div><div><strong>تعلّم بثقة وعلى وتيرتك</strong><small>تدريب لفظي وكمي في مكان واحد</small></div></div>
-                    </div>
-                    <div class="hero-visual">
-                        <div class="hero-photo-main"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1100&q=85" alt="طالب يستعد للدراسة" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="photo-shade"></div><div class="photo-caption"><span class="caption-icon">✦</span><div><strong>كل سؤال يقرّبك من هدفك</strong><small>خطوة صغيرة، إنجاز أكبر</small></div></div></div>
-                        <div class="floating-note note-score"><span class="note-symbol">↗</span><div><strong>تقدّم مستمر</strong><small>تابع تطور مستواك</small></div></div>
-                        <div class="floating-note note-book"><span class="note-symbol">▤</span><div><strong>نماذج متنوعة</strong><small>لفظي · كمي</small></div></div>
-                        <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
-                    </div>
-                </section>
-                <section class="landing-stats">
-                    <div><span class="stat-icon">✎</span><div><strong>تدرّب بذكاء</strong><small>أسئلة تساعدك على تثبيت المفاهيم</small></div></div>
-                    <div><span class="stat-icon">◷</span><div><strong>اختبر وقتك</strong><small>تدرّب على أجواء الاختبار</small></div></div>
-                    <div><span class="stat-icon">⌁</span><div><strong>تابع تقدّمك</strong><small>ارجع للتدريب وقتما تشاء</small></div></div>
-                </section>
-                <section class="landing-discover">
-                    <div class="discover-heading"><div><span class="eyebrow">ابدأ من هنا</span><h2>اختر طريقك إلى التميّز</h2></div><p>محتوى منظّم وتجربة بسيطة تساعدك تركز على الأهم.</p></div>
-                    <div class="discover-grid">
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1455390582262-0440a436f2e3?auto=format&fit=crop&w=800&q=80" alt="كتب ودفتر للقراءة والتعلّم" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=900&q=80'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">01 / لفظي</span><h3>قوِّ مهاراتك اللفظية</h3><p>تدرّب على الفهم والاستيعاب والعلاقات اللغوية.</p><button onclick="switchView('login')">اكتشف التدريب <b>←</b></button></div></article>
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80" alt="كمي" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">02 / كمي</span><h3>فكّر بطريقة أذكى</h3><p>طوّر مهاراتك في المسائل والتفكير الرياضي.</p><button onclick="switchView('login')">ابدأ الحل <b>←</b></button></div></article>
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="محاكاة" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">03 / محاكاة</span><h3>جرّب أجواء الاختبار</h3><p>تدرّب على نماذج تساعدك تستعد بثقة.</p><button onclick="switchView('login')">شاهد النماذج <b>←</b></button></div></article>
                     </div>
                 </section>
                 <footer class="landing-footer"><div class="footer-brand"><span class="brand-icon">ق</span><strong>قِمّة</strong></div><span>رحلتك تبدأ بخطوة، واصل التقدّم.</span><button onclick="switchView('register')">أنشئ حسابك الآن ↗</button></footer>
@@ -634,7 +398,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" aria-label="إظهار كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="submit">دخول للمنصة 🚀</button>
@@ -655,7 +419,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                     <div class="form-group"><label>كلمة المرور الجديدة:</label>
                         <div class="password-container">
                             <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="إظهار كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="button" onclick="submitNewPassword()" style="background: #10b981;">تحديث كلمة المرور ✅</button>
@@ -672,7 +436,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" aria-label="إظهار كلمة المرور">👁️</button>
                         </div>
                     </div>
                     <button type="submit">إنشاء حساب 🔥</button>
@@ -687,10 +451,8 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                         <h2 id="student-welcome">أهلاً بك يا بطل القمة! 🌟</h2>
                         <p>ابدأ يومك بتحدٍ جديد في القسم الكمي أو اللفظي، وراقب تقدمك المستمر نحو تحقيق هدفك في اختبار القدرات.</p>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80" alt="طلاب متميزون" class="student-banner-img" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">
-                    <div class="capability-ribbon" aria-label="مهارات اختبار القدرات"><div><span class="cap-icon cap-green"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-7"/></svg></span><b>تحليل ذكي</b><small>افهم السؤال قبل الحل</small></div><div><span class="cap-icon cap-blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>إدارة الوقت</b><small>تدرّب بثقة وهدوء</small></div><div><span class="cap-icon cap-violet"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></svg></span><b>تقدّم مستمر</b><small>كل محاولة تصنع فرقًا</small></div></div>
+                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80" alt="طلاب متميزون" class="student-banner-img">
                 </div>
-
                 <div class="motivation-box">
                     <div class="motivation-icon">💡</div>
                     <div class="motivation-content">
@@ -698,57 +460,28 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                         <p>"النجاح ليس وليد الصدفة، بل هو ثمرة الاجتهاد، الصبر، والمثابرة اليومية. استمر في السعي نحو القمة!"</p>
                     </div>
                 </div>
-
-                <div class="student-quote-strip" aria-live="polite">
-                    <span class="quote-mark">❝</span>
-                    <div><p id="dailyMotivationQuote">لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.</p><small>رسالة لك: الاستمرار يصنع الفرق.</small></div>
-                </div>
-
-                <section class="qimma-next-step" aria-label="خطوتك التالية">
-                    <div class="next-step-copy"><span class="next-step-kicker">خطوة صغيرة اليوم تصنع فرقًا</span><h3>ماذا ستنجز اليوم؟</h3><p>اختر مسارك وابدأ بجلسة قصيرة. التقدم يبدأ بالمحاولة الأولى.</p></div>
-                    <div class="next-step-actions"><button type="button" class="next-action next-quant" onclick="navigateTo('quant')"><span class="next-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16l4-5 3 2 4-7"/><path d="M16 6h2v2"/></svg></span><span><b>تحدي كمي</b><small>حلّل الأرقام والعلاقات</small></span><span class="next-arrow">←</span></button><button type="button" class="next-action next-verbal" onclick="navigateTo('verbal')"><span class="next-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17H7.5A2.5 2.5 0 0 0 5 21.5z"/><path d="M5 5v16M9 7h7M9 11h7M9 15h5"/></svg></span><span><b>تحدي لفظي</b><small>اقرأ واربط واستنتج</small></span><span class="next-arrow">←</span></button></div>
-                </section>
-
                 <div class="student-video-card" style="margin-top: 20px;">
                     <video id="studentVideo" controls><source src="intro-qudrat.mp4" type="video/mp4"></video>
                 </div>
-
                 <div class="sections-stack">
-                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح القسم الكمي" onclick="navigateTo('quant')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('quant')}">
+                    <div class="section-big-card" onclick="navigateTo('quant')">
                         <div class="section-big-icon">📐</div>
-                        <div>
-                            <h3>القسم الكمي</h3>
-                            <p>اصقل مهاراتك الرياضية، الجبر، الهندسة والإحصاء بأسلوب تفاعلي.</p>
-                        </div>
+                        <div><h3>القسم الكمي</h3><p>اصقل مهاراتك الرياضية، الجبر، الهندسة والإحصاء بأسلوب تفاعلي.</p></div>
                     </div>
-                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح القسم اللفظي" onclick="navigateTo('verbal')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('verbal')}">
+                    <div class="section-big-card" onclick="navigateTo('verbal')">
                         <div class="section-big-icon">📚</div>
-                        <div>
-                            <h3>القسم اللفظي</h3>
-                            <p>استكشف أسرار التناظر اللفظي واستيعاب المقروء والخطأ السياقي.</p>
-                        </div>
+                        <div><h3>القسم اللفظي</h3><p>استكشف أسرار التناظر اللفظي واستيعاب المقروء والخطأ السياقي.</p></div>
                     </div>
-                    <div class="section-big-card" role="button" tabindex="0" aria-label="فتح اختبار قياس التجريبي" onclick="navigateTo('qiyas')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigateTo('qiyas')}" style="border-color: #10b981; background: #f0fdf4;">
+                    <div class="section-big-card" onclick="navigateTo('qiyas')" style="border-color: #10b981; background: #f0fdf4;">
                         <div class="section-big-icon" style="background: #d1fae5; color: #065f46;">⏱️</div>
-                        <div>
-                            <h3 style="color: #065f46;">اختبار قياس التجريبي المحاكي</h3>
-                            <p>عش أجواء اختبار قياس الحقيقي واختبر جاهزيتك الكاملة.</p>
-                        </div>
+                        <div><h3 style="color: #065f46;">اختبار قياس التجريبي المحاكي</h3><p>عش أجواء اختبار قياس الحقيقي واختبر جاهزيتك الكاملة.</p></div>
                     </div>
                 </div>
             </div>
 
             <div id="quant-page" class="app-section">
                 <h2>📐 القسم الكمي</h2>
-                <div class="section-detail-box">
-                    <h3>دليل القسم الكمي</h3>
-                    <p>يقيس القسم الكمي قدرتك على فهم العلاقات الرياضية وتحليل المعطيات واختيار الحل الأكثر كفاءة. لا تعتمد على الحفظ وحده؛ افهم الفكرة، حدّد المعطيات، ثم اختر استراتيجية الحل المناسبة.</p>
-                </div>
-                <div class="learning-guide">
-                    <div><h3>كيف تتدرّب بذكاء؟</h3><p>ابدأ بالأساسيات ثم انتقل تدريجيًا إلى الأسئلة المركبة. اكتب خطواتك عند التعلّم، وبعدها درّب نفسك على الحل الذهني وإدارة الوقت.</p><ul><li><b>الجبر:</b> المعادلات، النسب، والتناسب.</li><li><b>الهندسة:</b> الزوايا، المساحات، المحيط والحجم.</li><li><b>الإحصاء والاحتمالات:</b> المتوسط والوسيط وقراءة البيانات.</li><li><b>الاستراتيجية:</b> استبعد الخيارات غير المنطقية وتحقق من الوحدات.</li></ul></div>
-                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=900&q=85" alt="معادلات وأفكار رياضية على لوحة" loading="lazy" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><span>فكّر • حلّل • تحقّق</span></div>
-                </div>
-                <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">∑</div><h4>افهم النمط</h4><p>ابحث عن العلاقة بين الأرقام قبل البدء بالحساب الطويل.</p></article><article class="skill-card"><div class="skill-symbol">△</div><h4>ارسم المعطيات</h4><p>الرسم البسيط يساعد على فهم المسائل الهندسية بسرعة.</p></article><article class="skill-card"><div class="skill-symbol">✓</div><h4>راجع خطأك</h4><p>دوّن سبب الخطأ وأعد حل السؤال بعد فترة لتثبيت الفكرة.</p></article></div>
+                <div class="section-detail-box"><h3>دليل القسم الكمي</h3><p>يقيس القسم الكمي قدرتك على فهم العلاقات الرياضية وتحليل المعطيات.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('quant', 'exam')" style="background: #10b981;">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('quant', 'training')">⚡ تدريب مكثف</button>
@@ -758,15 +491,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
 
             <div id="verbal-page" class="app-section">
                 <h2>📚 القسم اللفظي</h2>
-                <div class="section-detail-box">
-                    <h3>دليل القسم اللفظي</h3>
-                    <p>يساعدك القسم اللفظي على فهم النصوص والعلاقات بين الكلمات واكتشاف المعنى الدقيق في السياق. اقرأ السؤال بعناية، واستند إلى الدليل الموجود في النص بدلًا من الاعتماد على الانطباع الأول.</p>
-                </div>
-                <div class="learning-guide">
-                    <div><h3>طوّر فهمك اللغوي خطوة بخطوة</h3><p>اقرأ يوميًا نصًا قصيرًا، واستخرج فكرته الرئيسة والكلمات الجديدة. عند حل السؤال، اسأل نفسك: ما العلاقة المطلوبة؟ وما الدليل الذي يدعم اختياري؟</p><ul><li><b>استيعاب المقروء:</b> حدّد الفكرة الرئيسة والتفاصيل والاستنتاجات.</li><li><b>التناظر اللفظي:</b> صغ العلاقة بين الكلمتين في عبارة قصيرة.</li><li><b>إكمال الجمل:</b> انتبه إلى الروابط مثل «لكن» و«لذلك».</li><li><b>الخطأ السياقي:</b> اختر الكلمة التي لا تنسجم مع معنى الجملة.</li></ul></div>
-                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1455390582262-0440a436f2e3?auto=format&fit=crop&w=900&q=85" alt="كتب ودفتر للقراءة والتعلّم" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=900&q=80'"><span>اقرأ • اربط • استنتج</span></div>
-                </div>
-                <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">Aa</div><h4>وسّع مفرداتك</h4><p>تعلّم الكلمة ضمن جملة، ولا تكتفِ بحفظ معناها المنفرد.</p></article><article class="skill-card"><div class="skill-symbol">↔</div><h4>حدّد العلاقة</h4><p>في التناظر، عبّر عن العلاقة بوضوح قبل اختيار الإجابة.</p></article><article class="skill-card"><div class="skill-symbol">¶</div><h4>استدل من النص</h4><p>فرّق بين المعلومة الصريحة والاستنتاج الذي يدعمه النص.</p></article></div>
+                <div class="section-detail-box"><h3>دليل القسم اللفظي</h3><p>يساعدك القسم اللفظي على فهم النصوص والعلاقات بين الكلمات.</p></div>
                 <div class="action-buttons-grid">
                     <button onclick="openModelsSelection('verbal', 'exam')" style="background: #10b981;">🎯 اختبار محاكي</button>
                     <button onclick="openModelsSelection('verbal', 'training')">⚡ تدريب مكثف</button>
@@ -801,7 +526,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                     <article class="student-stat-card"><span class="stat-symbol">▤</span><small>الاختبارات المكتملة</small><strong id="student-tests-count">—</strong><span>الاختبارات المسجلة في حسابك</span></article>
                     <article class="student-stat-card"><span class="stat-symbol">%</span><small>متوسط الدقة</small><strong id="student-average-score">—</strong><span>من 100</span></article>
                 </div>
-                <div class="stats-detail-grid"><section class="stats-detail-card"><h3>🎯 نقاط تحتاج إلى تقوية</h3><div id="student-weak-points">ستظهر هنا بعد تسجيل محاولاتك.</div></section><section class="stats-detail-card"><h3>🌱 خطوتك التالية</h3><p>استمر في التدريب، وراجع الأسئلة التي أخطأت فيها. ستصبح هذه اللوحة أدق كلما سُجّلت محاولاتك.</p><button class="primary-cta" onclick="navigateTo('quant')">ابدأ تدريبًا كميًا ←</button> <button class="secondary-cta" onclick="navigateTo('verbal')">ابدأ تدريبًا لفظيًا ←</button></section></div>
+                <div class="stats-detail-grid"><section class="stats-detail-card"><h3>🎯 نقاط تحتاج إلى تقوية</h3><div id="student-weak-points">ستظهر هنا بعد تسجيل محاولاتك.</div></section><section class="stats-detail-card"><h3>🌱 خطوتك التالية</h3><p>استمر في التدريب، وراجع الأسئلة التي أخطأت فيها.</p><button class="primary-cta" onclick="navigateTo('quant')">ابدأ تدريبًا كميًا ←</button></section></div>
                 <button class="secondary-cta" onclick="navigateTo('student')">العودة إلى الرئيسية</button>
             </div>
 
@@ -1007,12 +732,10 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             switchView(view);
         }
 
-        let viewTransitionToken = 0;
         function switchView(view) {
-            const token = ++viewTransitionToken;
             sessionStorage.setItem('currentView', view);
             hideAlerts();
-            const previousView = document.querySelector('.app-section.active-view');
+            document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
             document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
 
             let targetId = '';
@@ -1036,39 +759,8 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
 
             updateAuthStateUI();
             const target = document.getElementById(targetId);
-            if (!target) return;
-            const bar = document.getElementById('page-transition-bar');
-            if (bar) { bar.classList.remove('done'); bar.classList.add('active'); }
-            document.body.classList.add('is-navigating');
+            if (target) target.classList.add('active-view');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            const activateTarget = () => {
-                if (token !== viewTransitionToken) return;
-                document.querySelectorAll('.app-section.active-view').forEach(section => {
-                    if (section !== target) {
-                        section.classList.remove('active-view');
-                        section.style.pointerEvents = '';
-                        section.style.opacity = '';
-                        section.style.transform = '';
-                    }
-                });
-                target.style.pointerEvents = '';
-                target.style.opacity = '';
-                target.style.transform = '';
-                target.classList.add('active-view');
-                target.setAttribute('aria-current', 'page');
-                window.setTimeout(() => {
-                    if (token !== viewTransitionToken) return;
-                    if (bar) { bar.classList.remove('active'); bar.classList.add('done'); }
-                    document.body.classList.remove('is-navigating');
-                }, 360);
-            };
-            if (previousView && previousView !== target) {
-                previousView.style.pointerEvents = 'none';
-                previousView.style.opacity = '0';
-                previousView.style.transform = 'translateY(-6px) scale(.995)';
-                window.setTimeout(activateTarget, 110);
-            } else activateTarget();
         }
 
         function openAdminTab(tabId) {
@@ -1165,13 +857,13 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 const base64Data = e.target.result;
                 if (mode === 'add') {
                     document.getElementById('qImage').value = base64Data;
-                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
+                    document.getElementById('addImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة">`;
                 } else if (mode === 'qiyas') {
                     document.getElementById('qiyasImage').value = base64Data;
-                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
+                    document.getElementById('qiyasImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة">`;
                 } else if (mode === 'edit') {
                     document.getElementById('editQImage').value = base64Data;
-                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">`;
+                    document.getElementById('editImagePreviewContainer').innerHTML = `<img src="${base64Data}" style="max-height: 100px; border-radius: 8px;" alt="صورة">`;
                 }
             };
             reader.readAsDataURL(file);
@@ -1315,7 +1007,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                             </div>
                         </div>
                         <p style="font-weight:700; color:#1e293b; font-size:15px;">${q.question}</p>
-                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">` : ''}
+                        ${q.image ? `<img src="${q.image}" style="max-height:150px; border-radius:8px; width:fit-content;" alt="صورة">` : ''}
                         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; font-size:13px; background:#f8fafc; padding:10px; border-radius:8px;">
                             <div>أ) ${opts[0]}</div><div>ب) ${opts[1]}</div><div>ج) ${opts[2]}</div><div>د) ${opts[3]}</div>
                         </div>
@@ -1489,17 +1181,6 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             });
         });
 
-        async function toggleModelStatus(section, uniqueKey) {
-            try {
-                await fetch('/api/admin/toggle-model', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ section, uniqueKey, adminEmail: sessionStorage.getItem('sessionUserEmail') })
-                });
-                loadAdminModelsList(section);
-            } catch (e) { alert('خطأ في الاتصال'); }
-        }
-
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
@@ -1619,29 +1300,51 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             const input = document.getElementById(fieldId);
             const isShowing = input.type === 'password';
             input.type = isShowing ? 'text' : 'password';
-            btn.classList.toggle('is-visible', isShowing);
-            btn.setAttribute('aria-label', isShowing ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
-            btn.setAttribute('title', isShowing ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
-            const svg = btn.querySelector('svg');
-            if (svg) svg.innerHTML = isShowing
-              ? '<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.3 0 9.8 7 9.8 7a16 16 0 0 1-3.1 3.8M6.2 6.2C3.7 8 2.2 12 2.2 12s3.5 7 9.8 7c1.2 0 2.3-.2 3.3-.7"/>'
-              : '<path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/>';
+            btn.innerText = isShowing ? '🙈' : '👁️';
         }
 
         async function verifyForgotEmail() {
             verifiedForgotEmail = document.getElementById('forgotEmail').value;
-            if(!verifiedForgotEmail) return;
-            showLoading('تحقق...', 800, () => {
-                document.getElementById('forgot-step-1').classList.add('hidden');
-                document.getElementById('forgot-step-2').classList.remove('hidden');
+            if(!verifiedForgotEmail) {
+                showAlert('forgot', '⚠️ يرجى إدخال البريد الإلكتروني!', false);
+                return;
+            }
+            showLoading('تحقق...', 800, async () => {
+                try {
+                    const r = await fetch('/api/check-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: verifiedForgotEmail })
+                    });
+                    const d = await r.json();
+                    if (!d.success) {
+                        showAlert('forgot', d.message, false);
+                    } else {
+                        hideAlerts();
+                        document.getElementById('forgot-step-1').classList.add('hidden');
+                        document.getElementById('forgot-step-2').classList.remove('hidden');
+                    }
+                } catch(e) {
+                    showAlert('forgot', '❌ حدث خطأ في الاتصال بالخادم', false);
+                }
             });
         }
 
         async function submitNewPassword() {
             const newPass = document.getElementById('newPasswordInput').value;
+            if (!newPass || newPass.length < 6) {
+                showAlert('forgot', '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل!', false);
+                return;
+            }
             showLoading('تحديث...', 1000, async () => {
-                await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
-                switchView('login');
+                const r = await fetch('/api/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: verifiedForgotEmail, newPass }) });
+                const d = await r.json();
+                if (d.success) {
+                    showAlert('forgot', d.message, true);
+                    setTimeout(() => switchView('login'), 1200);
+                } else {
+                    showAlert('forgot', d.message, false);
+                }
             });
         }
 
@@ -1656,7 +1359,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             container.innerHTML = `
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 20px;">
                     <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">${q.question}</p>
-                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"></div>` : ''}
+                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"></div>` : ''}
                     <div style="display: flex; flex-direction: column; gap: 14px;">
                         <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">أ) ${opts[0]}</button>
                         <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ب) ${opts[1]}</button>
@@ -1706,7 +1409,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 const questions = await (await fetch('/api/questions')).json();
                 globalQuestionsCache = questions;
                 const el = document.getElementById('statsText');
-                if (el) el.innerHTML = `<div class="student-stat-grid"><article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${questions.length}</strong></article><article class="student-stat-card"><small>نماذج مضافة</small><strong id="admin-model-count">…</strong></article><article class="student-stat-card"><small>عدد الطلاب</small><strong id="admin-student-count">…</strong></article></div><p style="color:#64748b">لإظهار ترتيب النماذج حسب الإجابات الصحيحة ودرجات الطلاب، يجب تسجيل محاولات الاختبارات في الخادم أولًا.</p>`;
+                if (el) el.innerHTML = `<div class="student-stat-grid"><article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${questions.length}</strong></article><article class="student-stat-card"><small>نماذج مضافة</small><strong id="admin-model-count">…</strong></article><article class="student-stat-card"><small>عدد الطلاب</small><strong id="admin-student-count">…</strong></article></div>`;
                 const [modelsRes, usersRes] = await Promise.allSettled([
                     fetch('/api/custom-models').then(r=>r.json()),
                     fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})}).then(r=>r.json())
@@ -1724,11 +1427,12 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                         <article class="student-stat-card"><small>متوسط الدقة</small><strong>${analytics.averageScore}%</strong></article>
                         <article class="student-stat-card"><small>الإجابات المسجلة</small><strong>${analytics.attemptsCount}</strong></article></div>
                         <h3 style="text-align:right;margin:22px 0 12px">النماذج الأكثر إجابات صحيحة</h3>
-                        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr><th>النموذج</th><th>إجابات صحيحة</th><th>عدد الإجابات</th><th>الطلاب</th><th>متوسط الدقة</th></tr></thead><tbody>${analytics.popularModels.map((m,i)=>`<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">${i+1}. ${m.section==='verbal'?'لفظي':m.section==='mock'?'محاكي قياس':'كمي'} — نموذج ${m.model}</td><td>${m.correctAnswers}</td><td>${m.answers}</td><td>${m.students}</td><td>${m.averageScore}%</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px">ستظهر نتائج ترتيب النماذج بعد تسجيل محاولات الطلاب.</td></tr>'}</tbody></table></div>`;
+                        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr><th>النموذج</th><th>إجابات صحيحة</th><th>عدد الإجابات</th><th>الطلاب</th><th>متوسط الدقة</th></tr></thead><tbody>${analytics.popularModels.map((m,i)=>`<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">${i+1}. ${m.section==='verbal'?'لفظي':m.section==='mock'?'محاكي قياس':'كمي'} — نموذج ${m.model}</td><td>${m.correctAnswers}</td><td>${m.answers}</td><td>${m.students}</td><td>${m.averageScore}%</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px">لا توجد محاولات مسجلة بعد.</td></tr>'}</tbody></table></div>`;
                     }
                 } catch(e) {}
-            } catch (e) { const el=document.getElementById('statsText'); if(el)el.textContent='تعذر تحميل الإحصائيات؛ تحقق من اتصال الخادم.'; }
+            } catch (e) { const el=document.getElementById('statsText'); if(el)el.textContent='تعذر تحميل الإحصائيات.'; }
         }
+
         async function loadStudentStats() {
             const email = sessionStorage.getItem('sessionUserEmail');
             try {
@@ -1738,12 +1442,12 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
                 document.getElementById('student-correct-count').textContent=d.correctAnswers ?? 0;
                 document.getElementById('student-tests-count').textContent=d.testsTaken ?? 0;
                 document.getElementById('student-average-score').textContent=(d.averageScore ?? 0)+'%';
-                document.getElementById('student-weak-points').innerHTML=(d.weakPoints?.length ? d.weakPoints.map(x=>`<p>• ${x.section==='verbal'?'اللفظي':'الكمي'} — دقة ${x.accuracy}%</p>`).join('') : '<p>لا توجد بيانات كافية بعد. ابدأ بحل التدريبات لتحديد نقاط القوة والتحسين.</p>');
+                document.getElementById('student-weak-points').innerHTML=(d.weakPoints?.length ? d.weakPoints.map(x=>`<p>• ${x.section==='verbal'?'اللفظي':'الكمي'} — دقة ${x.accuracy}%</p>`).join('') : '<p>لا توجد نقاط ضعف مسجلة. استمر في التدريب الممتاز!</p>');
             } catch(e) {
-                document.getElementById('student-correct-count').textContent='—';
-                document.getElementById('student-tests-count').textContent='—';
-                document.getElementById('student-average-score').textContent='—';
-                document.getElementById('student-weak-points').innerHTML='<p>إحصائيات المحاولات ستظهر بعد ربط تسجيل الإجابات في الخادم.</p>';
+                document.getElementById('student-correct-count').textContent='0';
+                document.getElementById('student-tests-count').textContent='0';
+                document.getElementById('student-average-score').textContent='0%';
+                document.getElementById('student-weak-points').innerHTML='<p>ابدأ بحل التدريبات لتظهر إحصائياتك هنا.</p>';
             }
         }
 
@@ -1755,7 +1459,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             await updateEditModelDropdowns();
             document.getElementById('editQModel').value = q.model || 1;
             document.getElementById('editQImage').value = q.image || '';
-            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'">` : '';
+            document.getElementById('editImagePreviewContainer').innerHTML = q.image ? `<img src="${q.image}" style="max-height: 100px; border-radius: 8px;" alt="صورة">` : '';
             document.getElementById('editQScore').value = q.score || 1;
             document.getElementById('editQText').value = q.question || '';
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
@@ -1829,7 +1533,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             e.preventDefault();
             showLoading('حفظ...', 500, async () => {
                 const res = await (await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section: qSection.value, type: qType.value, model: qModel.value, image: qImage.value || null, score: qScore.value, question: qText.value, options: [qA.value, qB.value, qC.value, qD.value], correct_answer: qCorrect.value }) })).json();
-                if(res.success) { showAlert('q', res.message, true); questionForm.reset(); document.getElementById('addImagePreviewContainer').innerHTML = ''; updateModelDropdowns(); loadAdminStats(); }
+                if(res.success) { showAlert('q', res.message, true); questionForm.reset(); updateModelDropdowns(); loadAdminStats(); }
                 else showAlert('q', res.message, false);
             });
         });
@@ -1838,209 +1542,15 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px s
             e.preventDefault();
             showLoading('حفظ...', 500, async () => {
                 const res = await (await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section: qiyasSection.value, type: 'qiyas_simulation', model: qiyasModelNum.value, image: qiyasImage.value || null, score: qiyasScore.value, question: qiyasText.value, options: [qiyasA.value, qiyasB.value, qiyasC.value, qiyasD.value], correct_answer: qiyasCorrect.value }) })).json();
-                if(res.success) { showAlert('qiyas-q', 'تم الحفظ بنجاح! 🎯', true); qiyasQuestionForm.reset(); document.getElementById('qiyasImagePreviewContainer').innerHTML = ''; updateQiyasModelDropdowns(); loadAdminStats(); }
+                if(res.success) { showAlert('qiyas-q', 'تم الحفظ بنجاح! 🎯', true); qiyasQuestionForm.reset(); updateQiyasModelDropdowns(); loadAdminStats(); }
                 else showAlert('qiyas-q', res.message, false);
             });
-        });
-
-
-
-
-        // Modern icon replacement: converts decorative emoji into a consistent inline-SVG icon set.
-        (() => {
-            const iconPaths = {
-                book:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/><path d="M4 5.5V21M8 7h8M8 11h7"/>',
-                ruler:'<path d="m4 17 13-13 4 4L8 21H4z"/><path d="m13 8 3 3M10 11l2 2M7 14l2 2"/>',
-                clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-                eye:'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>',
-                plus:'<path d="M12 5v14M5 12h14"/>',
-                list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
-                settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.2 1-1.4 2.4-1.5-.6a7.8 7.8 0 0 1-1.7 1l-.3 1.6h-2.8l-.3-1.6a7.8 7.8 0 0 1-1.7-1l-1.5.6-1.4-2.4 1.2-1a7 7 0 0 1 0-2l-1.2-1 1.4-2.4 1.5.6a7.8 7.8 0 0 1 1.7-1l.3-1.6h2.8l.3 1.6a7.8 7.8 0 0 1 1.7 1l1.5-.6 1.4 2.4-1.2 1a7 7 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)"/>',
-                chart:'<path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-7"/>',
-                users:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1z"/><path d="M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 4.5V20"/>',
-                edit:'<path d="m4 16.5-.8 4.3 4.3-.8L20 7.5 16.5 4z"/><path d="m14.5 6 3.5 3.5"/>',
-                trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
-                save:'<path d="M5 3h12l3 3v15H4V3z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
-                check:'<path d="m5 12 4 4L19 6"/>',
-                play:'<path d="m8 5 11 7-11 7z"/>',
-                pause:'<path d="M8 5h3v14H8zM15 5h3v14h-3z"/>',
-                search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
-                upload:'<path d="M12 16V4m-5 5 5-5 5 5"/><path d="M4 15v5h16v-5"/>',
-                download:'<path d="M12 4v12m-5-5 5 5 5-5"/><path d="M4 19h16"/>',
-                logout:'<path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/>',
-                arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
-                shield:'<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
-                sparkle:'<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
-                image:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
-                bell:'<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
-                lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>',
-                help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 4.4 1.9c-1.2 1-1.9 1.3-1.9 3M12 17h.01"/>',
-                target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
-                file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
-                bolt:'<path d="m13 2-9 12h7l-1 8 10-13h-7z"/>',
-                user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-                refresh:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/>',
-                default:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>'
-            };
-            function chooseIcon(label, emoji) {
-                const t=(label+' '+emoji).toLowerCase();
-                if(/حذف|مسح|إزالة|delete|trash/.test(t))return 'trash';
-                if(/حفظ|تحديث|submit|save|تعديل|edit/.test(t))return /تعديل|edit/.test(t)?'edit':'save';
-                if(/تنشيط|تفعيل|تشغيل|active|activate/.test(t))return 'play';
-                if(/تعطيل|إيقاف|pause|disable/.test(t))return 'pause';
-                if(/إضافة|جديد|plus|add/.test(t))return 'plus';
-                if(/بحث|تحقق|search|find/.test(t))return 'search';
-                if(/إحصائ|تقارير|stats|chart/.test(t))return 'chart';
-                if(/حساب|مستخدم|طلاب|أعضاء|account|user/.test(t))return 'users';
-                if(/قياس محاكي|اختبار محاكي لقياس|محاكي قياس/.test(t))return 'target';
-                if(/سؤال|أسئلة|اختبار|نموذج|quiz|question|test/.test(t))return 'file';
-                if(/صورة|ملف|image|upload/.test(t))return 'image';
-                if(/تسجيل الخروج|خروج|logout/.test(t))return 'logout';
-                if(/كلمة المرور|قفل|password|lock/.test(t))return 'lock';
-                if(/رئيسية|الرئيسية|قسم|كتاب|تدريب|home|student/.test(t))return 'book';
-                if(/نقل|سحب|move/.test(t))return 'arrow';
-                if(/تنزيل|تحميل|download/.test(t))return 'download';
-                if(/رفع|upload/.test(t))return 'upload';
-                if(/معاينة|عرض|مشاهدة|view|eye/.test(t))return 'eye';
-                if(/إعداد|إدارة|manage|setting/.test(t))return 'settings';
-                if(/تأكيد|تم|نجاح|check|confirm/.test(t))return 'check';
-                if(/ساعة|وقت|مؤقت|time|clock/.test(t))return 'clock';
-                if(/قياس|هدف|قدرات|target/.test(t))return 'target';
-                if(/مساعدة|help/.test(t))return 'help';
-                if(/دخول|دخول|login/.test(t))return 'shield';
-                return 'book';
-            }
-            const emojiRE=/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}](?:\uFE0F|\uFE0E)?(?:\u200D[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}](?:\uFE0F|\uFE0E)?)*/gu;
-            function iconNode(name, label='') {
-                const span=document.createElement('span');span.className='q-icon';span.setAttribute('aria-hidden','true');span.dataset.qIcon='1';
-                span.innerHTML='<svg viewBox="0 0 24 24" focusable="false">'+(iconPaths[name]||iconPaths.default)+'</svg>';
-                if(label)span.setAttribute('data-icon-label',label);return span;
-            }
-            function upgradeElement(el) {
-                if(!el || el.dataset.iconsUpgraded==='1')return;
-                const label=(el.innerText||el.getAttribute('aria-label')||el.title||'').trim();
-                const isIconSlot=el.matches('.brand-icon,.caption-icon,.stat-icon,.motivation-icon,.section-big-icon,.emoji-icon');
-                if(isIconSlot){
-                    const raw=el.textContent.trim(); if(emojiRE.test(raw)){emojiRE.lastIndex=0;const em=raw.match(emojiRE)?.[0]||'';emojiRE.lastIndex=0;el.textContent='';el.appendChild(iconNode(chooseIcon(label,em)));el.classList.add('icon-tile');el.dataset.iconsUpgraded='1';} else {emojiRE.lastIndex=0;}
-                }
-                if(el.matches('button,.switch-link span,[role="button"]')){
-                    const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-                    nodes.forEach(node=>{if(node.parentElement?.closest('.q-icon'))return;const text=node.nodeValue;if(!emojiRE.test(text)){emojiRE.lastIndex=0;return;}emojiRE.lastIndex=0;
-                        const frag=document.createDocumentFragment();let last=0;for(const match of text.matchAll(emojiRE)){frag.append(document.createTextNode(text.slice(last,match.index)));frag.appendChild(iconNode(chooseIcon(label,match[0]),match[0]));last=match.index+match[0].length;}frag.append(document.createTextNode(text.slice(last)));node.parentNode?.replaceChild(frag,node);
-                    });
-                    el.dataset.iconsUpgraded='1';
-                }
-            }
-            function upgradeAll(root=document){root.querySelectorAll('button,.switch-link span,[role="button"],.brand-icon,.caption-icon,.stat-icon,.motivation-icon,.section-big-icon,.emoji-icon').forEach(upgradeElement);}
-            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>upgradeAll());else upgradeAll();
-            const observer=new MutationObserver(records=>{for(const r of records){if(r.type==='childList'){r.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches?.('button,.switch-link span,[role="button"],.brand-icon,.caption-icon,.stat-icon,.motivation-icon,.section-big-icon,.emoji-icon'))upgradeElement(n);upgradeAll(n);}});}}});
-            observer.observe(document.body,{childList:true,subtree:true});
-        })();
-
-        // Compact progress indicator for sidebar/page changes.
-        (() => {
-            const bar=document.createElement('div');bar.id='qimma-page-progress';bar.setAttribute('aria-hidden','true');document.body.appendChild(bar);
-            let timer;window.qimmaShowTransition=()=>{bar.classList.add('active');clearTimeout(timer);timer=setTimeout(()=>bar.classList.remove('active'),520);};
-            document.addEventListener('click',e=>{if(e.target.closest('.sidebar-menu button,.switch-link span,[onclick*="navigateTo"],[onclick*="switchView"],[onclick*="openAdminTab"]'))window.qimmaShowTransition();});
-            const oldSwitch=window.switchView;if(typeof oldSwitch==='function')window.switchView=function(...args){window.qimmaShowTransition();return oldSwitch.apply(this,args);};
-            const oldNavigate=window.navigateTo;if(typeof oldNavigate==='function')window.navigateTo=function(...args){window.qimmaShowTransition();return oldNavigate.apply(this,args);};
-            const oldAdmin=window.openAdminTab;if(typeof oldAdmin==='function')window.openAdminTab=function(...args){window.qimmaShowTransition();return oldAdmin.apply(this,args);};
-        })();
-
-
-        // Gentle rotating encouragement for students.
-        (() => {
-            const quotes = [
-                'لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.',
-                'كل سؤال تحاول فهمه اليوم يقربك خطوة من هدفك.',
-                'الخطأ ليس نهاية المحاولة؛ إنه معلومة تساعدك على التقدم.',
-                'قسّم هدفك الكبير إلى خطوات صغيرة، وابدأ بخطوة الآن.',
-                'ثقتك تنمو مع التدريب، ونتيجتك تتحسن مع الاستمرار.'
-            ];
-            let index = 0;
-            const quote = document.getElementById('dailyMotivationQuote');
-            if (quote) window.setInterval(() => {
-                index = (index + 1) % quotes.length;
-                quote.style.opacity = '0';
-                window.setTimeout(() => { quote.textContent = quotes[index]; quote.style.opacity = '1'; }, 220);
-            }, 9000);
-        })();
-
-        // Subtle tactile feedback for controls; no effect on their existing actions.
-        document.addEventListener('pointerdown', (event) => {
-            const control = event.target.closest('button, .section-big-card, .model-btn');
-            if (control && !control.disabled) control.classList.add('is-pressed');
-        });
-        document.addEventListener('pointerup', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
-        document.addEventListener('pointercancel', () => document.querySelectorAll('.is-pressed').forEach(el => el.classList.remove('is-pressed')));
-
-        // Global micro-interactions: ripples, icon feedback and accessible button states.
-        document.addEventListener('click', (event) => {
-            const button = event.target.closest('button');
-            if (!button || button.disabled) return;
-            const rect = button.getBoundingClientRect();
-            button.style.setProperty('--ripple-x', `${event.clientX - rect.left}px`);
-            button.style.setProperty('--ripple-y', `${event.clientY - rect.top}px`);
-            button.classList.remove('ripple-active');
-            void button.offsetWidth;
-            button.classList.add('ripple-active');
-            window.setTimeout(() => button.classList.remove('ripple-active'), 600);
-            if (button.type === 'submit' && button.form && button.form.checkValidity()) {
-                button.dataset.originalText ||= button.innerHTML;
-                button.classList.add('button-processing');
-                window.setTimeout(() => button.classList.remove('button-processing'), 1400);
-            }
-        });
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                document.querySelectorAll('.custom-modal.active').forEach(modal => modal.classList.remove('active'));
-            }
         });
 
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
             switchView(sessionStorage.getItem('currentView') || (checkAuth() ? 'student' : 'landing'));
         });
-    
-        // Rotate supportive messages without inventing or altering student performance data.
-        (function initQimmaDailyMessages(){
-            const quote=document.getElementById('dailyMotivationQuote');
-            if(!quote || quote.dataset.rotatorReady) return;
-            quote.dataset.rotatorReady='1';
-            const messages=[
-                'لا تحتاج أن تكون الأفضل اليوم؛ يكفي أن تكون أفضل من الأمس.',
-                'كل سؤال تفهمه اليوم يضيف خطوة جديدة إلى طريقك.',
-                'الهدوء والفهم أهم من السرعة وحدها؛ خذ وقتك ثم تقدّم.',
-                'الخطأ فرصة لاكتشاف فكرة جديدة، وليس نهاية المحاولة.',
-                'قسّم هدفك الكبير إلى خطوات صغيرة، وابدأ بخطوة واحدة الآن.',
-                'ثباتك على التدريب يصنع فرقًا أكبر مما تتوقع.'
-            ];
-            let index=0;
-            window.setInterval(()=>{
-                if(document.hidden) return;
-                index=(index+1)%messages.length;
-                quote.classList.add('quote-changing');
-                window.setTimeout(()=>{quote.textContent=messages[index];quote.classList.remove('quote-changing');},180);
-            },7000);
-        })();
-
-
-
-        // Extra premium usability touches: reading progress, back-to-top, and honest action feedback.
-        (() => {
-            if (document.getElementById('qm-scroll-progress')) return;
-            const progress=document.createElement('div'); progress.id='qm-scroll-progress'; progress.setAttribute('aria-hidden','true'); document.body.appendChild(progress);
-            const top=document.createElement('button'); top.id='qm-back-top'; top.type='button'; top.setAttribute('aria-label','العودة إلى أعلى الصفحة'); top.title='العودة إلى الأعلى';
-            top.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7M12 5v14"/></svg>';
-            document.body.appendChild(top);
-            const update=()=>{const d=document.documentElement;const max=d.scrollHeight-window.innerHeight;progress.style.width=(max>0?Math.min(100,window.scrollY/max*100):0)+'%';top.classList.toggle('visible',window.scrollY>320)};
-            window.addEventListener('scroll',update,{passive:true}); window.addEventListener('resize',update); top.addEventListener('click',()=>window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})); update();
-            const stack=document.createElement('div'); stack.id='qm-toast-stack'; stack.setAttribute('aria-live','polite'); stack.setAttribute('aria-atomic','false'); document.body.appendChild(stack);
-            window.qimmaToast=(message)=>{if(!message)return;const item=document.createElement('div');item.className='qm-toast';item.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span></span>';item.querySelector('span').textContent=message;stack.appendChild(item);window.setTimeout(()=>{item.classList.add('out');window.setTimeout(()=>item.remove(),280)},2400)};
-            // Give clear, low-noise feedback for actions that explicitly indicate success.
-            document.addEventListener('click',(e)=>{const b=e.target.closest('button');if(!b||b.disabled)return;const t=(b.innerText||b.getAttribute('aria-label')||'').trim();if(/^(حفظ|تم الحفظ|نسخ|نسخ الرابط|تم|تحديث|إعادة المحاولة)$/i.test(t))window.qimmaToast(t==='حفظ'?'تم تنفيذ طلب الحفظ.':t+' بنجاح');});
-        })();
-
-</script>
+    </script>
 </body>
 </html>
