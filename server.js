@@ -11,7 +11,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = process.env.MONGO_URI;
 
-// لا تستخدم رابط اتصال ثابتًا داخل الكود؛ عرّف MONGO_URI في متغيرات البيئة.
 mongoose.connection.on('connected', () => console.log('✅ MongoDB متصل'));
 mongoose.connection.on('disconnected', () => console.error('⚠️ انقطع اتصال MongoDB'));
 mongoose.connection.on('error', err => console.error('❌ MongoDB:', err.message));
@@ -66,19 +65,16 @@ async function initAdmin() {
     try {
         const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
         const adminPassword = process.env.ADMIN_PASSWORD;
-        if (!adminEmail || !adminPassword) {
-            console.log('ℹ️ لم يتم إنشاء مشرف تلقائي: عرّف ADMIN_EMAIL و ADMIN_PASSWORD إذا احتجت ذلك.');
-            return;
-        }
+        if (!adminEmail || !adminPassword) return;
         const existingAdmin = await User.findOne({ email: adminEmail });
         if (!existingAdmin) {
             await User.create({ name: process.env.ADMIN_NAME || 'مشرف قمة', email: adminEmail, pass: adminPassword, role: 'admin' });
-            console.log('👑 تم إنشاء حساب المشرف من متغيرات البيئة.');
         }
     } catch (e) {
         console.error('Error initializing admin:', e);
     }
 }
+
 app.post('/api/register', async (req, res) => {
     try {
         const { name, email, pass } = req.body;
@@ -88,7 +84,6 @@ app.post('/api/register', async (req, res) => {
         await User.create({ name: name.trim(), email: normalizedEmail, pass, role: 'student' });
         res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
     } catch (error) {
-        console.error('POST /api/register:', error);
         res.status(500).json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
@@ -100,19 +95,23 @@ app.post('/api/login', async (req, res) => {
         if (!user) return res.json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
         res.json({ success: true, name: user.name, role: user.role, email: user.email });
     } catch (error) {
-        console.error('POST /api/login:', error);
         res.status(500).json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
 
+// التحقق من البريد بدقة وإرجاع رسالة الخطأ إذا كان غير مسجل
 app.post('/api/reset-password', async (req, res) => {
     try {
         const { email, newPass } = req.body;
+        if (!email) return res.json({ success: false, message: '❌ يرجى إدخال البريد الإلكتروني!' });
         const user = await User.findOne({ email: email.trim().toLowerCase() });
         if (!user) return res.json({ success: false, message: '❌ البريد غير مسجل!' });
-        user.pass = newPass;
-        await user.save();
-        res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+        if (newPass) {
+            user.pass = newPass;
+            await user.save();
+            return res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح!' });
+        }
+        res.json({ success: true, message: '✅ البريد مسجل وموجود' });
     } catch (error) {
         res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
@@ -236,6 +235,7 @@ app.post('/api/add-custom-model', async (req, res) => {
     }
 });
 
+// حذف النموذج وإعادة ترتيب وتلسلس الأرقام تلقائياً للنماذج المتبقية ضمن نفس الفئة
 app.post('/api/admin/delete-model', async (req, res) => {
     try {
         const { modelKey, modelNumber } = req.body;
@@ -244,17 +244,54 @@ app.post('/api/admin/delete-model', async (req, res) => {
             const targetNum = Number(parts.pop());
             const targetType = parts.pop();
             const targetSec = parts.join('_');
+
             await CustomModel.deleteOne({ key: modelKey });
             await ModelStatus.deleteOne({ uniqueKey: modelKey });
             await Question.deleteMany({ section: targetSec, type: targetType, model: targetNum });
+
+            // إعادة تلسلس النماذج المتبقية لتفادي وجود فجوات (مثل بقاء نموذج 2 وتحويله إلى 1 تلقائياً)
+            const prefix = `${targetSec}_${targetType}_`;
+            const remainingModels = await CustomModel.find({ key: new RegExp(`^${prefix}`) }).lean();
+            
+            // استخراج الأرقام وترتيبها تصاعدياً
+            remainingModels.sort((a, b) => {
+                const numA = Number(a.key.split('_').pop());
+                const numB = Number(b.key.split('_').pop());
+                return numA - numB;
+            });
+
+            for (let i = 0; i < remainingModels.length; i++) {
+                const oldModelKey = remainingModels[i].key;
+                const newModelNum = i + 1;
+                const newModelKey = `${prefix}${newModelNum}`;
+
+                if (oldModelKey !== newModelKey) {
+                    const oldNum = Number(oldModelKey.split('_').pop());
+                    // تحديث مفتاح النموذج واسمه وحالة نشاطه
+                    const modelDoc = await CustomModel.findOne({ key: oldModelKey });
+                    if (modelDoc) {
+                        modelDoc.key = newModelKey;
+                        await modelDoc.save();
+                    }
+                    const statusDoc = await ModelStatus.findOne({ uniqueKey: oldModelKey });
+                    if (statusDoc) {
+                        statusDoc.uniqueKey = newModelKey;
+                        await statusDoc.save();
+                    }
+                    // تحديث أرقام النماذج المرتبطة بالأسئلة
+                    await Question.updateMany(
+                        { section: targetSec, type: targetType, model: oldNum },
+                        { model: newModelNum }
+                    );
+                }
+            }
         }
-        res.json({ success: true, message: '🗑️ تم الحذف بنجاح!' });
+        res.json({ success: true, message: '🗑️ تم الحذف وإعادة الترتيب بنجاح!' });
     } catch (e) {
         res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
 });
 
-// المسار المصحح تماماً للتعديل والنقل الكلي دون بقايا
 app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
@@ -299,16 +336,13 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
             assignedModelNum = maxNum + 1;
         }
 
-        // 1. حذف المفتاح القديم كلياً من المكان القديم لئلا تبقى أي نسخة معلقة
         await CustomModel.deleteOne({ key: oldKey });
         await ModelStatus.deleteOne({ uniqueKey: oldKey });
 
-        // 2. إنشاء المفتاح الجديد بالاسم المحدث في المكان الجديد
         const newKey = `${targetSectionPrefix}${assignedModelNum}`;
         await CustomModel.deleteOne({ key: newKey });
         await CustomModel.create({ key: newKey, name: newName.trim() });
 
-        // 3. نقل وتحديث الأسئلة التابعة لهذا النموذج للوجهة الجديدة
         await Question.updateMany(
             { section: oldSec, type: oldType, model: oldModelNum },
             { section: updatedSection, type: updatedType, model: assignedModelNum }
@@ -421,7 +455,6 @@ app.post('/api/admin/toggle-model', async (req, res) => {
     }
 });
 
-// تسجيل إجابة الطالب (تستخدمه واجهة لوحة قمة)
 app.post('/api/attempts', async (req, res) => {
     try {
         const { email, questionId, section, type, model, chosenAnswer, correct, score } = req.body || {};
@@ -432,7 +465,6 @@ app.post('/api/attempts', async (req, res) => {
         await Attempt.create({ email: normalizedEmail, questionId, section, type, model: Number(model) || 1, chosenAnswer, correct: Boolean(correct), score: Number(score) || 1 });
         res.json({ success: true });
     } catch (e) {
-        console.error('POST /api/attempts:', e);
         res.status(500).json({ success: false, message: 'تعذر تسجيل المحاولة' });
     }
 });
@@ -454,7 +486,6 @@ app.post('/api/student/stats', async (req, res) => {
         const weakPoints = Object.entries(bySection).filter(([,v]) => v.total >= 3).map(([section,v]) => ({ section, accuracy: Math.round(v.correct / v.total * 100) })).filter(x => x.accuracy < 70).sort((a,b) => a.accuracy-b.accuracy);
         res.json({ success: true, correctAnswers, testsTaken: attempts.length, averageScore, weakPoints });
     } catch (e) {
-        console.error('POST /api/student/stats:', e);
         res.status(500).json({ success: false, message: 'تعذر تحميل إحصائيات الطالب' });
     }
 });
@@ -478,15 +509,13 @@ app.post('/api/admin/analytics', async (req, res) => {
         const popularModels = [...groups.values()].map(g => ({ section: g.section, model: g.model, correctAnswers: g.correctAnswers, answers: g.answers, students: g.studentsSet.size, averageScore: Math.round(g.correctAnswers / g.answers * 100) })).sort((a,b) => b.correctAnswers-a.correctAnswers).slice(0, 10);
         res.json({ success: true, questionCount, modelCount, studentCount, averageScore, attemptsCount: attempts.length, popularModels });
     } catch (e) {
-        console.error('POST /api/admin/analytics:', e);
         res.status(500).json({ success: false, message: 'تعذر تحميل التحليلات' });
     }
 });
 
-// ابدأ الاستماع فقط بعد نجاح اتصال قاعدة البيانات، لتجنب buffering timed out.
 async function startServer() {
     if (!MONGO_URI) {
-        console.error('❌ متغير البيئة MONGO_URI غير مضبوط. أضف رابط MongoDB إلى إعدادات البيئة.');
+        console.error('❌ متغير البيئة MONGO_URI غير مضبوط.');
         process.exit(1);
     }
     try {
@@ -495,7 +524,7 @@ async function startServer() {
         await initAdmin();
         app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
     } catch (err) {
-        console.error('❌ تعذر الاتصال بـ MongoDB؛ لم يتم تشغيل الخادم:', err.message);
+        console.error('❌ تعذر الاتصال بـ MongoDB:', err.message);
         process.exit(1);
     }
 }
