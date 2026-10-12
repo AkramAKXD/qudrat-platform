@@ -670,6 +670,153 @@ button{touch-action:manipulation;overflow-wrap:anywhere}
 }
 </style>
 
+
+<style id="qimma-admin-and-home-mobile-only">
+/* تعديل قائمة المشرف والواجهة الرئيسية على الجوال العمودي فقط. */
+@media (max-width: 600px) and (orientation: portrait) {
+  /* قائمة المشرف بنفس أسلوب قائمة الطالب: شريط أفقي قابل للسحب. */
+  body.logged-in #appSidebar #admin-sidebar-section:not(.hidden) {
+    display: contents !important;
+  }
+  body.logged-in #appSidebar #admin-sidebar-section:not(.hidden) .admin-sidebar-title {
+    display: none !important;
+  }
+  body.logged-in #appSidebar #admin-sidebar-section li {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body.logged-in #appSidebar #admin-sidebar-section button {
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    min-height: 39px !important;
+    padding: 8px 12px !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+  }
+  body.logged-in #appSidebar .sidebar-menu > li[style] {
+    flex: 0 0 auto !important;
+  }
+
+  /* تحسين الواجهة الرئيسية للعرض العمودي دون تغيير تصميم الكمبيوتر أو الأفقي. */
+  body:not(.logged-in) .main-content,
+  body.logged-in .main-content {
+    padding: 8px !important;
+  }
+  #landing-section {
+    padding: 0 14px 18px !important;
+    border-radius: 0 0 18px 18px !important;
+    box-shadow: 0 10px 30px rgba(17,49,55,.07) !important;
+  }
+  .landing-topbar {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) auto !important;
+    gap: 10px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 12px 0 !important;
+  }
+  .brand-mark { min-width: 0 !important; }
+  .topbar-note {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    font-size: 11px !important;
+    line-height: 1.7 !important;
+    margin: 0 !important;
+  }
+  .topbar-login {
+    padding: 9px 11px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+  .landing-hero {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 18px !important;
+    min-height: 0 !important;
+    padding: 25px 0 22px !important;
+  }
+  .hero-copy { min-width: 0 !important; }
+  .hero-badge {
+    margin-bottom: 13px !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+  .hero-title {
+    font-size: clamp(27px, 7.5vw, 38px) !important;
+    line-height: 1.5 !important;
+    letter-spacing: -.7px !important;
+    margin-bottom: 12px !important;
+  }
+  .hero-subtitle {
+    font-size: 13px !important;
+    line-height: 1.9 !important;
+    margin-bottom: 17px !important;
+  }
+  .hero-buttons {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 9px !important;
+    margin-bottom: 17px !important;
+  }
+  .hero-buttons button {
+    width: 100% !important;
+    min-height: 46px !important;
+    padding: 12px 14px !important;
+  }
+  .hero-proof { gap: 10px !important; }
+  .hero-visual {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 3px 12px !important;
+  }
+  .hero-photo-main {
+    width: 100% !important;
+    height: clamp(190px, 58vw, 260px) !important;
+    border-radius: 20px !important;
+    transform: none !important;
+  }
+  .floating-note { display: none !important; }
+  .hero-orbit { display: none !important; }
+  .photo-caption { padding: 12px !important; }
+  .landing-stats {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 4px !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+  .landing-stats > div {
+    padding: 10px 5px !important;
+    gap: 10px !important;
+  }
+  .landing-stats > div + div {
+    border-right: 0 !important;
+    border-top: 1px solid #e3e9de !important;
+  }
+  .landing-discover { padding: 30px 0 22px !important; }
+  .discover-heading { display: block !important; margin-bottom: 15px !important; }
+  .discover-heading h2 { font-size: 22px !important; line-height: 1.5 !important; }
+  .discover-heading p { font-size: 12px !important; line-height: 1.8 !important; margin-top: 7px !important; }
+  .discover-grid { grid-template-columns: minmax(0,1fr) !important; gap: 12px !important; }
+  .discover-card { min-height: 250px !important; border-radius: 17px !important; }
+  .discover-card img { max-height: 330px !important; }
+  .discover-card-content { padding: 17px !important; }
+  .landing-footer {
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    padding-top: 16px !important;
+  }
+  .landing-footer > span { flex: 1 1 100% !important; order: 3 !important; line-height: 1.8 !important; }
+  .landing-footer > button { flex: 0 0 auto !important; }
+}
+</style>
+
 </head>
 <body id="appBody">
 
