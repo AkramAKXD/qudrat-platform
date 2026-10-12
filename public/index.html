@@ -378,7 +378,25 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
         .section-big-card[aria-label*="قياس"] .section-big-icon{background:linear-gradient(145deg,#0f766e,#14b8a6)!important;color:white!important;box-shadow:0 8px 20px rgba(13,148,136,.18)}
         @media(max-width:760px){.learning-guide{grid-template-columns:1fr}.learning-guide-visual{min-height:150px}.skill-cards{grid-template-columns:1fr}.learning-guide{padding:17px}}
 
-    </style>
+    
+        /* Qimma refinements: accessible eye controls, capability badges, distinctive assessment icon */
+        .toggle-password{width:38px;height:38px;border-radius:11px!important;background:#f1f7f5!important;color:#287b72!important;border:1px solid #dcebe6!important}
+        .toggle-password:hover{background:#e1f4ed!important;transform:translateY(-50%) scale(1.04)!important}
+        .password-eye-icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+        .toggle-password.is-visible .password-eye-icon path{stroke:#0f766e}
+        .nav-feature-icon{width:21px;height:21px;flex:0 0 21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+        .sidebar-menu button{display:flex;align-items:center;gap:11px}
+        .capability-ribbon{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 24px}
+        .capability-ribbon>div{display:grid;grid-template-columns:42px 1fr;column-gap:10px;align-items:center;padding:14px;border:1px solid #e3eee9;border-radius:16px;background:linear-gradient(145deg,#fff,#f7fbf9);transition:transform .22s,border-color .22s,box-shadow .22s}
+        .capability-ribbon>div:hover{transform:translateY(-3px);border-color:#b7d8ca;box-shadow:0 12px 25px rgba(20,83,65,.08)}
+        .capability-ribbon .cap-icon{grid-row:span 2;width:42px;height:42px;border-radius:13px;display:grid;place-items:center}
+        .capability-ribbon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+        .cap-green{background:#e1f7ec;color:#15805d}.cap-blue{background:#e5f1ff;color:#2866a6}.cap-violet{background:#f0eaff;color:#7450ae}
+        .capability-ribbon b{font-size:13px;color:#23434a}.capability-ribbon small{font-size:11px;color:#72878a;line-height:1.5}
+        .learning-guide-visual img,.discover-card img{background:linear-gradient(135deg,#e8f3ef,#dbe8f7);object-fit:cover}
+        @media(max-width:620px){.capability-ribbon{grid-template-columns:1fr}.capability-ribbon>div{grid-template-columns:42px 1fr}}
+
+</style>
 </head>
 <body id="appBody">
 
@@ -493,14 +511,14 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 <li id="menu-student"><button onclick="navigateTo('student')">📚 الرئيسية والأقسام</button></li>
                 <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
                 <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
-                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')">⏱️ اختبار قياس</button></li>
+                <li id="menu-qiyas"><button onclick="navigateTo('qiyas')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m8 12 2.5 2.5L16.5 9"/></svg><span>اختبار قياس المحاكي</span></button></li>
             </div>
             
             <div id="admin-sidebar-section" class="admin-sidebar-group hidden">
                 <div class="admin-sidebar-title">👑 لوحة المشرف</div>
                 <li><button onclick="navigateTo('student-preview')">👁️ معاينة الطالب</button></li>
                 <li><button onclick="openAdminTab('add-question-box')">➕ إضافة سؤال جديد</button></li>
-                <li><button onclick="openAdminTab('qiyas-question-box')">⏱️ أسئلة قياس المحاكي</button></li>
+                <li><button onclick="openAdminTab('qiyas-question-box')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 6h13M8 10h8M8 13h5"/></svg><span>أسئلة قياس المحاكي</span></button></li>
                 <li><button onclick="openAdminTab('add-custom-model-box')">🏷️ إضافة نماذج للاختبار</button></li>
                 <li><button onclick="openAdminTab('manage-models-box')">📋 إدارة نماذج الاختبارات</button></li>
                 <li><button onclick="openAdminTab('manage-questions-box')">🛠️ إدارة وتعديل الأسئلة</button></li>
@@ -546,7 +564,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 <section class="landing-discover">
                     <div class="discover-heading"><div><span class="eyebrow">ابدأ من هنا</span><h2>اختر طريقك إلى التميّز</h2></div><p>محتوى منظّم وتجربة بسيطة تساعدك تركز على الأهم.</p></div>
                     <div class="discover-grid">
-                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1455390582262-044cnej?auto=format&fit=crop&w=800&q=80" alt="لفظي"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">01 / لفظي</span><h3>قوِّ مهاراتك اللفظية</h3><p>تدرّب على الفهم والاستيعاب والعلاقات اللغوية.</p><button onclick="switchView('login')">اكتشف التدريب <b>←</b></button></div></article>
+                        <article class="discover-card"><img src="https://images.unsplash.com/photo-1455390582262-0440a436f2e3?auto=format&fit=crop&w=800&q=80" alt="كتب ودفتر للقراءة والتعلّم" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=900&q=80'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">01 / لفظي</span><h3>قوِّ مهاراتك اللفظية</h3><p>تدرّب على الفهم والاستيعاب والعلاقات اللغوية.</p><button onclick="switchView('login')">اكتشف التدريب <b>←</b></button></div></article>
                         <article class="discover-card"><img src="https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80" alt="كمي"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">02 / كمي</span><h3>فكّر بطريقة أذكى</h3><p>طوّر مهاراتك في المسائل والتفكير الرياضي.</p><button onclick="switchView('login')">ابدأ الحل <b>←</b></button></div></article>
                         <article class="discover-card"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="محاكاة"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">03 / محاكاة</span><h3>جرّب أجواء الاختبار</h3><p>تدرّب على نماذج تساعدك تستعد بثقة.</p><button onclick="switchView('login')">شاهد النماذج <b>←</b></button></div></article>
                     </div>
@@ -562,7 +580,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="loginPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
                     <button type="submit">دخول للمنصة 🚀</button>
@@ -583,7 +601,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     <div class="form-group"><label>كلمة المرور الجديدة:</label>
                         <div class="password-container">
                             <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
                     <button type="button" onclick="submitNewPassword()" style="background: #10b981;">تحديث كلمة المرور ✅</button>
@@ -600,7 +618,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                     <div class="form-group"><label>كلمة المرور:</label>
                         <div class="password-container">
                             <input type="password" id="regPass" required minlength="6" maxlength="18" placeholder="كلمة المرور">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)">👁️</button>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
                     <button type="submit">إنشاء حساب 🔥</button>
@@ -616,6 +634,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                         <p>ابدأ يومك بتحدٍ جديد في القسم الكمي أو اللفظي، وراقب تقدمك المستمر نحو تحقيق هدفك في اختبار القدرات.</p>
                     </div>
                     <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80" alt="طلاب متميزون" class="student-banner-img">
+                    <div class="capability-ribbon" aria-label="مهارات اختبار القدرات"><div><span class="cap-icon cap-green"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-7"/></svg></span><b>تحليل ذكي</b><small>افهم السؤال قبل الحل</small></div><div><span class="cap-icon cap-blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>إدارة الوقت</b><small>تدرّب بثقة وهدوء</small></div><div><span class="cap-icon cap-violet"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></svg></span><b>تقدّم مستمر</b><small>كل محاولة تصنع فرقًا</small></div></div>
                 </div>
 
                 <div class="motivation-box">
@@ -686,7 +705,7 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 </div>
                 <div class="learning-guide">
                     <div><h3>طوّر فهمك اللغوي خطوة بخطوة</h3><p>اقرأ يوميًا نصًا قصيرًا، واستخرج فكرته الرئيسة والكلمات الجديدة. عند حل السؤال، اسأل نفسك: ما العلاقة المطلوبة؟ وما الدليل الذي يدعم اختياري؟</p><ul><li><b>استيعاب المقروء:</b> حدّد الفكرة الرئيسة والتفاصيل والاستنتاجات.</li><li><b>التناظر اللفظي:</b> صغ العلاقة بين الكلمتين في عبارة قصيرة.</li><li><b>إكمال الجمل:</b> انتبه إلى الروابط مثل «لكن» و«لذلك».</li><li><b>الخطأ السياقي:</b> اختر الكلمة التي لا تنسجم مع معنى الجملة.</li></ul></div>
-                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1455390582262-044cnej?auto=format&fit=crop&w=900&q=85" alt="دفتر وكتب أثناء الدراسة والقراءة" loading="lazy"><span>اقرأ • اربط • استنتج</span></div>
+                    <div class="learning-guide-visual"><img src="https://images.unsplash.com/photo-1455390582262-0440a436f2e3?auto=format&fit=crop&w=900&q=85" alt="كتب ودفتر للقراءة والتعلّم" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=900&q=80'"><span>اقرأ • اربط • استنتج</span></div>
                 </div>
                 <div class="skill-cards"><article class="skill-card"><div class="skill-symbol">Aa</div><h4>وسّع مفرداتك</h4><p>تعلّم الكلمة ضمن جملة، ولا تكتفِ بحفظ معناها المنفرد.</p></article><article class="skill-card"><div class="skill-symbol">↔</div><h4>حدّد العلاقة</h4><p>في التناظر، عبّر عن العلاقة بوضوح قبل اختيار الإجابة.</p></article><article class="skill-card"><div class="skill-symbol">¶</div><h4>استدل من النص</h4><p>فرّق بين المعلومة الصريحة والاستنتاج الذي يدعمه النص.</p></article></div>
                 <div class="action-buttons-grid">
@@ -1527,8 +1546,15 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
 
         function togglePasswordVisibility(fieldId, btn) {
             const input = document.getElementById(fieldId);
-            input.type = input.type === 'password' ? 'text' : 'password';
-            btn.innerText = input.type === 'password' ? '👁️' : '🙈';
+            const isShowing = input.type === 'password';
+            input.type = isShowing ? 'text' : 'password';
+            btn.classList.toggle('is-visible', isShowing);
+            btn.setAttribute('aria-label', isShowing ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+            btn.setAttribute('title', isShowing ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+            const svg = btn.querySelector('svg');
+            if (svg) svg.innerHTML = isShowing
+              ? '<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.3 0 9.8 7 9.8 7a16 16 0 0 1-3.1 3.8M6.2 6.2C3.7 8 2.2 12 2.2 12s3.5 7 9.8 7c1.2 0 2.3-.2 3.3-.7"/>'
+              : '<path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/>';
         }
 
         async function verifyForgotEmail() {
