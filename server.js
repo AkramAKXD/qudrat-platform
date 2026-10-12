@@ -9,13 +9,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// رابط MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
     console.error('❌ يرجى ضبط متغير البيئة MONGO_URI');
 } else {
-    mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
+    mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 })
         .then(() => console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!'))
         .catch(err => console.error('❌ خطأ في الاتصال بقاعدة البيانات:', err));
 }
@@ -30,7 +29,6 @@ const userSchema = new mongoose.Schema({
     pass: { type: String, required: true },
     role: { type: String, default: 'student' }
 });
-
 const User = mongoose.model('User', userSchema);
 
 const questionSchema = new mongoose.Schema({
@@ -44,21 +42,18 @@ const questionSchema = new mongoose.Schema({
     correct_answer: String,
     image: String
 });
-
 const Question = mongoose.model('Question', questionSchema);
 
 const customModelSchema = new mongoose.Schema({
     key: { type: String, unique: true },
     name: String
 });
-
 const CustomModel = mongoose.model('CustomModel', customModelSchema);
 
 const modelStatusSchema = new mongoose.Schema({
     uniqueKey: { type: String, unique: true },
     active: Boolean
 });
-
 const ModelStatus = mongoose.model('ModelStatus', modelStatusSchema);
 
 const attemptSchema = new mongoose.Schema({
@@ -72,84 +67,53 @@ const attemptSchema = new mongoose.Schema({
     score: Number,
     answeredAt: { type: Date, default: Date.now }
 });
-
 const Attempt = mongoose.model('Attempt', attemptSchema);
 
 // ========================
-// تسجيل حساب جديد
+// المسارات (API)
 // ========================
 
 app.post('/api/register', async (req, res) => {
     try {
-        const { name, email, pass } = req.body;
-
-        if (!name || !email || !pass) {
-            return res.json({
-                success: false,
-                message: '⚠️ يرجى تعبئة جميع الحقول!'
-            });
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: '⚠️ قاعدة البيانات غير متصلة حالياً، حاول لاحقاً.' });
         }
-
+        const { name, email, pass } = req.body;
+        if (!name || !email || !pass) {
+            return res.json({ success: false, message: '⚠️ يرجى تعبئة جميع الحقول!' });
+        }
         const normalizedEmail = String(email).trim().toLowerCase();
-
         const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
-            return res.json({
-                success: false,
-                message: '⚠️ هذا البريد مسجل مسبقًا!'
-            });
+            return res.json({ success: false, message: '⚠️ هذا البريد مسجل مسبقًا!' });
         }
-
         await User.create({
             name: String(name).trim(),
             email: normalizedEmail,
             pass: String(pass),
             role: 'student'
         });
-
-        res.json({
-            success: true,
-            message: '🎉 تم إنشاء الحساب بنجاح!'
-        });
+        res.json({ success: true, message: '🎉 تم إنشاء الحساب بنجاح!' });
     } catch (error) {
-        console.error('Register error details:', error);
-        res.json({
-            success: false,
-            message: '❌ حدث خطأ أثناء التسجيل، تأكد من اتصال القاعدة'
-        });
+        console.error('Register error:', error);
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم أثناء التسجيل' });
     }
 });
 
-// ========================
-// تسجيل الدخول (مع حماية تامة من الانهيار)
-// ========================
-
 app.post('/api/login', async (req, res) => {
     try {
-        const { email, pass } = req.body;
-
-        if (!email || !pass) {
-            return res.json({
-                success: false,
-                message: 'يرجى إدخال البريد وكلمة المرور'
-            });
+        if (mongoose.connection.readyState !== 1) {
+            return res.json({ success: false, message: '⚠️ قاعدة البيانات غير متصلة حالياً، حاول لاحقاً.' });
         }
-
+        const { email, pass } = req.body;
+        if (!email || !pass) {
+            return res.json({ success: false, message: 'يرجى إدخال البريد وكلمة المرور' });
+        }
         const normalizedEmail = String(email).trim().toLowerCase();
         const user = await User.findOne({ email: normalizedEmail });
 
-        if (!user) {
-            return res.json({
-                success: false,
-                message: '❌ البريد الإلكتروني غير مسجل!'
-            });
-        }
-
-        if (user.pass !== String(pass)) {
-            return res.json({
-                success: false,
-                message: '❌ كلمة المرور غير صحيحة!'
-            });
+        if (!user || user.pass !== String(pass)) {
+            return res.json({ success: false, message: '❌ البريد الإلكتروني أو كلمة المرور غير صحيحة!' });
         }
 
         res.json({
@@ -159,138 +123,67 @@ app.post('/api/login', async (req, res) => {
             email: user.email
         });
     } catch (error) {
-        console.error('Login error details:', error);
-        res.json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم أثناء تسجيل الدخول'
-        });
+        console.error('Login error:', error);
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم أثناء تسجيل الدخول' });
     }
 });
-
-// ========================
-// إعادة تعيين كلمة المرور
-// ========================
 
 app.post('/api/reset-password', async (req, res) => {
     try {
         const { email, newPass } = req.body;
-
         if (!email || !newPass) {
-            return res.json({
-                success: false,
-                message: 'يرجى إدخال البريد وكلمة المرور الجديدة'
-            });
+            return res.json({ success: false, message: 'يرجى إدخال البريد وكلمة المرور الجديدة' });
         }
-
-        const user = await User.findOne({
-            email: String(email).trim().toLowerCase()
-        });
-
+        const user = await User.findOne({ email: String(email).trim().toLowerCase() });
         if (!user) {
-            return res.json({
-                success: false,
-                message: '❌ البريد غير مسجل!'
-            });
+            return res.json({ success: false, message: '❌ البريد غير مسجل!' });
         }
-
         user.pass = String(newPass);
         await user.save();
-
-        res.json({
-            success: true,
-            message: '✅ تم تحديث كلمة المرور بنجاح'
-        });
+        res.json({ success: true, message: '✅ تم تحديث كلمة المرور بنجاح' });
     } catch (error) {
         console.error('Reset password error:', error);
-        res.json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم'
-        });
+        res.json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
-
-// ========================
-// جلب الأسئلة
-// ========================
 
 app.get('/api/questions', async (req, res) => {
     try {
         const questions = await Question.find({});
         res.json(questions);
     } catch (error) {
-        console.error('Questions error:', error);
         res.json([]);
     }
 });
 
-// ========================
-// إضافة سؤال
-// ========================
-
 app.post('/api/add-question', async (req, res) => {
     try {
-        const {
-            section,
-            type,
-            model,
-            score,
-            question,
-            options,
-            correct_answer,
-            image
-        } = req.body;
-
-        const modelNum = Number(model);
+        const { section, type, model, score, question, options, correct_answer, image } = req.body;
         const count = await Question.countDocuments();
-
         await Question.create({
             id: count + 1,
             section: section || 'quant',
             type: type || 'practice',
-            model: modelNum,
+            model: Number(model),
             score: Number(score) || 1,
             question,
             options,
             correct_answer,
             image: image || null
         });
-
-        res.json({
-            success: true,
-            message: '🎯 تم حفظ السؤال بنجاح!'
-        });
+        res.json({ success: true, message: '🎯 تم حفظ السؤال بنجاح!' });
     } catch (error) {
-        console.error('Add question error:', error);
-        res.json({
-            success: false,
-            message: '❌ حدث خطأ أثناء حفظ السؤال'
-        });
+        res.json({ success: false, message: '❌ حدث خطأ أثناء حفظ السؤال' });
     }
 });
 
-// ========================
-// تعديل سؤال
-// ========================
-
 app.post('/api/edit-question', async (req, res) => {
     try {
-        const {
-            index,
-            section,
-            type,
-            model,
-            score,
-            question,
-            options,
-            correct_answer,
-            image
-        } = req.body;
-
+        const { index, section, type, model, score, question, options, correct_answer, image } = req.body;
         const questions = await Question.find({});
         if (index === undefined || index < 0 || index >= questions.length) {
             return res.json({ success: false, message: '❌ السؤال غير موجود!' });
         }
-
         const targetQuestion = questions[index];
         targetQuestion.section = section || 'quant';
         targetQuestion.type = type || 'practice';
@@ -300,18 +193,12 @@ app.post('/api/edit-question', async (req, res) => {
         targetQuestion.options = options;
         targetQuestion.correct_answer = correct_answer;
         targetQuestion.image = image || null;
-
         await targetQuestion.save();
         res.json({ success: true, message: '✏️ تم تعديل السؤال بنجاح!' });
     } catch (error) {
-        console.error('Edit question error:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء التعديل' });
     }
 });
-
-// ========================
-// نقل سؤال
-// ========================
 
 app.post('/api/move-question', async (req, res) => {
     try {
@@ -320,23 +207,16 @@ app.post('/api/move-question', async (req, res) => {
         if (index === undefined || index < 0 || index >= questions.length) {
             return res.json({ success: false, message: '❌ السؤال غير موجود!' });
         }
-
         const targetQuestion = questions[index];
         targetQuestion.section = section;
         targetQuestion.type = type;
         targetQuestion.model = Number(model);
-
         await targetQuestion.save();
         res.json({ success: true, message: '🚚 تم نقل السؤال بنجاح!' });
     } catch (error) {
-        console.error('Move question error:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء النقل' });
     }
 });
-
-// ========================
-// حذف سؤال
-// ========================
 
 app.post('/api/delete-question', async (req, res) => {
     try {
@@ -345,29 +225,20 @@ app.post('/api/delete-question', async (req, res) => {
         if (index === undefined || index < 0 || index >= questions.length) {
             return res.json({ success: false, message: '❌ السؤال غير موجود!' });
         }
-
         await questions[index].deleteOne();
         res.json({ success: true, message: '🗑️ تم حذف السؤال بنجاح!' });
     } catch (error) {
-        console.error('Delete question error:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
 });
-
-// ========================
-// النماذج المخصصة
-// ========================
 
 app.get('/api/custom-models', async (req, res) => {
     try {
         const customModels = await CustomModel.find({});
         const modelsMap = {};
-        customModels.forEach(m => {
-            modelsMap[m.key] = m.name;
-        });
+        customModels.forEach(m => { modelsMap[m.key] = m.name; });
         res.json({ success: true, models: modelsMap });
     } catch (error) {
-        console.error('Custom models error:', error);
         res.json({ success: false, models: {} });
     }
 });
@@ -378,7 +249,6 @@ app.post('/api/add-custom-model', async (req, res) => {
         if (!category || !modelNumber || !customName) {
             return res.json({ success: false, message: 'يرجى تعبئة بيانات النموذج' });
         }
-
         const key = `${category}_${modelNumber}`;
         const existing = await CustomModel.findOne({ key });
         if (existing) {
@@ -387,22 +257,19 @@ app.post('/api/add-custom-model', async (req, res) => {
         } else {
             await CustomModel.create({ key, name: String(customName).trim() });
         }
-
         res.json({ success: true, message: '✅ تم حفظ النموذج بنجاح!' });
     } catch (error) {
-        console.error('Add model error:', error);
         res.json({ success: false, message: '❌ حدث خطأ أثناء الحفظ' });
     }
 });
 
 app.post('/api/admin/delete-model', async (req, res) => {
     try {
-        const { modelKey, modelNumber } = req.body;
+        const { modelKey } = req.body;
         await CustomModel.deleteOne({ key: modelKey });
         await ModelStatus.deleteOne({ uniqueKey: modelKey });
         res.json({ success: true, message: '🗑️ تم الحذف بنجاح!' });
     } catch (error) {
-        console.error('Delete model error:', error);
         res.json({ success: false, message: '❌ حدث خطأ' });
     }
 });
@@ -411,7 +278,6 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
     try {
         const { oldKey, modelNumber, newName, newCategory } = req.body;
         const newKey = `${newCategory}_${modelNumber}`;
-        
         await CustomModel.deleteOne({ key: oldKey });
         let existing = await CustomModel.findOne({ key: newKey });
         if (existing) {
@@ -420,17 +286,11 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         } else {
             await CustomModel.create({ key: newKey, name: String(newName).trim() });
         }
-
         res.json({ success: true, message: '✅ تم التعديل بنجاح!' });
     } catch (error) {
-        console.error('Edit model error:', error);
         res.json({ success: false, message: '❌ حدث خطأ' });
     }
 });
-
-// ========================
-// المستخدمون والإحصائيات
-// ========================
 
 app.post('/api/admin/users', async (req, res) => {
     try {
@@ -444,7 +304,6 @@ app.post('/api/admin/users', async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('Admin users error:', error);
         res.json({ success: false, users: [] });
     }
 });
@@ -455,7 +314,6 @@ app.post('/api/admin/delete-user', async (req, res) => {
         await User.deleteOne({ email: String(userEmailToDelete).trim().toLowerCase() });
         res.json({ success: true, message: '🗑️ تم الحذف بنجاح!' });
     } catch (error) {
-        console.error('Delete user error:', error);
         res.json({ success: false, message: '❌ حدث خطأ' });
     }
 });
@@ -468,17 +326,14 @@ app.get('/api/admin/models-status', async (req, res) => {
         statuses.forEach(s => { statusesMap[s.uniqueKey] = s.active; });
 
         const result = { quant: {}, verbal: {}, mock: {} };
-
         customModels.forEach(m => {
             const lastIndex = m.key.lastIndexOf('_');
             const category = m.key.substring(0, lastIndex);
             const modelNumber = Number(m.key.substring(lastIndex + 1));
-
             let sectionKey = '';
             if (category.startsWith('quant')) sectionKey = 'quant';
             else if (category.startsWith('verbal')) sectionKey = 'verbal';
             else if (category.startsWith('qiyas')) sectionKey = 'mock';
-
             if (!sectionKey) return;
 
             result[sectionKey][m.key] = {
@@ -489,10 +344,8 @@ app.get('/api/admin/models-status', async (req, res) => {
                 isActive: statusesMap[m.key] ?? true
             };
         });
-
         res.json({ success: true, models: result });
     } catch (error) {
-        console.error('Models status error:', error);
         res.json({ success: false, models: { quant: {}, verbal: {}, mock: {} } });
     }
 });
@@ -528,7 +381,6 @@ app.post('/api/student/stats', async (req, res) => {
         const rows = await Attempt.find({ email });
         const correctAnswers = rows.filter(x => x.correct).length;
         const averageScore = rows.length ? Math.round((correctAnswers / rows.length) * 100) : 0;
-        
         res.json({
             success: true,
             correctAnswers,
@@ -550,7 +402,6 @@ app.post('/api/admin/analytics', async (req, res) => {
             User.countDocuments({ role: 'student' }),
             Attempt.find({})
         ]);
-
         res.json({
             success: true,
             questionCount,
@@ -564,10 +415,6 @@ app.post('/api/admin/analytics', async (req, res) => {
         res.json({ success: false });
     }
 });
-
-// ========================
-// تشغيل الخادم
-// ========================
 
 app.listen(PORT, () => {
     console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
