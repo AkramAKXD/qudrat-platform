@@ -512,6 +512,74 @@ button{touch-action:manipulation;overflow-wrap:anywhere}
   .model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   #admin-dashboard [style*="padding: 25px"],#admin-dashboard [style*="padding: 22px"]{padding:14px!important}
 }
+
+/* Mobile usability patch: compact navigation, readable cards, and safe form controls */
+@media (max-width: 800px) {
+  html, body { width:100%; max-width:100%; overflow-x:hidden; }
+  body { display:flex; flex-direction:column; align-items:stretch; }
+  body.logged-in .sidebar {
+    position:relative!important; inset:auto!important; z-index:20!important;
+    display:flex!important; flex:0 0 auto; width:100%!important; max-width:100%!important;
+    height:auto!important; max-height:none!important; border-radius:0 0 18px 18px;
+    box-shadow:0 6px 22px rgba(12,39,45,.12); overflow:hidden;
+  }
+  .sidebar-header { padding:10px 14px!important; }
+  .sidebar-header h2 { font-size:18px!important; }
+  .sidebar-menu {
+    display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important; padding:8px!important; margin:0!important;
+    max-height:185px!important; overflow-y:auto!important; overscroll-behavior:contain;
+  }
+  .sidebar-menu button {
+    min-height:42px!important; height:auto!important; padding:8px 9px!important;
+    font-size:12px!important; line-height:1.45!important; border-radius:10px!important;
+    justify-content:flex-start!important; gap:7px!important; text-align:right;
+  }
+  .sidebar-menu button::after { display:none!important; }
+  .admin-sidebar-group { padding:7px!important; margin:2px 0!important; }
+  .admin-sidebar-title { font-size:12px!important; margin-bottom:5px!important; }
+  body.logged-in .main-content {
+    order:2; display:block!important; width:100%!important; max-width:100%!important;
+    margin:0!important; padding:12px!important; min-height:0!important;
+  }
+  .main-content .container,.container,.app-section { width:100%!important; min-width:0!important; max-width:100%!important; }
+  .app-section.active-view { overflow-wrap:anywhere; }
+  #landing-section { padding:0 16px 20px!important; border-radius:0 0 20px 20px!important; }
+  .landing-topbar { min-height:70px; height:auto!important; padding:12px 0; }
+  .brand-mark strong,.footer-brand strong { font-size:19px!important; }
+  h1 { font-size:clamp(22px,6vw,32px); line-height:1.4; overflow-wrap:anywhere; }
+  h2 { overflow-wrap:anywhere; }
+  p { overflow-wrap:anywhere; }
+  .hero-buttons,.action-buttons-grid { grid-template-columns:1fr!important; }
+  .model-grid,.discover-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:10px!important; }
+  .section-big-card,.model-card,.feature-card,.info-card,.stat-card { min-width:0; padding:14px!important; }
+  .student-stat-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:10px!important; }
+  .stats-detail-grid { grid-template-columns:1fr!important; }
+  input,select,textarea { width:100%; min-width:0!important; font-size:16px!important; }
+  button { max-width:100%; min-height:42px; }
+  .modal-box { width:calc(100% - 24px)!important; max-width:550px; max-height:calc(100dvh - 24px)!important; padding:18px!important; }
+  .modal-actions { flex-wrap:wrap; }
+  .modal-actions button { flex:1 1 130px; }
+  #admin-dashboard { overflow-x:hidden; }
+  #admin-dashboard table { min-width:560px!important; }
+  #admin-dashboard .table-container,#admin-dashboard [style*="overflow-x"] { max-width:100%; overflow-x:auto!important; -webkit-overflow-scrolling:touch; }
+}
+@media (max-width: 480px) {
+  .main-content { padding:9px!important; }
+  body.logged-in .main-content { padding:9px!important; }
+  .sidebar-menu { max-height:160px!important; }
+  .sidebar-menu button { font-size:11px!important; padding:7px!important; }
+  .model-grid,.discover-grid { grid-template-columns:1fr!important; }
+  .student-stat-grid { grid-template-columns:1fr 1fr!important; }
+  .student-stat-card strong { font-size:24px!important; }
+  .custom-modal { padding:10px; }
+  .modal-box { width:100%!important; }
+  .stats-page-head { padding:15px!important; }
+}
+@media (max-width: 360px) {
+  .student-stat-grid { grid-template-columns:1fr!important; }
+  .sidebar-menu { grid-template-columns:1fr!important; max-height:145px!important; }
+}
 </style>
 </head>
 <body id="appBody">
