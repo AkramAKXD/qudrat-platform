@@ -422,6 +422,31 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
         @media(prefers-reduced-motion:reduce){.student-hero-banner,.qimma-next-step,.student-quote-strip{animation:none!important}}
 
 </style>
+
+<style id="qimma-extra-polish">
+:root{--qm-ink:#153b35;--qm-mint:#19b88a;--qm-gold:#e5b85c;--qm-glass:rgba(255,255,255,.88)}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{background-image:radial-gradient(ellipse at 8% 0%,rgba(25,184,138,.055),transparent 34%),radial-gradient(ellipse at 95% 90%,rgba(229,184,92,.06),transparent 30%)}
+button,a,.model-btn,[role="button"]{transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,filter .22s ease,border-color .22s ease}
+button:active,.model-btn:active,[role="button"]:active{transform:scale(.975)}
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px solid rgba(25,184,138,.5);outline-offset:3px}
+#qm-scroll-progress{position:fixed;top:0;right:0;height:3px;width:0;z-index:10050;background:linear-gradient(90deg,#19b88a,#8de4c7,#e5b85c);box-shadow:0 0 12px rgba(25,184,138,.3);transition:width .08s linear;pointer-events:none}
+#qm-back-top{position:fixed;bottom:24px;left:24px;z-index:10020;width:46px;height:46px;border:1px solid rgba(25,184,138,.22);border-radius:16px;background:rgba(255,255,255,.92);color:#087e61;box-shadow:0 8px 28px rgba(16,65,53,.13);display:grid;place-items:center;opacity:0;visibility:hidden;transform:translateY(12px);backdrop-filter:blur(12px);cursor:pointer}
+#qm-back-top.visible{opacity:1;visibility:visible;transform:translateY(0)}
+#qm-back-top:hover{background:#e8fbf4;box-shadow:0 12px 30px rgba(16,65,53,.18)}
+#qm-back-top svg{width:21px;height:21px}
+#qm-toast-stack{position:fixed;top:22px;left:22px;z-index:10060;display:grid;gap:10px;pointer-events:none}
+.qm-toast{display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100vw - 36px));padding:12px 16px;border:1px solid rgba(25,184,138,.18);border-radius:16px;background:rgba(255,255,255,.96);color:#153b35;box-shadow:0 14px 40px rgba(20,54,46,.14);font-size:14px;animation:qm-toast-in .3s ease both;backdrop-filter:blur(12px)}
+.qm-toast svg{width:20px;height:20px;flex:none;color:#12a77c}.qm-toast.out{animation:qm-toast-out .25s ease both}
+@keyframes qm-toast-in{from{opacity:0;transform:translateX(-12px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes qm-toast-out{to{opacity:0;transform:translateX(-10px) scale(.97)}}
+/* Elegant hover treatment for content cards without changing their layout. */
+.stat-card,.section-big-card,.model-card,.feature-card,.info-card{transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
+@media(hover:hover){.stat-card:hover,.section-big-card:hover,.model-card:hover,.feature-card:hover,.info-card:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(19,69,56,.10);border-color:rgba(25,184,138,.28)}}
+@media(max-width:600px){#qm-back-top{bottom:14px;left:14px;width:42px;height:42px;border-radius:14px}#qm-toast-stack{top:12px;left:12px;right:12px}.qm-toast{max-width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
 </head>
 <body id="appBody">
 
@@ -1939,6 +1964,23 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
                 quote.classList.add('quote-changing');
                 window.setTimeout(()=>{quote.textContent=messages[index];quote.classList.remove('quote-changing');},180);
             },7000);
+        })();
+
+
+
+        // Extra premium usability touches: reading progress, back-to-top, and honest action feedback.
+        (() => {
+            if (document.getElementById('qm-scroll-progress')) return;
+            const progress=document.createElement('div'); progress.id='qm-scroll-progress'; progress.setAttribute('aria-hidden','true'); document.body.appendChild(progress);
+            const top=document.createElement('button'); top.id='qm-back-top'; top.type='button'; top.setAttribute('aria-label','العودة إلى أعلى الصفحة'); top.title='العودة إلى الأعلى';
+            top.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7M12 5v14"/></svg>';
+            document.body.appendChild(top);
+            const update=()=>{const d=document.documentElement;const max=d.scrollHeight-window.innerHeight;progress.style.width=(max>0?Math.min(100,window.scrollY/max*100):0)+'%';top.classList.toggle('visible',window.scrollY>320)};
+            window.addEventListener('scroll',update,{passive:true}); window.addEventListener('resize',update); top.addEventListener('click',()=>window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})); update();
+            const stack=document.createElement('div'); stack.id='qm-toast-stack'; stack.setAttribute('aria-live','polite'); stack.setAttribute('aria-atomic','false'); document.body.appendChild(stack);
+            window.qimmaToast=(message)=>{if(!message)return;const item=document.createElement('div');item.className='qm-toast';item.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span></span>';item.querySelector('span').textContent=message;stack.appendChild(item);window.setTimeout(()=>{item.classList.add('out');window.setTimeout(()=>item.remove(),280)},2400)};
+            // Give clear, low-noise feedback for actions that explicitly indicate success.
+            document.addEventListener('click',(e)=>{const b=e.target.closest('button');if(!b||b.disabled)return;const t=(b.innerText||b.getAttribute('aria-label')||'').trim();if(/^(حفظ|تم الحفظ|نسخ|نسخ الرابط|تم|تحديث|إعادة المحاولة)$/i.test(t))window.qimmaToast(t==='حفظ'?'تم تنفيذ طلب الحفظ.':t+' بنجاح');});
         })();
 
 </script>
