@@ -2342,27 +2342,57 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
             setTimeout(() => { currentQuestionIndex++; renderTrainingQuestion(); }, 1500);
         }
 
-        // إنجاز النماذج: يُسجّل مفتاح فريد لكل قسم/نوع/رقم نموذج ولا تتكرر النقاط عند الإعادة.
+        // إنجاز النماذج محفوظ في MongoDB ويرتبط بحساب الطالب.
         function qimmaModelKey(section, model, mode){ return `${section}:${mode}:${String(model)}`; }
-        function getQimmaCompletedModels(){ try{return JSON.parse(localStorage.getItem('qimmaCompletedModels:'+ (sessionStorage.getItem('sessionUserEmail')||'guest'))||'[]')}catch(e){return []} }
-        function recordQimmaModelCompletion(){
-            const email=sessionStorage.getItem('sessionUserEmail')||'guest';
-            const key=qimmaModelKey(currentSectionType,selectedModelNum,currentActionMode);
-            const storageKey='qimmaCompletedModels:'+email; const list=getQimmaCompletedModels();
-            if(!list.includes(key)){list.push(key);localStorage.setItem(storageKey,JSON.stringify(list));}
-            updateQimmaProgress();
+        let qimmaAchievementState = { requiredModels: 10, completedCount: 0, completedModels: [] };
+        function getQimmaCompletedModels(){ return qimmaAchievementState.completedModels || []; }
+        async function recordQimmaModelCompletion(){
+            const email=sessionStorage.getItem('sessionUserEmail')||'';
+            if(!email) return updateQimmaProgress();
+            const section = currentActionMode === 'qiyas_simulation' ? 'mock' : (currentSectionType || 'quant');
+            const type = currentActionMode || 'practice';
+            try {
+                await fetch('/api/student/achievement/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,section,type,model:Number(selectedModelNum)})});
+                await updateQimmaProgress();
+            } catch(e) { console.error('تعذر حفظ الإنجاز على الخادم',e); }
         }
-        function updateQimmaProgress(){
-            const required=Math.max(1,Number(localStorage.getItem('qimmaAchievementRequired')||10));
-            const count=getQimmaCompletedModels().length; const percent=Math.min(100,Math.round(count/required*100));
+        async function updateQimmaProgress(){
+            const email=sessionStorage.getItem('sessionUserEmail')||'';
+            if(email){
+                try {
+                    const r=await fetch('/api/student/achievement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+                    const d=await r.json();
+                    if(d.success) qimmaAchievementState=d;
+                } catch(e) { console.error('تعذر تحميل الإنجاز',e); }
+            }
+            const required=Math.max(1,Number(qimmaAchievementState.requiredModels)||10);
+            const count=Number(qimmaAchievementState.completedCount)||0;
+            const percent=Math.min(100,Math.round(count/required*100));
             const label=document.getElementById('qimma-progress-percent'),fill=document.getElementById('qimma-progress-fill'),caption=document.getElementById('qimma-progress-caption');
             if(label)label.textContent=percent+'%'; if(fill)fill.style.width=percent+'%'; if(caption)caption.textContent=`أنجزت ${Math.min(count,required)} من ${required} نماذج مختلفة${percent===100?' — وصلت إلى القمة! 🎉':''}`;
         }
-        document.addEventListener('DOMContentLoaded',()=>{
-            const input=document.getElementById('achievement-required-count'); if(input)input.value=localStorage.getItem('qimmaAchievementRequired')||10;
-            document.getElementById('achievementSettingsForm')?.addEventListener('submit',e=>{e.preventDefault();const n=Math.max(1,Math.min(500,Number(input.value)||10));localStorage.setItem('qimmaAchievementRequired',String(n));document.getElementById('achievement-settings-note').textContent=`تم حفظ الهدف: ${n} نماذج مختلفة.`;updateQimmaProgress();});
-            updateQimmaProgress();
+        document.addEventListener('DOMContentLoaded',async()=>{
+            const input=document.getElementById('achievement-required-count');
+            const note=document.getElementById('achievement-settings-note');
+            const email=sessionStorage.getItem('sessionUserEmail')||'';
+            if(input && email){
+                try{
+                    const r=await fetch('/api/admin/achievement-settings/get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+                    const d=await r.json(); if(d.success) input.value=d.requiredModels;
+                }catch(e){console.error(e);}
+            }
+            document.getElementById('achievementSettingsForm')?.addEventListener('submit',async e=>{
+                e.preventDefault(); const n=Math.max(1,Math.min(500,Number(input?.value)||10));
+                try{
+                    const r=await fetch('/api/admin/achievement-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,requiredModels:n})});
+                    const d=await r.json();
+                    if(note) note.textContent=d.success?`تم حفظ الهدف لجميع الطلاب: ${n} نماذج مختلفة.`:(d.message||'تعذر حفظ الهدف');
+                    if(d.success) await updateQimmaProgress();
+                }catch(err){if(note)note.textContent='تعذر الاتصال بالخادم.';}
+            });
+            await updateQimmaProgress();
         });
+
 
         function logout() {
             showLoading('خروج...', 1000, () => {
