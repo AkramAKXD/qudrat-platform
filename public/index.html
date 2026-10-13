@@ -996,6 +996,41 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 <style id="qimma-model-status-styles">
 .model-status-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:900px;margin:16px auto}.model-status-card{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 18px;box-shadow:0 5px 18px rgba(15,23,42,.06);transition:transform .2s,box-shadow .2s}.model-status-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,23,42,.1)}.model-status-info{display:flex;align-items:center;gap:12px}.model-status-badge{font-size:13px;font-weight:800;border-radius:999px;padding:8px 12px;white-space:nowrap}.model-status-badge.pending{background:#f1f5f9;color:#475569}.model-status-badge.done{background:#dcfce7;color:#166534;animation:qimmaPop .45s ease-out}.model-score{font-weight:900;color:#047857;direction:ltr}.model-status-actions{display:flex;align-items:center;gap:10px}.model-retry{background:#0f766e!important;color:white!important;width:auto!important;padding:9px 14px!important;border-radius:10px!important}@keyframes qimmaPop{0%{transform:scale(.7);opacity:.3}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}@media(max-width:600px){.model-status-card{align-items:flex-start}.model-status-actions{width:100%;justify-content:space-between}}
 </style>
+
+<style id="qimma-final-brand-mobile-fix">
+.sidebar-brand{display:flex;align-items:center;justify-content:center;gap:9px;color:#d5f36a;font-weight:900;font-size:19px}
+.sidebar-brand img{width:48px;height:34px;object-fit:contain;filter:none}
+#mobileMenuToggle{display:none;position:fixed;top:12px;right:12px;width:44px;height:44px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#123b48;box-shadow:0 5px 18px rgba(18,59,72,.22);z-index:1200;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer}
+#mobileMenuToggle span{display:block;width:21px;height:2.5px;background:#d5f36a;border-radius:3px}
+#postLoginTopbar{display:none;position:sticky;top:0;z-index:900;width:100%;height:58px;flex:0 0 58px;align-items:center;justify-content:center;gap:14px;background:#123b48;color:#fff;border-bottom:3px solid #d5f36a;box-shadow:0 5px 18px rgba(18,59,72,.12)}
+body.logged-in #postLoginTopbar{display:flex}
+.post-login-title{font-size:17px;font-weight:900;letter-spacing:.1px}
+.hamma-mark{display:flex;align-items:center;gap:5px;color:#d5f36a;font-weight:900;border-right:1px solid rgba(255,255,255,.22);padding-right:12px}
+.hamma-symbol{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border:2px solid #d5f36a;border-radius:7px;font-size:14px;line-height:1}
+.hamma-mark strong{font-size:16px}
+@media(max-width:760px){
+ body{display:block!important}
+ #mobileMenuToggle{display:none}
+ body.logged-in #mobileMenuToggle{display:flex}
+ body.logged-in #postLoginTopbar{padding-right:62px;height:58px;position:sticky;top:0}
+ body.logged-in #appSidebar{position:fixed!important;top:0!important;right:0!important;bottom:0!important;width:min(82vw,310px)!important;height:100dvh!important;max-height:100dvh!important;z-index:1150!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;transform:translateX(110%);transition:transform .25s ease!important;border-radius:0 0 0 0!important;background:#123b48!important}
+ body.logged-in.mobile-sidebar-open #appSidebar{transform:translateX(0)!important}
+ body.logged-in #appSidebar .sidebar-header{padding:22px 14px!important;text-align:center!important}
+ body.logged-in #appSidebar .sidebar-menu{display:block!important;max-height:none!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;padding:12px!important}
+ body.logged-in #appSidebar .sidebar-menu li,body.logged-in #appSidebar #student-sidebar-group li{display:block!important;width:100%!important;margin:0 0 7px!important;min-width:0!important}
+ body.logged-in #appSidebar .sidebar-menu button{display:flex!important;width:100%!important;min-width:0!important;min-height:45px!important;justify-content:flex-start!important;text-align:right!important;font-size:14px!important;padding:11px 13px!important;white-space:normal!important}
+ body.logged-in #appSidebar #admin-sidebar-section:not(.hidden){display:block!important}
+ body.logged-in #appSidebar #admin-sidebar-section:not(.hidden) .admin-sidebar-title{display:block!important}
+ body.logged-in .main-content{margin:0!important;padding:10px!important;width:100%!important}
+ body.logged-in #postLoginTopbar{display:flex!important}
+ body:not(.logged-in) #mobileMenuToggle,body:not(.logged-in) #postLoginTopbar{display:none!important}
+}
+</style>
+<script>
+function toggleMobileSidebar(){document.body.classList.toggle('mobile-sidebar-open');const b=document.getElementById('mobileMenuToggle');if(b)b.setAttribute('aria-expanded',document.body.classList.contains('mobile-sidebar-open')?'true':'false');}
+document.addEventListener('click',function(e){if(!document.body.classList.contains('mobile-sidebar-open'))return;const s=document.getElementById('appSidebar'),b=document.getElementById('mobileMenuToggle');if(s&&!s.contains(e.target)&&b&&!b.contains(e.target)){document.body.classList.remove('mobile-sidebar-open');b.setAttribute('aria-expanded','false')}if(s&&s.contains(e.target)&&e.target.closest('button')){document.body.classList.remove('mobile-sidebar-open');if(b)b.setAttribute('aria-expanded','false')}});
+</script>
+
 </head>
 <body id="appBody">
 
@@ -1104,7 +1139,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
     </div>
 
     <nav class="sidebar" id="appSidebar">
-        <div class="sidebar-header"><h2><img class="qimma-brand-symbol" src="/qimma-logo.png" alt="" aria-hidden="true"> <span>منصة قِمّة</span></h2></div>
+        <div class="sidebar-header"><div class="sidebar-brand"><img src="/qimma-logo.png" alt="شعار قمة"><span>منصة قِمّة</span></div></div>
         <ul class="sidebar-menu">
             <div id="student-sidebar-group">
                 <li id="menu-student"><button onclick="navigateTo('student')">📚 الرئيسية والأقسام</button></li>
@@ -1132,11 +1167,13 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
         </ul>
     </nav>
 
+    <button id="mobileMenuToggle" type="button" aria-label="فتح القائمة الجانبية" aria-controls="appSidebar" aria-expanded="false" onclick="toggleMobileSidebar()"><span></span><span></span><span></span></button>
+    <header id="postLoginTopbar" aria-label="هوية منصة القدرات"><div class="post-login-title">منصة القدرات</div><div class="hamma-mark" aria-label="همة"><span class="hamma-symbol">هـ</span><strong>همة</strong></div></header>
     <div class="main-content">
         <div class="container">
             <div id="landing-section" class="app-section hero-section active-view">
                 <div class="landing-topbar">
-                    <div class="brand-mark"><img class="qimma-brand-symbol landing-brand-symbol" src="/qimma-logo.png" alt="شعار قِمّة"><div><strong>قِمّة</strong><small>منصة القدرات الذكية</small></div></div>
+                    <div class="brand-mark"><span class="brand-icon">ق</span><div><strong>قِمّة</strong><small>منصة القدرات الذكية</small></div></div>
                     <div class="topbar-note"><span class="live-dot"></span> رحلتك نحو الدرجة الأعلى تبدأ هنا</div>
                     <button class="topbar-login" onclick="switchView('login')">دخول المنصة <span>↗</span></button>
                 </div>
@@ -1175,7 +1212,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                         <article class="discover-card"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80" alt="محاكاة" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"><div class="discover-overlay"></div><div class="discover-card-content"><span class="discover-tag">03 / محاكاة</span><h3>جرّب أجواء الاختبار</h3><p>تدرّب على نماذج تساعدك تستعد بثقة.</p><button onclick="switchView('login')">شاهد النماذج <b>←</b></button></div></article>
                     </div>
                 </section>
-                <footer class="landing-footer"><div class="footer-brand"><img class="qimma-brand-symbol footer-brand-symbol" src="/qimma-logo.png" alt="شعار قِمّة"><strong>قِمّة</strong></div><span>رحلتك تبدأ بخطوة، واصل التقدّم.</span><button onclick="switchView('register')">أنشئ حسابك الآن ↗</button></footer>
+                <footer class="landing-footer"><div class="footer-brand"><span class="brand-icon">ق</span><strong>قِمّة</strong></div><span>رحلتك تبدأ بخطوة، واصل التقدّم.</span><button onclick="switchView('register')">أنشئ حسابك الآن ↗</button></footer>
             </div>
 
             <div id="login-section" class="app-section auth-section auth-login">
@@ -2794,33 +2831,5 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 })();
 </script>
 
-
-<style id="qimma-refined-mobile-drawer-and-brand">
-.qimma-brand-symbol{display:inline-block;width:42px;height:38px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(18,59,72,.10))}
-.sidebar-header h2{display:flex;align-items:center;justify-content:center;gap:8px}.sidebar-header .qimma-brand-symbol{width:42px;height:35px;filter:brightness(0) invert(1) opacity(.94)}
-.landing-brand-symbol{width:54px;height:46px;filter:brightness(0) saturate(100%) invert(14%) sepia(28%) saturate(1518%) hue-rotate(151deg) brightness(92%) contrast(94%)}.footer-brand-symbol{width:38px;height:32px}
-#qimma-mobile-menu-toggle,#qimma-mobile-menu-backdrop{display:none}
-@media(max-width:800px){
- body.logged-in #appSidebar{position:fixed!important;top:0!important;right:0!important;bottom:0!important;left:auto!important;inset-inline-start:auto!important;width:min(82vw,310px)!important;max-width:310px!important;height:100dvh!important;max-height:100dvh!important;display:flex!important;flex-direction:column!important;flex:initial!important;overflow:hidden!important;z-index:12001!important;border-radius:0!important;background:#123b48!important;box-shadow:-12px 0 35px rgba(0,0,0,.2)!important;transform:translateX(110%);transition:transform .25s ease!important;visibility:hidden}
- body.logged-in #appSidebar.qimma-drawer-open{transform:translateX(0)!important;visibility:visible!important}
- body.logged-in #appSidebar .sidebar-menu{display:block!important;flex:1 1 auto!important;max-height:none!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;padding:14px!important}
- body.logged-in #appSidebar .sidebar-menu li{display:block!important;margin-bottom:7px!important}
- body.logged-in #appSidebar .sidebar-menu button{width:100%!important;min-height:46px!important;justify-content:flex-start!important;font-size:14px!important;padding:11px 13px!important;color:#c3d2d3!important;background:transparent!important;border-radius:12px!important}
- body.logged-in #appSidebar .sidebar-menu li.active button{background:#d5f36a!important;color:#123b48!important}
- body.logged-in #appSidebar .admin-sidebar-group{display:block!important;margin:10px 0!important}
- body.logged-in #qimma-mobile-menu-toggle{display:flex;position:fixed;top:12px;right:12px;z-index:12003;width:46px;height:46px;border:1px solid rgba(213,243,106,.45);border-radius:13px;background:#123b48;color:#d5f36a;align-items:center;justify-content:center;flex-direction:column;gap:5px;box-shadow:0 5px 16px rgba(18,59,72,.22);cursor:pointer;padding:0}
- #qimma-mobile-menu-toggle span{display:block;width:22px;height:2.5px;background:currentColor;border-radius:3px;transition:transform .2s,opacity .2s}
- #qimma-mobile-menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(7.5px) rotate(45deg)}
- #qimma-mobile-menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
- #qimma-mobile-menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-7.5px) rotate(-45deg)}
- #qimma-mobile-menu-backdrop{display:block;position:fixed;inset:0;background:rgba(7,25,31,.52);z-index:12000;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
- #qimma-mobile-menu-backdrop.active{opacity:1;visibility:visible}
- body.logged-in .main-content{padding-top:68px!important}
-}
-@media(max-width:800px){body:not(.logged-in) #qimma-mobile-menu-toggle,body:not(.logged-in) #qimma-mobile-menu-backdrop{display:none!important}}
-@media(min-width:801px){#qimma-mobile-menu-toggle,#qimma-mobile-menu-backdrop{display:none!important}}
-</style>
-<div id="qimma-mobile-menu-backdrop" aria-hidden="true"></div><button id="qimma-mobile-menu-toggle" type="button" aria-label="فتح القائمة الجانبية" aria-controls="appSidebar" aria-expanded="false"><span></span><span></span><span></span></button><script>
-(()=>{const side=document.getElementById("appSidebar"),btn=document.getElementById("qimma-mobile-menu-toggle"),back=document.getElementById("qimma-mobile-menu-backdrop");if(!side||!btn||!back)return;const close=()=>{side.classList.remove("qimma-drawer-open");back.classList.remove("active");btn.setAttribute("aria-expanded","false");btn.setAttribute("aria-label","فتح القائمة الجانبية");document.body.style.overflow=""};const open=()=>{side.classList.add("qimma-drawer-open");back.classList.add("active");btn.setAttribute("aria-expanded","true");btn.setAttribute("aria-label","إغلاق القائمة الجانبية")};btn.addEventListener("click",()=>btn.getAttribute("aria-expanded")==="true"?close():open());back.addEventListener("click",close);side.addEventListener("click",e=>{if(e.target.closest("button"))close()});document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});window.addEventListener("resize",()=>{if(innerWidth>800)close()});})();
-</script></body>
+</body>
 </html>
