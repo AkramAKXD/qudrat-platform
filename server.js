@@ -62,7 +62,8 @@ const attemptSchema = new mongoose.Schema({
     score: { type: Number, default: 1 },
     createdAt: { type: Date, default: Date.now, index: true }
 });
-const Attempt = mongoose.models.Attempt || mongoose.model('Attempt', attemptSchema);
+const Attempt = mongoose.models.Attempt ||
+    mongoose.model('Attempt', attemptSchema);
 
 // ==================== إنشاء حساب المشرف ====================
 
@@ -244,9 +245,7 @@ app.post('/api/reset-password', async (req, res) => {
             message: '❌ حدث خطأ في الخادم'
         });
     }
-});
-
-// ==================== جلب الأسئلة ====================
+});// ==================== جلب الأسئلة ====================
 
 app.get('/api/questions', async (req, res) => {
     try {
@@ -453,20 +452,12 @@ app.get('/api/custom-models', async (req, res) => {
             modelsMap[m.key] = m.name;
         });
 
-        res.json({
-            success: true,
-            models: modelsMap
-        });
+        res.json(modelsMap);
     } catch (error) {
         console.error('GET /api/custom-models:', error);
-        res.status(500).json({
-            success: false,
-            models: {}
-        });
+        res.status(500).json({});
     }
-});
-
-// ==================== إضافة نموذج مخصص ====================
+});// ==================== إضافة نموذج مخصص ====================
 
 app.post('/api/add-custom-model', async (req, res) => {
     try {
@@ -701,11 +692,8 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
                             uniqueKey: oldStatusKey
                         });
 
-                        await ModelStatus.updateOne(
-                            { uniqueKey: newKeyForRemaining },
-                            { $set: { active: status.active } },
-                            { upsert: true }
-                        );
+                        status.uniqueKey = newKeyForRemaining;
+                        await status.save();
                     }
                 }
 
@@ -718,259 +706,18 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
         res.json({
             success: true,
-            message: '✅ تم تعديل ونقل النموذج بنجاح، وإعادة ترقيم النماذج المتبقية تلقائياً!'
+            message: '✅ تم تعديل النموذج ونقل أسئلته بنجاح!',
+            modelKey: newKey,
+            modelNumber: assignedModelNum
         });
     } catch (error) {
         console.error('POST /api/admin/edit-model-full:', error);
         res.status(500).json({
             success: false,
-            message: '❌ حدث خطأ أثناء التحديث'
+            message: '❌ حدث خطأ أثناء تعديل النموذج'
         });
     }
-});
-
-// ==================== جلب المستخدمين للمشرف ====================
-
-app.post('/api/admin/users', async (req, res) => {
-    try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        });
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: '⛔ ليس لديك صلاحية!'
-            });
-        }
-
-        const users = await User.find({});
-
-        res.json({
-            success: true,
-            users: users.map(user => ({
-                name: user.name,
-                email: user.email,
-                pass: user.pass,
-                role: user.role === 'admin'
-                    ? 'مشرف (Admin)'
-                    : 'طالب (Student)'
-            }))
-        });
-    } catch (error) {
-        console.error('POST /api/admin/users:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم'
-        });
-    }
-});
-
-// ==================== حذف مستخدم ====================
-
-app.post('/api/admin/delete-user', async (req, res) => {
-    try {
-        const {
-            adminEmail,
-            userEmailToDelete
-        } = req.body;
-
-        const normalizedAdminEmail =
-            String(adminEmail || '').trim().toLowerCase();
-
-        const normalizedUserEmail =
-            String(userEmailToDelete || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email: normalizedAdminEmail,
-            role: 'admin'
-        });
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: '⛔ ليس لديك صلاحية!'
-            });
-        }
-
-        if (!normalizedUserEmail) {
-            return res.status(400).json({
-                success: false,
-                message: 'يرجى تحديد المستخدم.'
-            });
-        }
-
-        if (normalizedAdminEmail === normalizedUserEmail) {
-            return res.json({
-                success: false,
-                message: '⚠️ لا يمكنك حذف حسابك!'
-            });
-        }
-
-        await User.deleteOne({
-            email: normalizedUserEmail
-        });
-
-        res.json({
-            success: true,
-            message: '🗑️ تم الحذف بنجاح!'
-        });
-    } catch (error) {
-        console.error('POST /api/admin/delete-user:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ'
-        });
-    }
-});
-
-// ==================== حالة النماذج ====================
-
-app.get('/api/admin/models-status', async (req, res) => {
-    try {
-        const questions = await Question.find({});
-        const statuses = await ModelStatus.find({});
-        const modelsStatusMap = {};
-
-        statuses.forEach(status => {
-            modelsStatusMap[status.uniqueKey] = status.active;
-        });
-
-        const customModels = await CustomModel.find({});
-        const customModelsMap = {};
-
-        customModels.forEach(model => {
-            customModelsMap[model.key] = model.name;
-        });
-
-        const result = {
-            quant: {},
-            verbal: {},
-            mock: {}
-        };
-
-        Object.keys(customModelsMap).forEach(key => {
-            const lastUnderscoreIdx = key.lastIndexOf('_');
-            const catPart = key.substring(0, lastUnderscoreIdx);
-            const modelNum = Number(
-                key.substring(lastUnderscoreIdx + 1)
-            );
-
-            let sectionKey = '';
-
-            if (catPart.startsWith('quant')) {
-                sectionKey = 'quant';
-            } else if (catPart.startsWith('verbal')) {
-                sectionKey = 'verbal';
-            } else if (catPart.startsWith('qiyas')) {
-                sectionKey = 'mock';
-            }
-
-            const uniqueModelKey = `${catPart}_${modelNum}`;
-
-            if (sectionKey && !result[sectionKey][uniqueModelKey]) {
-                result[sectionKey][uniqueModelKey] = {
-                    modelNumber: modelNum,
-                    categoryType: catPart,
-                    customKey: key,
-                    questionCount: 0,
-                    isActive: modelsStatusMap[uniqueModelKey] ?? true
-                };
-            }
-        });
-
-        questions.forEach(question => {
-            let section = question.section === 'verbal'
-                ? 'verbal'
-                : 'quant';
-
-            if (question.type === 'qiyas_simulation') {
-                section = 'mock';
-            }
-
-            const modelNum = Number(question.model) || 1;
-
-            Object.keys(result[section]).forEach(uniqueKey => {
-                const modelData = result[section][uniqueKey];
-
-                if (
-                    modelData.modelNumber === modelNum &&
-                    (
-                        section === 'mock' ||
-                        modelData.categoryType.includes(question.type)
-                    )
-                ) {
-                    modelData.questionCount++;
-                }
-            });
-        });
-
-        res.json({
-            success: true,
-            models: result
-        });
-    } catch (error) {
-        console.error('GET /api/admin/models-status:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ'
-        });
-    }
-});
-
-// ==================== تفعيل وتعطيل نموذج ====================
-
-app.post('/api/admin/toggle-model', async (req, res) => {
-    try {
-        const {
-            adminEmail,
-            uniqueKey
-        } = req.body;
-
-        const normalizedEmail =
-            String(adminEmail || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email: normalizedEmail,
-            role: 'admin'
-        });
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: '⛔ ليس لديك صلاحية!'
-            });
-        }
-
-        let modelStatus = await ModelStatus.findOne({ uniqueKey });
-
-        if (modelStatus) {
-            modelStatus.active = !modelStatus.active;
-            await modelStatus.save();
-        } else {
-            await ModelStatus.create({
-                uniqueKey,
-                active: false
-            });
-        }
-
-        res.json({
-            success: true,
-            message: '✅ تم تحديث الحالة بنجاح!'
-        });
-    } catch (error) {
-        console.error('POST /api/admin/toggle-model:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ'
-        });
-    }
-});
-
-// ==================== تسجيل إجابة الطالب ====================
+});// ==================== تسجيل محاولة الطالب ====================
 
 app.post('/api/attempts', async (req, res) => {
     try {
@@ -983,46 +730,39 @@ app.post('/api/attempts', async (req, res) => {
             chosenAnswer,
             correct,
             score
-        } = req.body || {};
+        } = req.body;
 
-        const normalizedEmail =
-            String(email || '').trim().toLowerCase();
-
-        if (!normalizedEmail) {
+        if (!email) {
             return res.status(400).json({
                 success: false,
-                message: 'البريد مطلوب'
+                message: 'البريد الإلكتروني مطلوب.'
             });
         }
 
-        const user = await User.findOne({
-            email: normalizedEmail
-        });
+        const normalizedEmail = String(email).trim().toLowerCase();
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'المستخدم غير موجود'
-            });
-        }
-
-        await Attempt.create({
+        const attempt = await Attempt.create({
             email: normalizedEmail,
             questionId,
-            section,
-            type,
+            section: section || 'quant',
+            type: type || 'practice',
             model: Number(model) || 1,
             chosenAnswer,
             correct: Boolean(correct),
-            score: Number(score) || 1
+            score: Number(score) || 0
         });
 
-        res.json({ success: true });
+        return res.json({
+            success: true,
+            message: 'تم تسجيل المحاولة بنجاح.',
+            attempt
+        });
     } catch (error) {
         console.error('POST /api/attempts:', error);
-        res.status(500).json({
+
+        return res.status(500).json({
             success: false,
-            message: 'تعذر تسجيل المحاولة'
+            message: 'تعذر تسجيل المحاولة.'
         });
     }
 });
@@ -1031,249 +771,347 @@ app.post('/api/attempts', async (req, res) => {
 
 app.post('/api/student/stats', async (req, res) => {
     try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
+        const email = String(req.body?.email || '').trim().toLowerCase();
 
         if (!email) {
             return res.status(400).json({
                 success: false,
-                message: 'البريد مطلوب'
+                message: 'البريد الإلكتروني مطلوب.'
             });
         }
 
         const attempts = await Attempt.find({ email }).lean();
 
-        const correctAnswers =
-            attempts.filter(attempt => attempt.correct).length;
+        const totalAttempts = attempts.length;
+        const correctAnswers = attempts.filter(a => a.correct).length;
+        const wrongAnswers = totalAttempts - correctAnswers;
 
-        const averageScore = attempts.length
-            ? Math.round(correctAnswers / attempts.length * 100)
+        const totalScore = attempts.reduce(
+            (sum, attempt) => sum + (Number(attempt.score) || 0),
+            0
+        );
+
+        const accuracy = totalAttempts
+            ? Math.round((correctAnswers / totalAttempts) * 100)
             : 0;
-
-        const bySection = {};
-
-        attempts.forEach(attempt => {
-            const section = attempt.section || 'quant';
-
-            bySection[section] ||= {
-                total: 0,
-                correct: 0
-            };
-
-            bySection[section].total++;
-
-            if (attempt.correct) {
-                bySection[section].correct++;
-            }
-        });
-
-        const weakPoints = Object.entries(bySection)
-            .filter(([, value]) => value.total >= 3)
-            .map(([section, value]) => ({
-                section,
-                accuracy: Math.round(
-                    value.correct / value.total * 100
-                )
-            }))
-            .filter(item => item.accuracy < 70)
-            .sort((a, b) => a.accuracy - b.accuracy);
-
-        res.json({
-            success: true,
-            correctAnswers,
-            testsTaken: attempts.length,
-            averageScore,
-            weakPoints
-        });
-    } catch (error) {
-        console.error('POST /api/student/stats:', error);
-        res.status(500).json({
-            success: false,
-            message: 'تعذر تحميل إحصائيات الطالب'
-        });
-    }
-});
-
-// ==================== تحليلات المنصة للمشرف ====================
-
-app.post('/api/admin/analytics', async (req, res) => {
-    try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        });
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: 'ليس لديك صلاحية'
-            });
-        }
-
-        const [
-            questionCount,
-            modelCount,
-            studentCount,
-            attempts
-        ] = await Promise.all([
-            Question.countDocuments(),
-            CustomModel.countDocuments(),
-            User.countDocuments({ role: { $ne: 'admin' } }),
-            Attempt.find({}).lean()
-        ]);
-
-        const averageScore = attempts.length
-            ? Math.round(
-                attempts.filter(attempt => attempt.correct).length /
-                attempts.length * 100
-            )
-            : 0;
-
-        const groups = new Map();
-
-        attempts.forEach(attempt => {
-            const section = attempt.type === 'qiyas_simulation'
-                ? 'mock'
-                : (attempt.section || 'quant');
-
-            const modelNum = Number(attempt.model) || 1;
-            const key = `${section}|${modelNum}`;
-
-            if (!groups.has(key)) {
-                groups.set(key, {
-                    section,
-                    model: modelNum,
-                    correctAnswers: 0,
-                    answers: 0,
-                    studentsSet: new Set()
-                });
-            }
-
-            const group = groups.get(key);
-
-            group.answers++;
-
-            if (attempt.correct) {
-                group.correctAnswers++;
-            }
-
-            group.studentsSet.add(attempt.email);
-        });
-
-        const popularModels = [...groups.values()]
-            .map(group => ({
-                section: group.section,
-                model: group.model,
-                correctAnswers: group.correctAnswers,
-                answers: group.answers,
-                students: group.studentsSet.size,
-                averageScore: Math.round(
-                    group.correctAnswers / group.answers * 100
-                )
-            }))
-            .sort((a, b) => b.correctAnswers - a.correctAnswers)
-            .slice(0, 10);
-
-        res.json({
-            success: true,
-            questionCount,
-            modelCount,
-            studentCount,
-            averageScore,
-            attemptsCount: attempts.length,
-            popularModels
-        });
-    } catch (error) {
-        console.error('POST /api/admin/analytics:', error);
-        res.status(500).json({
-            success: false,
-            message: 'تعذر تحميل التحليلات'
-        });
-    }
-});
-
-// ==================== حذف الإحصائيات ====================
-// يحذف سجلات المحاولات فقط ولا يحذف الحسابات أو الأسئلة أو النماذج.
-
-app.post('/api/admin/delete-statistics', async (req, res) => {
-    try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
-
-        const scope = String(req.body?.scope || '');
-
-        if (!['students', 'platform'].includes(scope)) {
-            return res.status(400).json({
-                success: false,
-                message: 'نوع حذف الإحصائيات غير صالح.'
-            });
-        }
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        }).select('_id');
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.'
-            });
-        }
-
-        // كلا الخيارين يحذف سجلات المحاولات كلها.
-        // لذلك ستُصفّر إحصائيات الطلاب والأداء العام معاً.
-        const result = await Attempt.deleteMany({});
 
         return res.json({
             success: true,
-            scope,
-            deletedCount: result.deletedCount || 0,
-            message: scope === 'students'
-                ? 'تم تصفير إحصائيات جميع الطلاب بنجاح.'
-                : 'تم تصفير إحصائيات الأداء في المنصة بنجاح.'
+            totalAttempts,
+            correctAnswers,
+            wrongAnswers,
+            totalScore,
+            accuracy
         });
     } catch (error) {
-        console.error('POST /api/admin/delete-statistics:', error);
+        console.error('POST /api/student/stats:', error);
 
         return res.status(500).json({
             success: false,
-            message: 'تعذر حذف الإحصائيات حالياً.'
+            message: 'تعذر جلب إحصائيات الطالب.'
+        });
+    }
+});// ==================== إعداد إنجاز الطلاب ====================
+
+const achievementConfigSchema = new mongoose.Schema({
+    key: {
+        type: String,
+        unique: true,
+        default: 'global'
+    },
+    requiredModels: {
+        type: Number,
+        min: 1,
+        max: 500,
+        default: 10
+    },
+    updatedBy: String,
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const AchievementConfig =
+    mongoose.models.AchievementConfig ||
+    mongoose.model('AchievementConfig', achievementConfigSchema);
+
+const completedModelSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,
+        lowercase: true
+    },
+    modelKey: {
+        type: String,
+        required: true
+    },
+    section: String,
+    type: String,
+    model: Number,
+    completedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+completedModelSchema.index(
+    { email: 1, modelKey: 1 },
+    { unique: true }
+);
+
+const CompletedModel =
+    mongoose.models.CompletedModel ||
+    mongoose.model('CompletedModel', completedModelSchema);
+
+// قراءة عدد النماذج المطلوب إنجازها
+async function getAchievementRequired() {
+    const config = await AchievementConfig.findOne({
+        key: 'global'
+    }).lean();
+
+    return config?.requiredModels || 10;
+}
+
+// ==================== جلب إنجاز الطالب ====================
+
+app.post('/api/student/achievement', async (req, res) => {
+    try {
+        const email = String(
+            req.body?.email || ''
+        ).trim().toLowerCase();
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'البريد الإلكتروني مطلوب.'
+            });
+        }
+
+        const user = await User.findOne({
+            email
+        }).select('_id role');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'المستخدم غير موجود.'
+            });
+        }
+
+        const [requiredModels, completed] = await Promise.all([
+            getAchievementRequired(),
+
+            CompletedModel.find({ email })
+                .select('modelKey section type model completedAt')
+                .lean()
+        ]);
+
+        res.json({
+            success: true,
+            requiredModels,
+            completedCount: completed.length,
+            percent: Math.min(
+                100,
+                Math.round(
+                    completed.length / requiredModels * 100
+                )
+            ),
+            completedModels: completed
+        });
+    } catch (error) {
+        console.error(
+            'POST /api/student/achievement:',
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: 'تعذر تحميل الإنجاز.'
         });
     }
 });
 
-// ==================== تشغيل الخادم ====================
+// ==================== تسجيل إكمال نموذج ====================
 
-async function startServer() {
-    if (!MONGO_URI) {
-        console.error(
-            '❌ متغير البيئة MONGO_URI غير مضبوط. أضف رابط MongoDB إلى إعدادات البيئة.'
-        );
-        process.exit(1);
-    }
-
+app.post('/api/student/achievement/complete', async (req, res) => {
     try {
-        await mongoose.connect(MONGO_URI, {
-            serverSelectionTimeoutMS: 15000
-        });
+        const email = String(
+            req.body?.email || ''
+        ).trim().toLowerCase();
 
-        console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!');
+        const section = String(
+            req.body?.section || ''
+        ).trim();
 
-        await initAdmin();
+        const type = String(
+            req.body?.type || 'practice'
+        ).trim();
 
-        app.listen(PORT, () => {
-            console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`);
+        const model = Number(req.body?.model);
+
+        if (
+            !email ||
+            !section ||
+            !Number.isInteger(model) ||
+            model < 1
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'بيانات النموذج غير مكتملة.'
+            });
+        }
+
+        const user = await User.findOne({
+            email
+        }).select('_id');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'المستخدم غير موجود.'
+            });
+        }
+
+        const modelKey = `${section}:${type}:${model}`;
+
+        let alreadyCompleted = false;
+
+        try {
+            await CompletedModel.create({
+                email,
+                modelKey,
+                section,
+                type,
+                model
+            });
+        } catch (error) {
+            if (error.code === 11000) {
+                alreadyCompleted = true;
+            } else {
+                throw error;
+            }
+        }
+
+        const [requiredModels, completedCount] = await Promise.all([
+            getAchievementRequired(),
+            CompletedModel.countDocuments({ email })
+        ]);
+
+        res.json({
+            success: true,
+            alreadyCompleted,
+            requiredModels,
+            completedCount,
+            percent: Math.min(
+                100,
+                Math.round(
+                    completedCount / requiredModels * 100
+                )
+            )
         });
     } catch (error) {
         console.error(
-            '❌ تعذر الاتصال بـ MongoDB؛ لم يتم تشغيل الخادم:',
-            error.message
+            'POST /api/student/achievement/complete:',
+            error
         );
 
+        res.status(500).json({
+            success: false,
+            message: 'تعذر حفظ إنجاز النموذج.'
+        });
+    }
+});// ==================== جلب إعدادات الإنجاز للمشرف ====================
+
+app.post('/api/admin/achievement-settings/get', async (req, res) => {
+    try {
+        const config = await AchievementConfig.findOne({
+            key: 'global'
+        }).lean();
+
+        res.json({
+            success: true,
+            requiredModels: config?.requiredModels || 10
+        });
+    } catch (error) {
+        console.error('GET achievement settings:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'تعذر تحميل إعدادات الإنجاز.'
+        });
+    }
+});
+
+// ==================== حفظ إعدادات الإنجاز ====================
+
+app.post('/api/admin/achievement-settings', async (req, res) => {
+    try {
+        const requiredModels = Number(
+            req.body?.requiredModels
+        );
+
+        if (
+            !Number.isInteger(requiredModels) ||
+            requiredModels < 1 ||
+            requiredModels > 500
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'يجب أن يكون العدد بين 1 و500.'
+            });
+        }
+
+        const config = await AchievementConfig.findOneAndUpdate(
+            { key: 'global' },
+            {
+                $set: {
+                    requiredModels,
+                    updatedAt: new Date()
+                },
+                $setOnInsert: {
+                    key: 'global'
+                }
+            },
+            {
+                new: true,
+                upsert: true,
+                runValidators: true
+            }
+        );
+
+        res.json({
+            success: true,
+            requiredModels: config.requiredModels,
+            message: 'تم حفظ إعدادات الإنجاز بنجاح.'
+        });
+    } catch (error) {
+        console.error('POST achievement settings:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'تعذر حفظ إعدادات الإنجاز.'
+        });
+    }
+});// ==================== تشغيل الخادم ====================
+
+async function startServer() {
+    try {
+        if (!MONGO_URI) {
+            throw new Error(
+                'متغير البيئة MONGO_URI غير موجود في إعدادات الخادم.'
+            );
+        }
+
+        await mongoose.connect(MONGO_URI);
+
+        await initAdmin();
+
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 خادم منصة قمة يعمل على المنفذ ${PORT}`);
+        });
+    } catch (error) {
+        console.error('❌ تعذر تشغيل الخادم:', error.message);
         process.exit(1);
     }
 }
