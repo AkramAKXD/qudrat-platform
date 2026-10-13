@@ -1585,6 +1585,10 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         let currentQuestionIndex = 0;
         let currentCorrectCount = 0;
         let currentModelAnsweredCount = 0;
+        let trainingAnswers = {};
+        let trainingTimerInterval = null;
+        let trainingSecondsLeft = 0;
+        let trainingReviewMode = false;
         let verifiedForgotEmail = '';
         let globalQuestionsCache = [];
         let customModelNamesCache = {};
@@ -2121,6 +2125,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                                         ${isActive ? '🟢 النموذج نشط ويظهر للمستخدمين' : '🔴 النموذج معطل'}
                                     </span>
                                 </div>
+                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#eef2ff;padding:8px;border-radius:8px;">
+                                    <label style="font-size:12px;color:#334155">وقت التدريب (دقيقة)</label>
+                                    <input type="number" min="0" max="300" value="${getTrainingModelMinutes(sectionKey, model.categoryType, model.modelNumber)}" aria-label="وقت التدريب بالدقائق" style="width:76px;padding:6px;border:1px solid #cbd5e1;border-radius:6px" onchange="setTrainingModelMinutes('${sectionKey}','${String(model.categoryType).replace(/'/g, '')}',${Number(model.modelNumber)},this.value)">
+                                    <small style="font-size:11px;color:#64748b">0 = بدون مؤقت</small>
+                                </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button type="button" onclick="openEditModelNameModal('${customKey}', ${model.modelNumber}, '${modelDisplayName}', '${model.categoryType}')" style="background: #0284c7; color: #fff; padding: 8px 14px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">تعديل ✏️</button>
                                     <button type="button" onclick="toggleModelStatus('${sectionKey}', '${uKey}')" style="background: ${isActive ? '#f59e0b' : '#10b981'}; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; width: auto; margin: 0;">${isActive ? 'تعطيل ⏸️' : 'تنشيط ▶️'}</button>
@@ -2284,8 +2293,8 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 currentTrainingQuestions=allQuestions.filter(q=>q.section===currentSectionType&&Number(q.model)===Number(modelNum)&&q.type===expectedType);
                 document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));
                 if(!currentTrainingQuestions.length){document.getElementById('no-questions-section').classList.add('active-view');return;}
-                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;
-                document.getElementById('training-section').classList.add('active-view');renderTrainingQuestion();
+                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;trainingAnswers={};trainingReviewMode=false;
+                document.getElementById('training-section').classList.add('active-view');startTrainingTimer();renderTrainingQuestion();
             });
         }
 
@@ -2380,9 +2389,67 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             }
         }
 
+        function getTrainingTimerKey(section, category, model) { return `qimma-training-minutes:${section}:${model}`; }
+        function getTrainingModelMinutes(section, category, model) {
+            const v = Number(localStorage.getItem(getTrainingTimerKey(section, category, model)) || 0);
+            return Number.isFinite(v) && v > 0 ? Math.min(300, v) : 0;
+        }
+        function setTrainingModelMinutes(section, category, model, value) {
+            const n = Math.max(0, Math.min(300, Number(value) || 0));
+            localStorage.setItem(getTrainingTimerKey(section, category, model), String(n));
+            if (typeof showLoading === 'function') showLoading('تم حفظ وقت النموذج على هذا الجهاز', 500);
+        }
+        function toArabicNumber(n) { return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]); }
+        function stopTrainingTimer() { if (trainingTimerInterval) clearInterval(trainingTimerInterval); trainingTimerInterval = null; }
+        function startTrainingTimer() {
+            stopTrainingTimer();
+            // المؤقت خاص بتدريب الكمي واللفظي فقط، وليس الاختبارات المحاكية.
+            if (currentActionMode !== 'training' || !['quant','verbal'].includes(currentSectionType)) return;
+            const mins = getTrainingModelMinutes(currentSectionType, 'practice', selectedModelNum);
+            if (!mins) { trainingSecondsLeft = 0; return; }
+            trainingSecondsLeft = mins * 60;
+            trainingTimerInterval = setInterval(() => {
+                if (trainingReviewMode) return;
+                trainingSecondsLeft = Math.max(0, trainingSecondsLeft - 1);
+                const el = document.getElementById('training-timer');
+                if (el) el.textContent = `الوقت ${toArabicNumber(Math.floor(trainingSecondsLeft/60)).padStart(2,'٠')}:${toArabicNumber(trainingSecondsLeft%60).padStart(2,'٠')}`;
+                if (trainingSecondsLeft <= 0) { stopTrainingTimer(); showTrainingReview(); }
+            }, 1000);
+        }
+        function saveTrainingAnswer(index, value) { trainingAnswers[index] = value; renderTrainingQuestion(); }
+        function goTrainingQuestion(delta) {
+            if (trainingReviewMode) return;
+            currentQuestionIndex = Math.max(0, Math.min(currentTrainingQuestions.length - 1, currentQuestionIndex + delta));
+            renderTrainingQuestion();
+        }
+        function showTrainingReview() {
+            trainingReviewMode = true; stopTrainingTimer();
+            const container = document.getElementById('training-container');
+            const answered = Object.keys(trainingAnswers).length;
+            const total = currentTrainingQuestions.length;
+            const items = currentTrainingQuestions.map((q,i) => {
+                const done = Object.prototype.hasOwnProperty.call(trainingAnswers, i);
+                return `<button type="button" onclick="returnToTrainingQuestion(${i})" style="padding:12px 8px;border:1px solid #dbe3ed;border-radius:8px;background:${done?'#f8fafc':'#fff7ed'};color:#1e293b;min-width:72px"><b>س${toArabicNumber(i+1)}</b>${done?'':'<small style="display:block;color:#c2410c;margin-top:4px">غير مكتمل</small>'}</button>`;
+            }).join('');
+            container.innerHTML = `<div style="background:#fff;border:1px solid #dbe3ed;padding:22px;border-radius:18px"><h3 style="margin:0 0 8px;color:#123b48">مراجعة الأسئلة</h3><p style="color:#64748b;margin-bottom:16px">اختر رقم السؤال للعودة إليه. الأسئلة غير المجابة موضحة بعبارة «غير مكتمل».</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px;margin-bottom:20px">${items}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>تمت الإجابة عن ${toArabicNumber(answered)} من ${toArabicNumber(total)}</span><button type="button" onclick="finishTrainingAttempt()" style="width:auto;background:#0f766e;color:white;padding:12px 22px">إنهاء التدريب وعرض النتيجة</button></div></div>`;
+        }
+        function returnToTrainingQuestion(index) { currentQuestionIndex=index; trainingReviewMode=false; renderTrainingQuestion(); }
+        function finishTrainingAttempt() {
+            const email=sessionStorage.getItem('sessionUserEmail')||'';
+            if(email) currentTrainingQuestions.forEach((q,i)=>{ if(Object.prototype.hasOwnProperty.call(trainingAnswers,i)){ const chosen=trainingAnswers[i],correct=String(chosen)===String(q.correct_answer); fetch('/api/attempts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,questionId:q.id,section:q.section||currentSectionType,type:q.type||'practice',model:q.model||selectedModelNum,chosenAnswer:chosen,correct,score:q.score||1})}).catch(()=>{}); }});
+            currentCorrectCount = currentTrainingQuestions.reduce((sum,q,i) => sum + (Object.prototype.hasOwnProperty.call(trainingAnswers,i) && String(trainingAnswers[i])===String(q.correct_answer) ? 1 : 0),0);
+            currentModelAnsweredCount = Object.keys(trainingAnswers).length;
+            const total=currentTrainingQuestions.length, score=total?Math.round(currentCorrectCount/total*100):0;
+            recordQimmaModelCompletion(score,currentCorrectCount,total);
+            const container=document.getElementById('training-container');
+            container.innerHTML=`<div style="text-align:center;padding:32px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;color:#065f46"><div style="font-size:40px">✓</div><h3>انتهى التدريب</h3><div style="font-size:36px;font-weight:900;margin:15px">${score}/100</div><p>الإجابات الصحيحة: ${toArabicNumber(currentCorrectCount)} من ${toArabicNumber(total)}</p><p>الأسئلة المجابة: ${toArabicNumber(currentModelAnsweredCount)} من ${toArabicNumber(total)}</p><button class="model-retry" onclick="openModelsSelection(currentSectionType,'training')" style="margin:10px 6px 0">إعادة التدريب ↻</button><button onclick="navigateTo('student')" style="margin:10px 6px 0;width:auto;padding:12px 25px">العودة للرئيسية</button></div>`;
+        }
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
+            const trainingOnly = currentActionMode === 'training' && ['quant','verbal'].includes(currentSectionType);
+            if (trainingOnly && trainingReviewMode) { showTrainingReview(); return; }
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
+                if (trainingOnly) { showTrainingReview(); return; }
                 const total=currentTrainingQuestions.length;const score=total?Math.round(currentCorrectCount/total*100):0;
                 recordQimmaModelCompletion(score,currentCorrectCount,total);
                 container.innerHTML = `<div style="text-align:center;padding:35px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;color:#065f46"><div style="font-size:42px">🏆</div><h3>✓ مكتمل — أتممت النموذج!</h3><div style="font-size:38px;font-weight:900;margin:15px">${score}/100</div><p>الإجابات الصحيحة: ${currentCorrectCount} من ${total}</p><button class="model-retry" onclick="openModelsSelection(currentSectionType,currentActionMode)" style="margin:10px 6px 0">إعادة الاختبار ↻</button><button onclick="navigateTo('student')" style="margin:10px 6px 0;width:auto;padding:12px 25px">العودة للرئيسية</button></div>`;
@@ -2390,19 +2457,21 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             }
             const q = currentTrainingQuestions[currentQuestionIndex];
             let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+            if (trainingOnly) {
+                const selected=trainingAnswers[currentQuestionIndex];
+                const mins=getTrainingModelMinutes(currentSectionType,'practice',selectedModelNum);
+                const timeText=mins?`الوقت ${toArabicNumber(Math.floor(trainingSecondsLeft/60)).padStart(2,'٠')}:${toArabicNumber(trainingSecondsLeft%60).padStart(2,'٠')}`:'بدون مؤقت';
+                container.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;direction:ltr"><div id="training-timer" style="background:#123b48;color:#fff;padding:9px 14px;border-radius:10px;font-weight:800">${timeText}</div><strong style="direction:rtl;color:#334155">السؤال ${toArabicNumber(currentQuestionIndex+1)} من ${toArabicNumber(currentTrainingQuestions.length)}</strong></div><div style="background:#f8fafc;border:1px solid #cbd5e1;padding:22px;border-radius:18px"><p style="font-size:18px;font-weight:bold;margin-bottom:20px">${q.question}</p>${q.image?`<div style="margin-bottom:20px;text-align:center"><img src="${q.image}" style="max-height:220px;border-radius:12px" alt="صورة"></div>`:''}<div style="display:flex;flex-direction:column;gap:12px">${opts.map((opt,i)=>{const letter=['أ','ب','ج','د'][i];return `<button type="button" onclick="saveTrainingAnswer(${currentQuestionIndex},'${letter}')" style="background:${selected===letter?'#dbeafe':'#fff'};color:#0f172a;text-align:right;border:2px solid ${selected===letter?'#2563eb':'#cbd5e1'};box-shadow:none">${letter}) ${opt}</button>`;}).join('')}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:22px"><button type="button" onclick="goTrainingQuestion(-1)" ${currentQuestionIndex===0?'disabled':''} style="width:auto;background:#e2e8f0;color:#1e293b;padding:10px 18px">السابق</button><button type="button" onclick="${currentQuestionIndex===currentTrainingQuestions.length-1?'showTrainingReview()':'goTrainingQuestion(1)'}" style="width:auto;background:#0f766e;color:#fff;padding:10px 20px">${currentQuestionIndex===currentTrainingQuestions.length-1?'المراجعة ←':'التالي ←'}</button></div></div>`;
+                return;
+            }
             container.innerHTML = `
                 <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 20px;">
                     <p style="font-size: 18px; font-weight: bold; margin-bottom: 20px;">${q.question}</p>
-                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/ onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23e3f4e9'/%3E%3Cstop offset='1' stop-color='%23e5effb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='420' rx='28' fill='url(%23g)'/%3E%3Ccircle cx='630' cy='90' r='75' fill='%23ffffff' fill-opacity='.55'/%3E%3Cpath d='M0 340 Q180 270 350 350 T800 320 V420 H0Z' fill='%23176b64' fill-opacity='.14'/%3E%3Cpath d='M320 265l80-105 80 105z' fill='%23176b64' fill-opacity='.8'/%3E%3Cpath d='M360 265v-58h80v58' fill='%23ffffff' fill-opacity='.8'/%3E%3Ctext x='400' y='315' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='%23123b48'%3E%D9%82%D9%90%D9%85%D9%91%D8%A9%20%7C%20%D8%AA%D8%B9%D9%84%D9%91%D9%85%20%D8%A8%D8%AB%D9%82%D8%A9%3C/text%3E%3C/svg%3E'"></div>` : ''}
+                    ${q.image ? `<div style="margin-bottom: 20px; text-align: center;"><img src="${q.image}" style="max-height: 220px; border-radius: 12px;" alt="صورة"/></div>` : ''}
                     <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">أ) ${opts[0]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ب) ${opts[1]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ج) ${opts[2]}</button>
-                        <button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">د) ${opts[3]}</button>
-                    </div>
-                    <div id="feedback" style="margin-top: 20px; font-weight: bold; text-align: center;"></div>
-                </div>
-            `;
+                        <button onclick="checkAnswer('${q.correct_answer}', 'أ', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">أ) ${opts[0]}</button><button onclick="checkAnswer('${q.correct_answer}', 'ب', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ب) ${opts[1]}</button><button onclick="checkAnswer('${q.correct_answer}', 'ج', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">ج) ${opts[2]}</button><button onclick="checkAnswer('${q.correct_answer}', 'د', this)" style="background:#fff; color:#0f172a; text-align:right; border:2px solid #cbd5e1; box-shadow:none;">د) ${opts[3]}</button>
+                    </div><div id="feedback" style="margin-top:20px;font-weight:bold;text-align:center"></div>
+                </div>`;
         }
 
         function checkAnswer(correctOpt, chosenOpt, btn) {
