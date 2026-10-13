@@ -1196,7 +1196,7 @@ app.post('/api/admin/analytics', async (req, res) => {
 });
 
 // ==================== حذف الإحصائيات ====================
-// يحذف سجلات المحاولات فقط ولا يحذف الحسابات أو الأسئلة أو النماذج.
+// يحذف المحاولات والإنجازات معًا، مع الحفاظ على الحسابات والأسئلة والنماذج.
 
 app.post('/api/admin/delete-statistics', async (req, res) => {
     try {
@@ -1226,12 +1226,13 @@ app.post('/api/admin/delete-statistics', async (req, res) => {
 
         // كلا الخيارين يحذف سجلات المحاولات كلها.
         // لذلك ستُصفّر إحصائيات الطلاب والأداء العام معاً.
-        const result = await Attempt.deleteMany({});
+        const [result, completionResult] = await Promise.all([Attempt.deleteMany({}), CompletedModel.deleteMany({})]);
 
         return res.json({
             success: true,
             scope,
             deletedCount: result.deletedCount || 0,
+            deletedAchievements: completionResult.deletedCount || 0,
             message: scope === 'students'
                 ? 'تم تصفير إحصائيات جميع الطلاب بنجاح.'
                 : 'تم تصفير إحصائيات الأداء في المنصة بنجاح.'
@@ -1260,9 +1261,8 @@ const AchievementConfig = mongoose.models.AchievementConfig ||
 const completedModelSchema = new mongoose.Schema({
     email: { type: String, required: true, lowercase: true },
     modelKey: { type: String, required: true },
-    section: String,
-    type: String,
-    model: Number,
+    section: String, type: String, model: Number,
+    score: { type: Number, default: 0 }, correctCount: { type: Number, default: 0 }, totalQuestions: { type: Number, default: 0 },
     completedAt: { type: Date, default: Date.now }
 });
 completedModelSchema.index({ email: 1, modelKey: 1 }, { unique: true });
@@ -1283,7 +1283,7 @@ app.post('/api/student/achievement', async (req, res) => {
         if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
         const [requiredModels, completed] = await Promise.all([
             getAchievementRequired(),
-            CompletedModel.find({ email }).select('modelKey section type model completedAt').lean()
+            CompletedModel.find({ email }).select('modelKey section type model score correctCount totalQuestions completedAt').lean()
         ]);
         res.json({
             success: true,
@@ -1305,6 +1305,9 @@ app.post('/api/student/achievement/complete', async (req, res) => {
         const section = String(req.body?.section || '').trim();
         const type = String(req.body?.type || 'practice').trim();
         const model = Number(req.body?.model);
+        const score = Math.max(0, Math.min(100, Number(req.body?.score) || 0));
+        const correctCount = Math.max(0, Number(req.body?.correctCount) || 0);
+        const totalQuestions = Math.max(0, Number(req.body?.totalQuestions) || 0);
         if (!email || !section || !Number.isInteger(model) || model < 1) {
             return res.status(400).json({ success: false, message: 'بيانات النموذج غير مكتملة' });
         }
@@ -1313,9 +1316,9 @@ app.post('/api/student/achievement/complete', async (req, res) => {
         const modelKey = `${section}:${type}:${model}`;
         let alreadyCompleted = false;
         try {
-            await CompletedModel.create({ email, modelKey, section, type, model });
+            await CompletedModel.create({ email, modelKey, section, type, model, score, correctCount, totalQuestions });
         } catch (error) {
-            if (error.code === 11000) alreadyCompleted = true;
+            if (error.code === 11000) { alreadyCompleted = true; await CompletedModel.updateOne({ email, modelKey }, { $set: { score, correctCount, totalQuestions, completedAt: new Date() } }); }
             else throw error;
         }
         const [requiredModels, completedCount] = await Promise.all([
