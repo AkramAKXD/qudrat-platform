@@ -992,6 +992,10 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 #quant-page,#verbal-page{padding-bottom:18px!important;margin-bottom:0!important}#quant-page .learning-guide,#verbal-page .learning-guide{margin-bottom:14px}#quant-page .skill-cards,#verbal-page .skill-cards{margin-bottom:14px}#quant-page .switch-link,#verbal-page .switch-link{margin-top:14px!important;padding-bottom:0}
 </style>
 
+
+<style>
+.qimma-model-row{display:flex!important;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;text-align:right!important;padding:17px 20px!important;border-radius:16px!important;transition:transform .22s,box-shadow .22s!important;animation:qimmaIn .35s ease both}.qimma-model-row:hover{transform:translateY(-3px);box-shadow:0 10px 24px #0f766e18}.qimma-model-status{font-size:13px;font-weight:800;border-radius:999px;padding:7px 12px;white-space:nowrap}.qimma-model-status.done{background:#d1fae5;color:#047857;animation:qimmaPulse 1.8s ease-in-out infinite}.qimma-model-status.pending{background:#f1f5f9;color:#64748b}.qimma-retry{color:#0f766e;font-weight:700}.qimma-result-card{text-align:center;padding:36px 20px;background:linear-gradient(145deg,#ecfdf5,#eff6ff);border:1px solid #a7f3d0;border-radius:24px;color:#064e3b;animation:qimmaIn .4s ease}.qimma-result-check{margin:auto;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#10b981;color:white;font-size:38px;box-shadow:0 0 0 8px #10b98120;animation:qimmaPop .5s ease}.qimma-score{font-size:54px;font-weight:900;color:#047857;margin:12px}.qimma-score small{font-size:20px}.qimma-primary-action,.qimma-secondary-action{width:auto!important;margin:8px!important;padding:12px 20px!important;border-radius:12px!important}.qimma-secondary-action{background:#fff!important;color:#0f766e!important;border:1px solid #99f6e4!important}@keyframes qimmaIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes qimmaPulse{50%{box-shadow:0 0 0 4px #10b98120}}@keyframes qimmaPop{0%{transform:scale(.5);opacity:0}75%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+</style>
 </head>
 <body id="appBody">
 
@@ -1673,8 +1677,8 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 
         async function deleteStatistics(scope) {
             const message = scope === 'students'
-                ? 'هل أنت متأكد من حذف إحصائيات جميع الطلاب؟ ستُحذف سجلات المحاولات فقط، ولن تُحذف الحسابات أو الأسئلة أو النماذج.'
-                : 'هل أنت متأكد من تصفير إحصائيات المنصة؟ ستُحذف سجلات المحاولات والإجابات فقط، وستبقى أعداد الأسئلة والطلاب والنماذج كما هي.';
+                ? 'هل أنت متأكد من حذف إحصائيات جميع الطلاب؟ ستُحذف المحاولات والإنجازات معًا، ولن تُحذف الحسابات أو الأسئلة أو النماذج.'
+                : 'هل أنت متأكد من تصفير إحصائيات المنصة؟ ستُحذف سجلات المحاولات والإنجازات معًا، وستبقى أعداد الأسئلة والطلاب والنماذج كما هي.';
             if (!['students', 'platform'].includes(scope) || !confirm(message)) return;
             const status = document.getElementById('delete-statistics-message');
             const buttons = document.querySelectorAll('.statistics-reset-button');
@@ -1688,7 +1692,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                 });
                 const data = await response.json();
                 if (!response.ok || !data.success) throw new Error(data.message || 'تعذر حذف الإحصائيات.');
-                if (status) { status.className = 'statistics-reset-message success'; status.textContent = `✅ ${data.message} تم حذف ${data.deletedCount || 0} سجل إحصائي، ولم تُحذف الأسئلة أو النماذج أو حسابات الطلاب.`; }
+                if (status) { status.className = 'statistics-reset-message success'; status.textContent = `✅ ${data.message} تم حذف ${data.deletedCount || 0} سجل إحصائي و${data.deletedAchievements || 0} إنجاز، ولم تُحذف الأسئلة أو النماذج أو حسابات الطلاب.`; }
                 await loadAdminStats();
                 if (scope === 'students') {
                     const email = sessionStorage.getItem('sessionUserEmail');
@@ -2118,6 +2122,11 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
             } catch (e) { alert('خطأ في الاتصال'); }
         }
 
+        let qimmaRunCorrect = 0;
+        let qimmaRunAnswered = 0;
+        let qimmaLastScore = 0;
+        async function getModelCompletions(){ await updateQimmaProgress(); return getQimmaCompletedModels(); }
+
         async function renderQiyasModelsGrid() {
             const grid = document.getElementById('qiyasModelsGrid');
             grid.innerHTML = '<p style="color: #64748b; grid-column: span 3; text-align: center;">جاري التحميل...</p>';
@@ -2132,10 +2141,15 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                     if (!m || m.questionCount === 0 || m.isActive === false) return;
                     hasAny = true;
                     const btn = document.createElement('button');
-                    btn.className = 'model-btn';
+                    btn.className = 'model-btn qimma-model-row';
                     btn.style.borderColor = '#10b981';
-                    btn.innerText = customNames[m.customKey] || `نموذج قياس ${m.modelNumber}`;
-                    btn.onclick = () => selectQiyasModel(m.modelNumber, true);
+                    const modelTitle = customNames[m.customKey] || `نموذج قياس ${m.modelNumber}`;
+                    const completionKey = qimmaModelKey('qiyas', 'qiyas_simulation', m.modelNumber);
+                    const completed = getQimmaCompletedModels().find(x => (typeof x === 'string' ? x : x.modelKey) === completionKey);
+                    const done = !!completed;
+                    const scoreLabel = done && Number.isFinite(Number(completed.score)) ? ` · ${Number(completed.score)}/100` : '';
+                    btn.innerHTML = `<span>${modelTitle}</span><span class="qimma-model-status ${done?'done':'pending'}">${done?'✓ مكتمل'+scoreLabel:'لم يتم الحل'}</span>${done?'<small class="qimma-retry">إعادة الاختبار ↻</small>':''}`;
+                    btn.onclick = () => selectQiyasModel(m.modelNumber);
                     grid.appendChild(btn);
                 });
                 if (!hasAny) {
@@ -2146,6 +2160,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
         }
 
         async function selectQiyasModel(modelNum) {
+            currentSectionType = 'qiyas'; currentActionMode = 'qiyas_simulation'; selectedModelNum = Number(modelNum); qimmaRunCorrect = 0; qimmaRunAnswered = 0;
             showLoading('جاري التحميل...', 400, async () => {
                 const allQuestions = await (await fetch('/api/questions')).json();
                 currentTrainingQuestions = allQuestions.filter(q => q.type === 'qiyas_simulation' && Number(q.model) === Number(modelNum));
@@ -2154,7 +2169,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                     document.getElementById('no-questions-section').classList.add('active-view');
                     return;
                 }
-                currentQuestionIndex = 0;
+                currentQuestionIndex = 0; qimmaRunCorrect = 0; qimmaRunAnswered = 0;
                 document.getElementById('training-section').classList.add('active-view');
                 renderTrainingQuestion();
             });
@@ -2181,11 +2196,14 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                     const btn = document.createElement('button');
                     btn.className = 'model-btn';
                     const modelTitle = customNames[m.customKey] || `النموذج ${m.modelNumber}`;
-                    const completionKey = qimmaModelKey(sectionType, m.modelNumber, 'exam');
-                    const done = getQimmaCompletedModels().includes(completionKey);
-                    btn.innerText = done ? `✓ مكتمل — ${modelTitle} · إعادة الاختبار` : modelTitle;
-                    if(done) btn.style.cssText = 'border:1px solid #10b981;background:#ecfdf5;color:#065f46';
-                    btn.onclick = () => selectModel(m.modelNumber, true);
+                    const modelType = mode === 'exam' ? 'simulation' : 'practice';
+                    const completionKey = qimmaModelKey(sectionType, modelType, m.modelNumber);
+                    const completed = getQimmaCompletedModels().find(x => (typeof x === 'string' ? x : x.modelKey) === completionKey);
+                    const done = !!completed;
+                    const scoreLabel = done && typeof completed === 'object' && Number.isFinite(Number(completed.score)) ? ` · ${Number(completed.score)}/100` : '';
+                    btn.classList.add('qimma-model-row');
+                    btn.innerHTML = `<span>${modelTitle}</span><span class="qimma-model-status ${done?'done':'pending'}">${done?'✓ مكتمل'+scoreLabel:'لم يتم الحل'}</span>${done?'<small class="qimma-retry">إعادة الاختبار ↻</small>':''}`;
+                    btn.onclick = () => selectModel(m.modelNumber);
                     gridContainer.appendChild(btn);
                 });
                 if (!hasAny) {
@@ -2199,13 +2217,14 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
             selectedModelNum = modelNum;
             showLoading('جاري التحميل...', 400, async () => {
                 const allQuestions = await (await fetch('/api/questions')).json();
-                currentTrainingQuestions = allQuestions.filter(q => q.section === currentSectionType && Number(q.model) === Number(modelNum) && q.type === (currentActionMode === 'exam' ? 'simulation' : 'practice'));
+                const expectedType = currentActionMode === 'exam' ? 'simulation' : 'practice';
+                currentTrainingQuestions = allQuestions.filter(q => q.section === currentSectionType && Number(q.model) === Number(modelNum) && q.type === expectedType);
                 document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active-view'));
                 if (currentTrainingQuestions.length === 0) {
                     document.getElementById('no-questions-section').classList.add('active-view');
                     return;
                 }
-                currentQuestionIndex = 0;
+                currentQuestionIndex = 0; qimmaRunCorrect = 0; qimmaRunAnswered = 0;
                 document.getElementById('training-section').classList.add('active-view');
                 renderTrainingQuestion();
             });
@@ -2305,7 +2324,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
-                recordQimmaModelCompletion(); container.innerHTML = `<div style="text-align: center; padding: 40px; background: #d1fae5; border-radius: 20px; color: #065f46;"><h3>🎉 مكتمل — أتممت النموذج!</h3><p>تم تسجيل إنجاز هذا النموذج مرة واحدة فقط.</p><button onclick="openModelsSelection(currentSectionType, currentActionMode)" style="margin:10px 6px 0;width:auto;padding:12px 25px;">إعادة الاختبار / التدريب</button><button onclick="navigateTo('student')" style="margin:10px 6px 0;width:auto;padding:12px 25px;">العودة للرئيسية</button></div>`;
+                const total = currentTrainingQuestions.length; const score = total ? Math.round(qimmaRunCorrect / total * 100) : 0; qimmaLastScore = score; recordQimmaModelCompletion(score, qimmaRunCorrect, total); container.innerHTML = `<div class="qimma-result-card"><div class="qimma-result-check">✓</div><h3>أحسنت! اكتمل النموذج</h3><div class="qimma-score">${score}<small>/100</small></div><p>إجابات صحيحة: ${qimmaRunCorrect} من ${total}</p><button onclick="${currentActionMode==='qiyas_simulation'?'selectQiyasModel(selectedModelNum)': 'selectModel(selectedModelNum)'}" class="qimma-primary-action">إعادة الاختبار ↻</button><button onclick="${currentActionMode==='qiyas_simulation'?"navigateTo('qiyas')":'openModelsSelection(currentSectionType, currentActionMode)'}" class="qimma-secondary-action">العودة إلى قائمة النماذج</button></div>`;
                 return;
             }
             const q = currentTrainingQuestions[currentQuestionIndex];
@@ -2326,9 +2345,11 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
         }
 
         function checkAnswer(correctOpt, chosenOpt, btn) {
+            if (btn.parentElement.querySelector('button:disabled')) return;
             const feedback = document.getElementById('feedback');
             btn.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
-            const isCorrect = correctOpt.trim() === chosenOpt.trim();
+            const isCorrect = String(correctOpt).trim() === String(chosenOpt).trim();
+            qimmaRunAnswered++; if (isCorrect) qimmaRunCorrect++;
             if(isCorrect) {
                 btn.style.background = '#d1fae5'; btn.style.borderColor = '#10b981';
                 feedback.innerHTML = '<span style="color:#10b981;">إجابة صحيحة! 🌟</span>';
@@ -2346,13 +2367,13 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
         function qimmaModelKey(section, model, mode){ return `${section}:${mode}:${String(model)}`; }
         let qimmaAchievementState = { requiredModels: 10, completedCount: 0, completedModels: [] };
         function getQimmaCompletedModels(){ return qimmaAchievementState.completedModels || []; }
-        async function recordQimmaModelCompletion(){
+        async function recordQimmaModelCompletion(score=0, correctCount=0, totalQuestions=0){
             const email=sessionStorage.getItem('sessionUserEmail')||'';
             if(!email) return updateQimmaProgress();
-            const section = currentActionMode === 'qiyas_simulation' ? 'mock' : (currentSectionType || 'quant');
-            const type = currentActionMode || 'practice';
+            const section = currentActionMode === 'qiyas_simulation' ? 'qiyas' : (currentSectionType || 'quant');
+            const type = currentActionMode === 'qiyas_simulation' ? 'qiyas_simulation' : (currentActionMode === 'exam' ? 'simulation' : 'practice');
             try {
-                await fetch('/api/student/achievement/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,section,type,model:Number(selectedModelNum)})});
+                await fetch('/api/student/achievement/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,section,type,model:Number(selectedModelNum),score,correctCount,totalQuestions})});
                 await updateQimmaProgress();
             } catch(e) { console.error('تعذر حفظ الإنجاز على الخادم',e); }
         }
