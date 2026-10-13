@@ -421,6 +421,21 @@ button[onclick*="toggleModelStatus"]:hover::before{animation:statusPulse 1s ease
         @media(max-width:760px){.qimma-next-step{grid-template-columns:1fr;padding:17px}.next-step-copy h3{font-size:19px}}
         @media(prefers-reduced-motion:reduce){.student-hero-banner,.qimma-next-step,.student-quote-strip{animation:none!important}}
 
+
+/* Final usability fixes: branded submit buttons and controlled page scrolling. */
+html{height:auto!important;min-height:100%;overflow-y:auto!important;scroll-padding-bottom:10px}
+body#appBody{height:auto!important;min-height:100vh!important;overflow-x:hidden!important;overflow-y:auto!important;align-items:stretch}
+body#appBody .main-content{min-height:calc(100vh - 48px)!important;padding-bottom:10px!important}
+body#appBody .container{padding-bottom:0!important;margin-bottom:0!important}
+body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0}
+#loginForm .auth-submit-button,#registerForm .auth-submit-button,
+.auth-form-area form>button[type="submit"]{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-height:52px!important;padding:13px 18px!important;border:0!important;border-radius:14px!important;background:linear-gradient(110deg,#164e63 0%,#176b64 58%,#238579 100%)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-family:'Cairo',sans-serif!important;font-size:15px!important;font-weight:900!important;line-height:1.5!important;letter-spacing:0!important;opacity:1!important;visibility:visible!important;box-shadow:0 10px 22px rgba(22,78,99,.2)!important;cursor:pointer!important}
+.auth-form-area form>button[type="submit"]:hover{background:linear-gradient(110deg,#123b48 0%,#145c58 58%,#1c746b 100%)!important;transform:translateY(-2px);box-shadow:0 14px 25px rgba(22,78,99,.25)!important}
+.auth-form-area form>button[type="submit"]:disabled{opacity:.75!important;cursor:wait!important}
+.app-section{scroll-margin-bottom:10px}
+#login-section.auth-section,#register-section.auth-section{margin-bottom:10px!important}
+@media(max-width:700px){body#appBody .main-content{padding-bottom:8px!important}#login-section.auth-section,#register-section.auth-section{margin:12px auto 8px!important}.auth-form-area{padding-bottom:22px!important}}
+
 </style>
 
 <style id="qimma-extra-polish">
@@ -1164,10 +1179,9 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
-                    <button type="submit">دخول للمنصة 🚀</button>
+                    <button type="submit" class="auth-submit-button">تسجيل دخول</button>
                 </form>
                 <div class="switch-link"><span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span></div>
-                <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً</span></div>
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
                 </div>
             </div>
@@ -1205,9 +1219,8 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPass', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
-                    <button type="submit">إنشاء حساب 🔥</button>
+                    <button type="submit" class="auth-submit-button">إنشاء حساب</button>
                 </form>
-                <div class="switch-link">لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span></div>
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
                 </div>
             </div>
