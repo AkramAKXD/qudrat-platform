@@ -1002,17 +1002,19 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 .sidebar-brand img{width:48px;height:34px;object-fit:contain;filter:none}
 #mobileMenuToggle{display:none;position:fixed;top:12px;right:12px;width:44px;height:44px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:#123b48;box-shadow:0 5px 18px rgba(18,59,72,.22);z-index:1200;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer}
 #mobileMenuToggle span{display:block;width:21px;height:2.5px;background:#d5f36a;border-radius:3px}
-#postLoginTopbar{display:none;position:sticky;top:0;z-index:900;width:100%;height:58px;flex:0 0 58px;align-items:center;justify-content:center;gap:14px;background:#123b48;color:#fff;border-bottom:3px solid #d5f36a;box-shadow:0 5px 18px rgba(18,59,72,.12)}
-body.logged-in #postLoginTopbar{display:flex}
+#postLoginTopbar{display:none!important;position:fixed;top:0;right:0;z-index:1100;width:100%;height:58px;align-items:center;justify-content:center;gap:14px;background:#123b48;color:#fff;border-bottom:3px solid #d5f36a;box-shadow:0 5px 18px rgba(18,59,72,.12)}
 .post-login-title{font-size:17px;font-weight:900;letter-spacing:.1px}
 .hamma-mark{display:flex;align-items:center;gap:5px;color:#d5f36a;font-weight:900;border-right:1px solid rgba(255,255,255,.22);padding-right:12px}
 .hamma-symbol{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border:2px solid #d5f36a;border-radius:7px;font-size:14px;line-height:1}
 .hamma-mark strong{font-size:16px}
+.landing-qimma-logo{display:block;width:48px;height:42px;object-fit:contain;flex:0 0 auto}
+@media(min-width:761px){#postLoginTopbar{display:none!important}#mobileMenuToggle{display:none!important}}
 @media(max-width:760px){
  body{display:block!important}
  #mobileMenuToggle{display:none}
  body.logged-in #mobileMenuToggle{display:flex}
- body.logged-in #postLoginTopbar{padding-right:62px;height:58px;position:sticky;top:0}
+ body.logged-in #postLoginTopbar{display:flex!important;padding-right:62px;height:58px;position:fixed;top:0;right:0}
+ body.logged-in .main-content{padding-top:68px!important}
  body.logged-in #appSidebar{position:fixed!important;top:0!important;right:0!important;bottom:0!important;width:min(82vw,310px)!important;height:100dvh!important;max-height:100dvh!important;z-index:1150!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;transform:translateX(110%);transition:transform .25s ease!important;border-radius:0 0 0 0!important;background:#123b48!important}
  body.logged-in.mobile-sidebar-open #appSidebar{transform:translateX(0)!important}
  body.logged-in #appSidebar .sidebar-header{padding:22px 14px!important;text-align:center!important}
@@ -1173,7 +1175,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         <div class="container">
             <div id="landing-section" class="app-section hero-section active-view">
                 <div class="landing-topbar">
-                    <div class="brand-mark"><span class="brand-icon">ق</span><div><strong>قِمّة</strong><small>منصة القدرات الذكية</small></div></div>
+                    <div class="brand-mark"><img class="landing-qimma-logo" src="/qimma-logo.png" alt="شعار قِمّة"><div><strong>قِمّة</strong><small>منصة القدرات الذكية</small></div></div>
                     <div class="topbar-note"><span class="live-dot"></span> رحلتك نحو الدرجة الأعلى تبدأ هنا</div>
                     <button class="topbar-login" onclick="switchView('login')">دخول المنصة <span>↗</span></button>
                 </div>
