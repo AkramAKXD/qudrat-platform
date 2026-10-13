@@ -892,6 +892,84 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 @media(prefers-reduced-motion:reduce){.hero-photo-main,.hero-photo-main img,.hero-visual:before,.hero-visual:after,.floating-note,.note-score,.note-book{animation:none!important;translate:0 0!important;transform:none!important;will-change:auto!important}}
 </style>
 
+<style id="qimma-3d-auth-refresh">
+
+/* Qimma 3D learning polish: landing-first, light on inner pages, and shared split auth card. */
+:root{--qm-ease:cubic-bezier(.2,.75,.25,1)}
+#landing-section .landing-hero{perspective:1200px}
+#landing-section .hero-visual{isolation:isolate;perspective:1100px;transform-style:preserve-3d}
+#landing-section .hero-photo-main{transform-style:preserve-3d;will-change:transform;transition:transform .75s var(--qm-ease),box-shadow .75s var(--qm-ease);animation:qmHeroFloat 7.5s ease-in-out infinite;box-shadow:0 30px 60px rgba(16,47,52,.19),0 7px 0 rgba(216,243,107,.24)}
+#landing-section .hero-photo-main img{transform:scale(1.025);transition:transform 1.1s var(--qm-ease),filter 1.1s var(--qm-ease)}
+#landing-section .hero-visual:hover .hero-photo-main img{transform:scale(1.075);filter:saturate(1.06)}
+#landing-section .orbit-one{animation:qmOrbit 19s linear infinite}
+#landing-section .orbit-two{animation:qmOrbit 28s linear infinite reverse}
+.ability-3d{position:absolute;z-index:4;display:grid;place-items:center;pointer-events:none;transform-style:preserve-3d;filter:drop-shadow(0 15px 18px rgba(18,59,72,.12))}
+.ability-cube{width:78px;height:78px;right:8%;top:11%;grid-template-columns:1fr 1fr;gap:3px;padding:9px;border:1px solid rgba(255,255,255,.9);border-radius:20px;background:linear-gradient(145deg,#e8f5c7,#a8c85e);color:#234a45;font-size:22px;font-weight:900;box-shadow:inset 5px 5px 13px rgba(255,255,255,.75),inset -7px -8px 16px rgba(83,121,32,.15),0 18px 28px rgba(31,72,62,.16);transform:rotateX(14deg) rotateY(-20deg) rotateZ(8deg);animation:qmCubeFloat 6s ease-in-out infinite}
+.ability-cube span{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.48);box-shadow:inset 0 1px 0 #fff}
+.ability-formula{left:1%;top:25%;display:flex;gap:10px;padding:12px 15px;border-radius:15px;background:linear-gradient(145deg,#fff,#eaf4f1);border:1px solid #fff;color:#164e63;box-shadow:0 15px 35px rgba(16,48,57,.13);transform:rotateY(13deg) rotateZ(-5deg);animation:qmFormulaFloat 7s ease-in-out infinite}
+.ability-formula b{font-size:28px;color:#7da02f}.ability-formula span{font-size:12px;font-weight:900;letter-spacing:.3px}
+.ability-pi{right:2%;bottom:17%;width:56px;height:56px;border-radius:18px;background:linear-gradient(145deg,#dff0ff,#8fbdd3);color:#164e63;font-size:30px;font-weight:900;box-shadow:inset 3px 3px 7px #fff8,inset -4px -5px 10px #437e9b33,0 15px 28px #123b4820;transform:rotateX(15deg) rotateY(-16deg);animation:qmPiFloat 5.8s ease-in-out infinite}
+.ability-chart{left:8%;bottom:12%;width:78px;height:58px;display:flex;align-items:end;justify-content:center;gap:6px;padding:10px;border-radius:15px;background:linear-gradient(145deg,#fff,#eef4e8);border:1px solid #fff;box-shadow:0 14px 30px rgba(16,48,57,.12);transform:rotateY(14deg) rotateZ(4deg);animation:qmFormulaFloat 7.8s ease-in-out infinite reverse}
+.ability-chart i{display:block;width:8px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#d5f36a,#759b2b);box-shadow:inset 1px 1px 2px #fff9}.ability-chart i:nth-child(1){height:35%}.ability-chart i:nth-child(2){height:60%}.ability-chart i:nth-child(3){height:45%}.ability-chart i:nth-child(4){height:82%}.ability-chart i:nth-child(5){height:100%}
+#landing-section .floating-note{animation:qmNoteFloat 6.8s ease-in-out infinite}
+#landing-section .note-book{animation-delay:-2.5s}
+#landing-section .discover-card{transform:translateZ(0);will-change:transform}
+#landing-section .discover-card:hover{transform:translateY(-6px) perspective(900px) rotateX(1deg)}
+@keyframes qmHeroFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes qmCubeFloat{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 -13px;rotate:5deg}}
+@keyframes qmFormulaFloat{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@keyframes qmPiFloat{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 -11px;rotate:-7deg}}
+@keyframes qmNoteFloat{0%,100%{translate:0 0}50%{translate:0 -6px}}
+@keyframes qmOrbit{to{transform:rotate(360deg)}}
+/* Student area gets only small icon depth, no heavy 3D scene or continuous page animation. */
+.capability-ribbon .cap-icon{transform:perspective(180px) rotateY(-8deg) rotateX(5deg);box-shadow:inset 2px 2px 4px #ffffffaa,0 5px 10px rgba(18,59,72,.08);transition:transform .35s var(--qm-ease)}
+.capability-ribbon>div:hover .cap-icon{transform:perspective(180px) rotateY(-14deg) rotateX(9deg) translateY(-2px)}
+.section-big-icon,.next-action-icon{box-shadow:inset 2px 2px 5px rgba(255,255,255,.8),0 7px 13px rgba(18,59,72,.08)}
+/* Sign-in and create-account share a split-card design, with a smooth mirrored panel. */
+.auth-section{width:min(100%,980px)!important;min-height:540px!important;margin:20px auto!important;padding:0!important;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:1px solid #e5ece5!important;border-radius:28px!important;background:#fff!important;box-shadow:0 26px 80px rgba(17,49,55,.12)!important;isolation:isolate}
+.auth-visual-panel{grid-column:2;grid-row:1;position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(26px,4vw,48px);min-width:0;color:#fff;text-align:right;background:radial-gradient(circle at 18% 18%,rgba(213,243,106,.22),transparent 32%),linear-gradient(145deg,#123b48,#176b64 75%,#0e4b58);transition:background .5s var(--qm-ease)}
+.auth-form-area{grid-column:1;grid-row:1;align-self:center;min-width:0;width:100%;padding:clamp(24px,4vw,48px);text-align:right;animation:qmAuthIn .55s var(--qm-ease) both}
+.auth-section h1{font-size:clamp(24px,3vw,31px)!important;line-height:1.45;margin-bottom:24px!important;color:#153e4b}
+.auth-form-area .form-group{margin-bottom:17px}.auth-form-area label{font-size:13px}.auth-form-area input{min-height:48px;background:#f8faf8}.auth-form-area form>button{min-height:50px;margin-top:7px;background:linear-gradient(110deg,#164e63,#176b64);box-shadow:0 10px 20px rgba(22,78,99,.16);transition:transform .3s var(--qm-ease),box-shadow .3s var(--qm-ease)}
+.auth-form-area form>button:hover{transform:translateY(-2px);box-shadow:0 14px 25px rgba(22,78,99,.22)}
+.auth-form-area .switch-link{font-size:12px;color:#718187;margin-top:15px}.auth-form-area .switch-link span{cursor:pointer;color:#668b27;font-weight:900;transition:color .2s}
+.auth-form-area .switch-link span:hover{color:#164e63}
+.auth-register .auth-visual-panel{grid-column:1;align-items:flex-start}.auth-register .auth-form-area{grid-column:2;animation-name:qmAuthInReverse}
+.auth-panel-kicker{position:relative;z-index:2;margin-top:20px;margin-bottom:10px;color:#d5f36a;font-size:12px;font-weight:900;letter-spacing:.4px}
+.auth-visual-panel>strong{position:relative;z-index:2;font-size:clamp(28px,3.6vw,43px);line-height:1.35;font-weight:900;color:#fff;margin-bottom:12px}
+.auth-visual-panel>p{position:relative;z-index:2;color:#d8e9e4;font-size:13px;line-height:2.1;margin-bottom:24px}
+.auth-panel-switch{position:relative;z-index:3;width:auto;max-width:100%;min-height:44px;padding:11px 16px;margin:0;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.08);box-shadow:none;color:#fff;font-size:12px;backdrop-filter:blur(8px);transition:background .25s,transform .25s}
+.auth-panel-switch:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}.auth-panel-switch span{margin-right:12px;color:#d5f36a}
+.auth-panel-orbit{position:absolute;z-index:0;border:1px solid rgba(255,255,255,.12);border-radius:50%;pointer-events:none}.auth-orbit-a{width:330px;height:330px;right:-100px;top:-90px;box-shadow:0 0 0 20px #ffffff05,0 0 0 42px #ffffff04}.auth-orbit-b{width:210px;height:210px;left:-80px;bottom:-65px;border-style:dashed;animation:qmOrbit 30s linear infinite}
+.auth-3d-stack{position:relative;width:148px;height:130px;margin:0 auto 6px;transform-style:preserve-3d;perspective:600px;animation:qmAuthObject 6s ease-in-out infinite}
+.auth-stack-sheet{position:absolute;display:grid;place-items:center;width:92px;height:92px;border-radius:22px;left:25px;top:15px;transform-style:preserve-3d;box-shadow:inset 1px 1px 0 #ffffffa8,0 15px 25px #071f2528}
+.sheet-back{background:linear-gradient(145deg,#9bc4ce,#477f8d);transform:translate3d(22px,-12px,-30px) rotateZ(15deg) rotateY(-22deg)}.sheet-mid{background:linear-gradient(145deg,#e6f4c2,#a5c75d);transform:translate3d(9px,-4px,-12px) rotateZ(7deg) rotateY(-14deg)}
+.sheet-front{background:linear-gradient(145deg,#fff,#e6f0ed);color:#164e63;font-size:39px;font-weight:900;transform:translateZ(20px) rotateZ(-7deg) rotateY(10deg)}
+.auth-mini-cube{position:absolute;right:0;bottom:7px;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#e5f6b5,#a6c95d);color:#164e63;font-size:20px;font-weight:900;box-shadow:inset 2px 2px 4px #fff9,0 10px 18px #071f2530;transform:rotateX(20deg) rotateY(-18deg);animation:qmCubeFloat 5s ease-in-out infinite}
+@keyframes qmAuthObject{0%,100%{transform:translateY(0) rotateY(-5deg)}50%{transform:translateY(-8px) rotateY(5deg)}}
+@keyframes qmAuthIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}@keyframes qmAuthInReverse{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:700px){
+ #landing-section .landing-hero{perspective:none;grid-template-columns:1fr;gap:22px;padding:26px 0 28px;min-height:0}
+ #landing-section .hero-visual{min-height:300px;overflow:visible;transform:scale(.96);transform-origin:center}
+ #landing-section .hero-photo-main{height:290px;width:84%;animation-duration:9s}
+ .ability-cube{width:58px;height:58px;right:2%;top:9%;border-radius:15px;font-size:17px}.ability-cube span{width:18px;height:18px}
+ .ability-formula{left:-1%;top:20%;padding:8px 10px}.ability-formula b{font-size:22px}.ability-formula span{font-size:10px}
+ .ability-pi{width:44px;height:44px;right:1%;bottom:14%;font-size:24px;border-radius:14px}.ability-chart{width:63px;height:48px;left:1%;bottom:9%;gap:4px}
+ .auth-section{grid-template-columns:minmax(0,1fr)!important;min-height:0!important;margin:0 auto 12px!important;border-radius:20px!important}
+ .auth-visual-panel,.auth-register .auth-visual-panel{grid-column:1!important;grid-row:1!important;min-height:230px;padding:20px 22px 22px;align-items:flex-start}
+ .auth-3d-stack{position:absolute;left:12px;top:15px;width:100px;height:100px;transform:scale(.78);transform-origin:top left;margin:0;opacity:.96}
+ .auth-stack-sheet{width:76px;height:76px;left:10px;top:7px;border-radius:18px}.auth-mini-cube{right:-5px;bottom:0;width:33px;height:33px}
+ .auth-panel-kicker{margin-top:3px;margin-bottom:7px;font-size:11px}.auth-visual-panel>strong{font-size:25px;max-width:68%}.auth-visual-panel>p{font-size:11px;line-height:1.8;margin-bottom:12px;max-width:72%}.auth-panel-switch{min-height:40px;padding:8px 12px;font-size:11px}
+ .auth-form-area,.auth-register .auth-form-area{grid-column:1!important;grid-row:2!important;padding:22px!important;animation:none!important}
+ .auth-section h1{font-size:24px!important;margin-bottom:18px!important}
+}
+@media(max-width:380px){.auth-visual-panel,.auth-register .auth-visual-panel{min-height:215px;padding:17px!important}.auth-visual-panel>strong{font-size:22px}.auth-visual-panel>p{max-width:75%}.auth-3d-stack{left:0;transform:scale(.65);transform-origin:top left}.ability-formula{left:-3%}.ability-chart{left:-1%}}
+@media(prefers-reduced-motion:reduce){
+ #landing-section .hero-photo-main,#landing-section .orbit-one,#landing-section .orbit-two,#landing-section .floating-note,.ability-3d,.auth-orbit-b,.auth-3d-stack,.auth-mini-cube{animation:none!important}
+ #landing-section .hero-photo-main,#landing-section .hero-photo-main img,.discover-card,.auth-panel-switch,.auth-form-area{transition:none!important;animation:none!important}
+}
+
+</style>
 </head>
 <body id="appBody">
 
@@ -1051,6 +1129,10 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                         <div class="floating-note note-score"><span class="note-symbol">↗</span><div><strong>تقدّم مستمر</strong><small>تابع تطور مستواك</small></div></div>
                         <div class="floating-note note-book"><span class="note-symbol">▤</span><div><strong>نماذج متنوعة</strong><small>لفظي · كمي</small></div></div>
                         <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+                        <div class="ability-3d ability-cube" aria-hidden="true"><span>+</span><span>×</span><span>÷</span></div>
+                        <div class="ability-3d ability-formula" aria-hidden="true"><b>√</b><span>x² + y²</span></div>
+                        <div class="ability-3d ability-pi" aria-hidden="true">π</div>
+                        <div class="ability-3d ability-chart" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
                     </div>
                 </section>
                 <section class="landing-stats">
@@ -1069,7 +1151,9 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                 <footer class="landing-footer"><div class="footer-brand"><span class="brand-icon">ق</span><strong>قِمّة</strong></div><span>رحلتك تبدأ بخطوة، واصل التقدّم.</span><button onclick="switchView('register')">أنشئ حسابك الآن ↗</button></footer>
             </div>
 
-            <div id="login-section" class="app-section">
+            <div id="login-section" class="app-section auth-section auth-login">
+                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">∑</span><span class="auth-mini-cube">△</span></div><span class="auth-panel-kicker">قِمّة · منصة القدرات</span><strong>أهلاً بعودتك</strong><p>خطوتك القادمة تبدأ من هنا.<br>تعلّم بثقة، وتقدّم كل يوم.</p><button type="button" class="auth-panel-switch" onclick="switchView('register')">إنشاء حساب جديد <span>←</span></button></div>
+                <div class="auth-form-area">
                 <h1>🎯 مرحباً بك مجدداً!</h1>
                 <div id="login-alert" class="alert"></div>
                 <form id="loginForm">
@@ -1085,6 +1169,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                 <div class="switch-link"><span onclick="switchView('forgot')" style="color: #ef4444;">نسيت كلمة المرور؟</span></div>
                 <div class="switch-link">ليس لديك حساب؟ <span onclick="switchView('register')">سجل حساباً جديداً</span></div>
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
+                </div>
             </div>
 
             <div id="forgot-section" class="app-section">
@@ -1106,7 +1191,9 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                 <div class="switch-link"><span onclick="switchView('login')">العودة لتسجيل الدخول</span></div>
             </div>
 
-            <div id="register-section" class="app-section">
+            <div id="register-section" class="app-section auth-section auth-register">
+                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">√</span><span class="auth-mini-cube">π</span></div><span class="auth-panel-kicker">ابدأ رحلتك اليوم</span><strong>اصنع فرصتك</strong><p>درّب عقلك، واكتشف مستواك،<br>واقترب من هدفك بثبات.</p><button type="button" class="auth-panel-switch" onclick="switchView('login')">لديك حساب؟ سجّل الدخول <span>←</span></button></div>
+                <div class="auth-form-area">
                 <h1>✨ انضم إلى نخبة المتفوقين</h1>
                 <div id="reg-alert" class="alert"></div>
                 <form id="registerForm">
@@ -1122,6 +1209,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
                 </form>
                 <div class="switch-link">لديك حساب بالفعل؟ <span onclick="switchView('login')">سجل دخولك</span></div>
                 <div class="switch-link" style="margin-top: 10px;"><span onclick="switchView('landing')" style="color: #64748b;">← العودة للرئيسية</span></div>
+                </div>
             </div>
 
             <div id="student-dashboard" class="app-section">
