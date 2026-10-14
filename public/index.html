@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -2968,27 +2969,37 @@ setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibil
 <script defer src="https://unpkg.com/mathlive"></script>
 <script id="qimma-optional-math-editor">
 (function(){
- const fields=['qText','qA','qB','qC','qD','qiyasText','qiyasA','qiyasB','qiyasC','qiyasD','editQText','editQA','editQB','editQC','editQD'];
- function install(){fields.forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.mathEditor==='1')return;el.dataset.mathEditor='1';
-  const row=document.createElement('div');row.className='math-editor-controls';row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0';
-  const label=document.createElement('label');label.style.cssText='display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:#334155;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px';
-  const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','تفعيل محرر الرياضيات');
-  const icon=document.createElement('span');icon.textContent='∑';icon.style.cssText='font-size:19px;font-weight:bold';
-  const txt=document.createElement('span');txt.textContent='رياضيات';label.append(check,icon,txt);
-  const holder=document.createElement('div');holder.style.cssText='display:none;margin:6px 0 10px';
-  const mf=document.createElement('math-field');mf.setAttribute('dir','ltr');mf.setAttribute('virtual-keyboard-mode','onfocus');mf.style.cssText='display:block;width:100%;min-height:58px;padding:12px;border:1px solid #94a3b8;border-radius:10px;background:white;font-size:22px;direction:ltr;text-align:left;box-sizing:border-box';mf.setAttribute('placeholder','اكتب التعبير الرياضي هنا…');
-  const hint=document.createElement('div');hint.textContent='اكتب الكسر مباشرة من لوحة الرياضيات التي تظهر عند الضغط داخل الحقل.';hint.style.cssText='font-size:11px;color:#64748b;margin-top:4px';holder.append(mf,hint);row.append(label);
-  el.insertAdjacentElement('afterend',row);row.insertAdjacentElement('afterend',holder);
-  const syncToEditor=()=>{if(check.checked){mf.value=el.value||'';el.style.display='none';holder.style.display='block';if(window.MathfieldElement){} }};
-  const syncFromEditor=()=>{el.value=mf.value;el.dispatchEvent(new Event('input',{bubbles:true}));};
-  check.addEventListener('change',()=>{if(check.checked){mf.value=el.value||'';el.style.display='none';holder.style.display='block';setTimeout(()=>mf.focus(),50)}else{syncFromEditor();holder.style.display='none';el.style.display='';}});
-  mf.addEventListener('input',syncFromEditor);
-  // Keep ordinary text fields as the canonical values used by the existing save/edit API.
-  el.addEventListener('input',()=>{if(check.checked&&document.activeElement!==mf)mf.value=el.value;});
-  const form=el.closest('form');if(form)form.addEventListener('submit',syncFromEditor);
- });}
+ const groups=[{label:'سؤال جديد',ids:['qText','qA','qB','qC','qD']},{label:'سؤال قياس',ids:['qiyasText','qiyasA','qiyasB','qiyasC','qiyasD']},{label:'تعديل السؤال',ids:['editQText','editQA','editQB','editQC','editQD']}];
+ const arabicDigits=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+ function install(){
+  if(!window.customElements?.get('math-field')){setTimeout(install,250);return;}
+  groups.forEach(g=>{
+   const first=document.getElementById(g.ids[0]); if(!first||first.dataset.mathGroup==='1')return;
+   g.ids.forEach(id=>{const el=document.getElementById(id);if(el)el.dataset.mathGroup='1'});
+   const box=document.createElement('div');box.className='qimma-math-toggle';box.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:8px 0 14px;background:#f8fafc;border:1px solid #dbe3ed;border-radius:12px';
+   const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:#173b55';
+   const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','تحويل السؤال وخياراته إلى رياضيات');
+   const title=document.createElement('span');title.textContent='∑ وضع الرياضيات للسؤال كاملًا';label.append(check,title);
+   const note=document.createElement('small');note.style.cssText='color:#64748b';note.textContent='يشمل نص السؤال والخيارات الأربعة';box.append(label,note);
+   first.parentNode.insertBefore(box,first);
+   const fields=[];
+   g.ids.forEach((id,index)=>{const el=document.getElementById(id);if(!el)return;const holder=document.createElement('div');holder.style.cssText='display:none;margin:5px 0 12px';const mf=document.createElement('math-field');mf.setAttribute('dir','ltr');mf.setAttribute('virtual-keyboard-mode','onfocus');mf.setAttribute('smart-mode','true');mf.setAttribute('placeholder',index===0?'اكتب السؤال الرياضي…':'اكتب الخيار الرياضي…');mf.style.cssText='display:block;width:100%;min-height:54px;padding:10px 12px;border:1px solid #a8b8c9;border-radius:10px;background:#fff;font-size:23px;box-sizing:border-box';
+    const tools=document.createElement('div');tools.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+    [['كسر','\\frac{#@}{#?}'],['جذر','\\sqrt{#0}'],['أس','^{#0}'],['×','\\times'],['÷','\\div'],['±','\\pm'],['=','='],['≤','\\le'],['≥','\\ge'],['π','\\pi']].forEach(([name,latex])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.style.cssText='width:auto;padding:5px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;color:#334155';b.addEventListener('click',()=>{mf.focus();mf.executeCommand('insert',latex)});tools.append(b)});
+    holder.append(mf,tools);el.insertAdjacentElement('afterend',holder);fields.push({el,mf,holder});mf.addEventListener('input',()=>{el.value=arabicDigits(mf.getValue('latex'));el.dispatchEvent(new Event('input',{bubbles:true}))});
+   });
+   const setMode=on=>fields.forEach(({el,mf,holder})=>{if(on){mf.value=el.value||'';el.style.display='none';holder.style.display='block'}else{el.value=arabicDigits(mf.getValue('latex'));el.style.display='';holder.style.display='none'}});
+   check.addEventListener('change',()=>{setMode(check.checked);if(check.checked)fields[0]?.mf.focus()});
+   const form=first.closest('form');if(form)form.addEventListener('submit',()=>{if(check.checked)fields.forEach(({el,mf})=>el.value=arabicDigits(mf.getValue('latex'))) });
+   // Keep edit modal values synced when the existing code fills textareas.
+   fields.forEach(({el,mf})=>el.addEventListener('input',()=>{if(check.checked&&document.activeElement!==mf)mf.value=el.value}));
+  });
+ }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
- const oldOpen=window.openEditModal;if(typeof oldOpen==='function')window.openEditModal=async function(){install();return oldOpen.apply(this,arguments)};
+ const mathScript=document.createElement('script');mathScript.src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';mathScript.async=true;document.head.appendChild(mathScript);
+ function renderMath(root=document){if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([root]).catch(()=>{});}
+ const observer=new MutationObserver(muts=>{for(const m of muts){if(m.target?.nodeType===1&&m.target.closest?.('#training-question-container'))renderMath(m.target.closest('#training-question-container'));m.addedNodes?.forEach(n=>{if(n.nodeType===1&&n.matches?.('#training-question-container, #training-question-container *'))renderMath(n.closest?.('#training-question-container')||n)});}});
+ document.addEventListener('DOMContentLoaded',()=>{const c=document.getElementById('training-question-container');if(c)observer.observe(c,{childList:true,subtree:true});renderMath(document);});
 })();
 </script>
 
