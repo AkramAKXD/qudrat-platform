@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -436,7 +437,14 @@ body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0
 #login-section.auth-section,#register-section.auth-section{margin-bottom:10px!important}
 @media(max-width:700px){body#appBody .main-content{padding-bottom:8px!important}#login-section.auth-section,#register-section.auth-section{margin:12px auto 8px!important}.auth-form-area{padding-bottom:22px!important}}
 
-</style>
+
+        .math-helper-wrap{position:relative;display:inline-block;margin:5px 0;direction:rtl}
+        .math-helper-toggle{width:auto!important;margin:0!important;padding:5px 10px!important;background:#e0f2fe!important;color:#075985!important;border:1px solid #7dd3fc!important;border-radius:9px!important;font-size:12px!important}
+        .math-helper-panel{display:none;background:#fff;border:1px solid #bae6fd;border-radius:10px;padding:9px;margin-top:6px;box-shadow:0 8px 20px #0f172a14;gap:6px;flex-wrap:wrap}
+        .math-helper-panel.open{display:flex}
+        .math-helper-panel button{width:auto!important;margin:0!important;padding:5px 9px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:12px!important;border:1px solid #cbd5e1!important}
+        .math-helper-note{font-size:11px;color:#64748b;width:100%}
+    </style>
 
 <style id="qimma-extra-polish">
 :root{--qm-ink:#153b35;--qm-mint:#19b88a;--qm-gold:#e5b85c;--qm-glass:rgba(255,255,255,.88)}
@@ -1057,6 +1065,8 @@ function toggleMobileSidebar(){document.body.classList.toggle('mobile-sidebar-op
 document.addEventListener('click',function(e){if(!document.body.classList.contains('mobile-sidebar-open'))return;const s=document.getElementById('appSidebar'),b=document.getElementById('mobileMenuToggle');if(s&&!s.contains(e.target)&&b&&!b.contains(e.target)){document.body.classList.remove('mobile-sidebar-open');b.setAttribute('aria-expanded','false')}if(s&&s.contains(e.target)&&e.target.closest('button')){document.body.classList.remove('mobile-sidebar-open');if(b)b.setAttribute('aria-expanded','false')}});
 </script>
 
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['$$','$$'],['\\[','\\]']]}, options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body id="appBody">
 
@@ -2955,5 +2965,27 @@ window.addEventListener('DOMContentLoaded',()=>{try{const s=JSON.parse(sessionSt
 setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibilityState==='visible'&&typeof updateQimmaProgress==='function')updateQimmaProgress()},12000);
 })();
 </script>
-<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script></body>
+<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
+<script id="qimma-optional-math-editor">
+(function(){
+ const fields=['qText','qA','qB','qC','qD','qiyasText','qiyasA','qiyasB','qiyasC','qiyasD','editQText','editQA','editQB','editQC','editQD'];
+ const snippets=[['½ كسر','\\frac{1}{2}'],['⅓ كسر','\\frac{1}{3}'],['كسر فارغ','\\frac{ }{ }'],['جذر','\\sqrt{ }'],['أس','^{ }'],['ضرب','\\times'],['قسمة','\\div'],['باي','\\pi']];
+ function insertAt(el,value){const start=el.selectionStart??el.value.length,end=el.selectionEnd??start;el.setRangeText(value,start,end,'end');el.focus();}
+ function install(){fields.forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.mathHelper==='1')return;el.dataset.mathHelper='1';
+  const wrap=document.createElement('div');wrap.className='math-helper-wrap';
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='math-helper-toggle';toggle.textContent='∑ أدوات الكسور والمعادلات';toggle.setAttribute('aria-expanded','false');
+  const panel=document.createElement('div');panel.className='math-helper-panel';
+  snippets.forEach(([label,code])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.title=code;b.addEventListener('click',()=>insertAt(el,code));panel.appendChild(b)});
+  const note=document.createElement('small');note.className='math-helper-note';note.textContent='أدخل الكسر مثل \\frac{3}{4} وسيظهر عموديًا عند عرض السؤال. هذه الأدوات اختيارية.';panel.appendChild(note);
+  toggle.addEventListener('click',()=>{const open=panel.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
+  el.insertAdjacentElement('afterend',wrap);wrap.append(toggle,panel);
+ });}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+ // Edit modal fields already exist; re-run safely when opened.
+ const original=window.openEditModal;
+ if(typeof original==='function')window.openEditModal=async function(){install();return original.apply(this,arguments)};
+})();
+</script>
+
+</body>
 </html>
