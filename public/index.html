@@ -442,8 +442,7 @@ body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0
         .math-helper-toggle{width:auto!important;margin:0!important;padding:5px 10px!important;background:#e0f2fe!important;color:#075985!important;border:1px solid #7dd3fc!important;border-radius:9px!important;font-size:12px!important}
         .math-helper-panel{display:none;background:#fff;border:1px solid #bae6fd;border-radius:10px;padding:9px;margin-top:6px;box-shadow:0 8px 20px #0f172a14;gap:6px;flex-wrap:wrap}
         .math-helper-panel.open{display:flex}
-        .math-helper-panel button{width:auto!important;margin:0!important;padding:5px 9px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:12px!important;border:1px solid #cbd5e1!important}
-        .math-helper-note{font-size:11px;color:#64748b;width:100%}
+        .math-helper-panel button{width:auto!important;min-width:48px;min-height:44px;margin:0!important;padding:6px 10px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:17px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;display:inline-flex;align-items:center;justify-content:center}.math-helper-panel button:hover{background:#e0f2fe!important}.math-fraction-icon{display:inline-grid;grid-template-rows:auto 2px auto;min-width:23px;line-height:1.05;text-align:center;font-size:14px}.math-fraction-icon i{display:block;height:2px;background:currentColor;margin:2px 0}.math-helper-note{font-size:11px;color:#64748b;width:100%}
     </style>
 
 <style id="qimma-extra-polish">
@@ -2965,25 +2964,22 @@ window.addEventListener('DOMContentLoaded',()=>{try{const s=JSON.parse(sessionSt
 setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibilityState==='visible'&&typeof updateQimmaProgress==='function')updateQimmaProgress()},12000);
 })();
 </script>
-<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
+<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.closest('.math-helper-wrap'))return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
 <script id="qimma-optional-math-editor">
 (function(){
  const fields=['qText','qA','qB','qC','qD','qiyasText','qiyasA','qiyasB','qiyasC','qiyasD','editQText','editQA','editQB','editQC','editQD'];
- const snippets=[['½ كسر','\\frac{1}{2}'],['⅓ كسر','\\frac{1}{3}'],['كسر فارغ','\\frac{ }{ }'],['جذر','\\sqrt{ }'],['أس','^{ }'],['ضرب','\\times'],['قسمة','\\div'],['باي','\\pi']];
  function insertAt(el,value){const start=el.selectionStart??el.value.length,end=el.selectionEnd??start;el.setRangeText(value,start,end,'end');el.focus();}
  function install(){fields.forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.mathHelper==='1')return;el.dataset.mathHelper='1';
   const wrap=document.createElement('div');wrap.className='math-helper-wrap';
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='math-helper-toggle';toggle.textContent='∑ أدوات الكسور والمعادلات';toggle.setAttribute('aria-expanded','false');
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='math-helper-toggle';toggle.textContent='∑';toggle.title='فتح أدوات الكتابة الرياضية';toggle.setAttribute('aria-label','فتح أدوات الكتابة الرياضية');toggle.setAttribute('aria-expanded','false');
   const panel=document.createElement('div');panel.className='math-helper-panel';
-  snippets.forEach(([label,code])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.title=code;b.addEventListener('click',()=>insertAt(el,code));panel.appendChild(b)});
-  const note=document.createElement('small');note.className='math-helper-note';note.textContent='أدخل الكسر مثل \\frac{3}{4} وسيظهر عموديًا عند عرض السؤال. هذه الأدوات اختيارية.';panel.appendChild(note);
-  toggle.addEventListener('click',()=>{const open=panel.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
+  const add=(visual,code,title)=>{const b=document.createElement('button');b.type='button';b.title=title;b.setAttribute('aria-label',title);if(visual==='fraction'){b.innerHTML='<span class="math-fraction-icon"><span>□</span><i></i><span>□</span></span>';}else b.textContent=visual;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();insertAt(el,code);});panel.appendChild(b)};
+  add('fraction','\\frac{}{}','كسر: بسط ومقام');add('√','\\sqrt{}','جذر تربيعي');add('xⁿ','^{}','أس');add('×','\\times','ضرب');add('÷','\\div','قسمة');add('π','\\pi','باي');
+  toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const open=panel.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
   el.insertAdjacentElement('afterend',wrap);wrap.append(toggle,panel);
  });}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
- // Edit modal fields already exist; re-run safely when opened.
- const original=window.openEditModal;
- if(typeof original==='function')window.openEditModal=async function(){install();return original.apply(this,arguments)};
+ const original=window.openEditModal;if(typeof original==='function')window.openEditModal=async function(){install();return original.apply(this,arguments)};
 })();
 </script>
 
