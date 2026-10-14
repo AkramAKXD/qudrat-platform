@@ -1534,11 +1534,12 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     <div style="margin-bottom: 15px;">
                         <h4 id="adminModelsHeading" style="color: #1e293b; margin-bottom: 12px; font-size: 16px;">اختر النموذج:</h4>
                         <div id="adminModelsGrid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;"></div>
+                        <div id="modelTimerPanel" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;background:#f4f8f0;border:1px solid #dce8cf;padding:14px;border-radius:14px;margin-bottom:16px"><div style="min-width:190px;flex:1"><label for="admin-model-timer-minutes">وقت النموذج بالدقائق (0 = بدون مؤقت)</label><input id="admin-model-timer-minutes" type="number" min="0" max="600" value="0"></div><button type="button" onclick="saveAdminModelTimer()" style="width:auto;margin:0">حفظ وقت النموذج</button><small id="admin-model-timer-note" style="width:100%;color:#64748b">يُحفظ الوقت في قاعدة البيانات ويُطبّق على الطلاب.</small></div>
                     </div>
                     <div id="adminFilteredQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
-                <div id="achievement-settings-box" class="admin-tab-content hidden" style="background:#f0fdfa;padding:22px;border-radius:18px;margin-bottom:20px;border:1px solid #99f6e4"><h3 style="color:#115e59;margin-bottom:10px">🏆 تحديد إنجاز الطالب</h3><p style="color:#475569;margin-bottom:14px">حدد عدد النماذج المختلفة المكتملة للوصول إلى 100٪. يُحتسب كل نموذج مرة واحدة فقط لكل طالب.</p><form id="achievementSettingsForm" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap"><div class="form-group" style="margin:0;flex:1;min-width:180px"><label for="achievement-required-count">عدد النماذج المطلوبة لإكمال الإنجاز</label><input id="achievement-required-count" type="number" min="1" max="500" value="10" required></div><button type="submit" style="width:auto;margin:0">حفظ الإعدادات</button></form><small id="achievement-settings-note" style="display:block;margin-top:10px;color:#64748b">يحفظ هذا الإعداد في هذا المتصفح.</small></div>
+                <div id="achievement-settings-box" class="admin-tab-content hidden" style="background:#f0fdfa;padding:22px;border-radius:18px;margin-bottom:20px;border:1px solid #99f6e4"><h3 style="color:#115e59;margin-bottom:10px">🏆 تحديد إنجاز الطالب</h3><p style="color:#475569;margin-bottom:14px">حدد عدد النماذج المختلفة المكتملة للوصول إلى 100٪. يُحتسب كل نموذج مرة واحدة فقط لكل طالب.</p><form id="achievementSettingsForm" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap"><div class="form-group" style="margin:0;flex:1;min-width:180px"><label for="achievement-required-count">عدد النماذج المطلوبة لإكمال الإنجاز</label><input id="achievement-required-count" type="number" min="1" max="500" value="10" required></div><button type="submit" style="width:auto;margin:0">حفظ الإعدادات</button></form><small id="achievement-settings-note" style="display:block;margin-top:10px;color:#64748b">يُحفظ هذا الإعداد في قاعدة بيانات المنصة ويُطبّق على جميع الطلاب.</small></div>
 
                 <div id="platform-stats-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px; text-align: center;">
                     <h3 style="color: #7c3aed; margin-bottom: 15px;">📊 إحصائيات عامة</h3>
@@ -1939,6 +1940,22 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             renderAdminModels();
         }
 
+        function currentAdminTimerKey(){
+            const cat=adminCurrentCat||'quant'; const sub=adminCurrentSub||'practice'; const n=Number(adminCurrentSelectedModel||0);
+            return cat==='qiyas' ? `qiyas_simulation_${n}` : `${cat}_${sub}_${n}`;
+        }
+        async function loadAdminModelTimer(){
+            const key=currentAdminTimerKey(), input=document.getElementById('admin-model-timer-minutes'), note=document.getElementById('admin-model-timer-note');
+            if(!input||!Number(adminCurrentSelectedModel)) return;
+            try{const r=await fetch('/api/admin/model-timer/get',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key}),cache:'no-store'});const d=await r.json();if(d.success)input.value=d.minutes||0;if(note)note.textContent=`وقت النموذج الحالي: ${input.value} دقيقة — محفوظ في قاعدة البيانات.`;}catch(e){if(note)note.textContent='تعذر تحميل وقت النموذج من قاعدة البيانات.';}
+        }
+        async function saveAdminModelTimer(){
+            const key=currentAdminTimerKey(), input=document.getElementById('admin-model-timer-minutes'), note=document.getElementById('admin-model-timer-note');
+            if(!Number(adminCurrentSelectedModel)){if(note)note.textContent='اختر نموذجًا أولًا.';return;}
+            const minutes=Math.max(0,Math.min(600,Number(input?.value)||0));
+            try{const r=await fetch('/api/admin/model-timer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,minutes})});const d=await r.json();if(note)note.textContent=d.success?`تم حفظ ${minutes} دقيقة في قاعدة البيانات.`:(d.message||'تعذر الحفظ');}catch(e){if(note)note.textContent='تعذر الاتصال بالخادم.';}
+        }
+
         function renderAdminModels() {
             const modelsGrid = document.getElementById('adminModelsGrid');
             const questionsList = document.getElementById('adminFilteredQuestionsList');
@@ -1980,6 +1997,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             adminCurrentSelectedModel = mNum;
             renderAdminModels();
             renderAdminQuestionsForSelectedModel();
+            loadAdminModelTimer();
         }
 
         function renderAdminQuestionsForSelectedModel() {
@@ -2926,5 +2944,16 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
 })();
 </script>
 
-</body>
+<div id="discover-info-modal" class="custom-modal" role="dialog" aria-modal="true" aria-labelledby="discover-info-title" onclick="if(event.target===this)this.classList.remove('active')"><div class="modal-box"><button type="button" aria-label="إغلاق" onclick="document.getElementById('discover-info-modal').classList.remove('active')" style="width:auto;float:left;margin:0 0 12px;background:#edf2ed;color:#123b48">✕</button><div id="discover-info-body" style="clear:both"></div><button type="button" onclick="document.getElementById('discover-info-modal').classList.remove('active');switchView('login')" style="margin-top:18px;background:#123b48">ابدأ رحلتك الآن — سجّل الدخول</button></div></div>
+<script>
+(function(){const cards=[...document.querySelectorAll('#landing-section .discover-card')];const details=[{title:'القسم اللفظي',text:'طوّر مهارات فهم المقروء، والعلاقات اللفظية، وإكمال الجمل، واستيعاب النصوص. يساعدك التدريب المنتظم على بناء حصيلة لغوية أقوى وقراءة السؤال بدقة وثقة.'},{title:'القسم الكمي',text:'نمِّ مهارات التفكير الرياضي والتحليل المنطقي من خلال المسائل الحسابية، والنسب، والهندسة، والأنماط. تعلّم كيف تفكك المسألة إلى خطوات واضحة وتختار الحل بكفاءة.'},{title:'الاختبارات المحاكية',text:'اختبر استعدادك في تجربة منظّمة تحاكي أجواء الاختبار، وراجع أداءك وحدد المهارات التي تحتاج إلى مزيد من التدريب قبل الاختبار الفعلي.'}];cards.forEach((card,i)=>{card.style.cursor='pointer';card.setAttribute('role','button');card.setAttribute('tabindex','0');const open=()=>{const d=details[i]||details[0];document.getElementById('discover-info-body').innerHTML='<h3 id="discover-info-title" style="color:#123b48;margin-bottom:12px">'+d.title+'</h3><p style="line-height:2;color:#475569">'+d.text+'</p>';document.getElementById('discover-info-modal').classList.add('active')};card.addEventListener('click',e=>{if(e.target.closest('button'))e.preventDefault();open()});card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+// Save and restore the current view, scroll position, and training position across refreshes.
+const save=()=>{try{sessionStorage.setItem('qimma-view-state',JSON.stringify({view:document.querySelector('.app-section.active-view')?.id||'landing-section',y:window.scrollY,question:window.currentQuestionIndex||0}));}catch(e){}};
+window.addEventListener('scroll',save,{passive:true});window.addEventListener('beforeunload',save);
+window.addEventListener('DOMContentLoaded',()=>{try{const s=JSON.parse(sessionStorage.getItem('qimma-view-state')||'null');if(s&&s.view&&document.getElementById(s.view)&&s.view!=='landing-section'&&sessionStorage.getItem('sessionUserEmail')){document.querySelectorAll('.app-section').forEach(x=>x.classList.remove('active-view'));document.getElementById(s.view).classList.add('active-view')}requestAnimationFrame(()=>window.scrollTo(0,s?.y||0));}catch(e){}});
+// Keep progress responsive after completion/settings updates without manual refresh.
+setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibilityState==='visible'&&typeof updateQimmaProgress==='function')updateQimmaProgress()},12000);
+})();
+</script>
+<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script></body>
 </html>
