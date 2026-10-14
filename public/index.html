@@ -2966,40 +2966,55 @@ setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibil
 })();
 </script>
 <script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.closest('.math-helper-wrap'))return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
-<script defer src="https://unpkg.com/mathlive"></script>
 <script id="qimma-optional-math-editor">
 (function(){
- const groups=[{label:'سؤال جديد',ids:['qText','qA','qB','qC','qD']},{label:'سؤال قياس',ids:['qiyasText','qiyasA','qiyasB','qiyasC','qiyasD']},{label:'تعديل السؤال',ids:['editQText','editQA','editQB','editQC','editQD']}];
- const arabicDigits=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+ const groups=[
+  {ids:['qText','qA','qB','qC','qD']},
+  {ids:['qiyasText','qiyasA','qiyasB','qiyasC','qiyasD']},
+  {ids:['editQText','editQA','editQB','editQC','editQD']}
+ ];
+ const digits=s=>String(s??'').replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+ let activeField=null;
+ const choices=[
+  ['كسر','\\(\\frac{ }{ }\\)'],['نسبة','\\(\\, : \\,\\)'],['معادلة','\\(\\left(\\;\\right)=\\)'],['متباينة','\\(\\;\\leq\\;\\)'],['جذر','\\(\\sqrt{ }\\)'],['أكبر من','\\(\\;>\\;\\)'],['أصغر من','\\(\\;<\\;\\)']
+ ];
+ function insertAtCursor(el,text){
+  const start=el.selectionStart??el.value.length, end=el.selectionEnd??start;
+  el.value=el.value.slice(0,start)+text+el.value.slice(end);
+  el.focus(); const pos=start+text.length; el.setSelectionRange(pos,pos);
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+ }
  function install(){
-  if(!window.customElements?.get('math-field')){setTimeout(install,250);return;}
   groups.forEach(g=>{
    const first=document.getElementById(g.ids[0]); if(!first||first.dataset.mathGroup==='1')return;
-   g.ids.forEach(id=>{const el=document.getElementById(id);if(el)el.dataset.mathGroup='1'});
-   const box=document.createElement('div');box.className='qimma-math-toggle';box.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:8px 0 14px;background:#f8fafc;border:1px solid #dbe3ed;border-radius:12px';
-   const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:#173b55';
-   const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','تحويل السؤال وخياراته إلى رياضيات');
-   const title=document.createElement('span');title.textContent='∑ وضع الرياضيات للسؤال كاملًا';label.append(check,title);
-   const note=document.createElement('small');note.style.cssText='color:#64748b';note.textContent='يشمل نص السؤال والخيارات الأربعة';box.append(label,note);
-   first.parentNode.insertBefore(box,first);
-   const fields=[];
-   g.ids.forEach((id,index)=>{const el=document.getElementById(id);if(!el)return;const holder=document.createElement('div');holder.style.cssText='display:none;margin:5px 0 12px';const mf=document.createElement('math-field');mf.setAttribute('dir','ltr');mf.setAttribute('virtual-keyboard-mode','onfocus');mf.setAttribute('smart-mode','true');mf.setAttribute('placeholder',index===0?'اكتب السؤال الرياضي…':'اكتب الخيار الرياضي…');mf.style.cssText='display:block;width:100%;min-height:54px;padding:10px 12px;border:1px solid #a8b8c9;border-radius:10px;background:#fff;font-size:23px;box-sizing:border-box';
-    const tools=document.createElement('div');tools.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
-    [['كسر','\\frac{#@}{#?}'],['جذر','\\sqrt{#0}'],['أس','^{#0}'],['×','\\times'],['÷','\\div'],['±','\\pm'],['=','='],['≤','\\le'],['≥','\\ge'],['π','\\pi']].forEach(([name,latex])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.style.cssText='width:auto;padding:5px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;color:#334155';b.addEventListener('click',()=>{mf.focus();mf.executeCommand('insert',latex)});tools.append(b)});
-    holder.append(mf,tools);el.insertAdjacentElement('afterend',holder);fields.push({el,mf,holder});mf.addEventListener('input',()=>{el.value=arabicDigits(mf.getValue('latex'));el.dispatchEvent(new Event('input',{bubbles:true}))});
-   });
-   const setMode=on=>fields.forEach(({el,mf,holder})=>{if(on){mf.value=el.value||'';el.style.display='none';holder.style.display='block'}else{el.value=arabicDigits(mf.getValue('latex'));el.style.display='';holder.style.display='none'}});
-   check.addEventListener('change',()=>{setMode(check.checked);if(check.checked)fields[0]?.mf.focus()});
-   const form=first.closest('form');if(form)form.addEventListener('submit',()=>{if(check.checked)fields.forEach(({el,mf})=>el.value=arabicDigits(mf.getValue('latex'))) });
-   // Keep edit modal values synced when the existing code fills textareas.
-   fields.forEach(({el,mf})=>el.addEventListener('input',()=>{if(check.checked&&document.activeElement!==mf)mf.value=el.value}));
+   g.ids.forEach(id=>{const el=document.getElementById(id);if(el){el.dataset.mathGroup='1';el.addEventListener('focus',()=>activeField=el)}});
+   const box=document.createElement('div');
+   box.style.cssText='display:flex;flex-direction:column;gap:10px;padding:12px;margin:8px 0 14px;background:#f8fafc;border:1px solid #dbe3ed;border-radius:12px';
+   const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:700;color:#173b55';
+   const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','السؤال رياضي');
+   const title=document.createElement('span');title.textContent='السؤال رياضي';label.append(check,title);
+   const toolbar=document.createElement('div');toolbar.style.cssText='display:none;gap:7px;flex-wrap:wrap';
+   choices.forEach(([name,latex])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.style.cssText='width:auto;padding:7px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#243b53;font-size:14px;cursor:pointer';b.addEventListener('click',()=>{const target=activeField&&g.ids.includes(activeField.id)?activeField:document.getElementById(g.ids[0]);if(target){activeField=target;insertAtCursor(target,latex)}});toolbar.append(b)});
+   const hint=document.createElement('small');hint.style.cssText='display:none;color:#64748b';hint.textContent='اختر الحقل المطلوب ثم اختر رمزًا لإضافته. ستظهر المعادلة بشكل رياضي في الاختبار.';
+   box.append(label,toolbar,hint);first.parentNode.insertBefore(box,first);
+   check.addEventListener('change',()=>{toolbar.style.display=hint.style.display=check.checked?'flex':'none';g.ids.forEach(id=>{const el=document.getElementById(id);if(el){el.dataset.mathEnabled=check.checked?'1':'0';if(check.checked)el.value=digits(el.value)}})});
   });
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
- const mathScript=document.createElement('script');mathScript.src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';mathScript.async=true;document.head.appendChild(mathScript);
- function renderMath(root=document){if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([root]).catch(()=>{});}
- const observer=new MutationObserver(muts=>{for(const m of muts){if(m.target?.nodeType===1&&m.target.closest?.('#training-question-container'))renderMath(m.target.closest('#training-question-container'));m.addedNodes?.forEach(n=>{if(n.nodeType===1&&n.matches?.('#training-question-container, #training-question-container *'))renderMath(n.closest?.('#training-question-container')||n)});}});
- document.addEventListener('DOMContentLoaded',()=>{const c=document.getElementById('training-question-container');if(c)observer.observe(c,{childList:true,subtree:true});renderMath(document);});
+ // Render math inserted dynamically in the test, after the content has been added.
+ function renderMath(root){
+  if(!root||!window.MathJax?.typesetPromise)return;
+  try{window.MathJax.typesetClear?.([root]);window.MathJax.typesetPromise([root]).catch(()=>{});}catch(e){}
+ }
+ let renderQueued=false;
+ function queueRender(){if(renderQueued)return;renderQueued=true;setTimeout(()=>{renderQueued=false;const c=document.getElementById('training-question-container');if(c)renderMath(c);},150);}
+ document.addEventListener('DOMContentLoaded',()=>{
+  const c=document.getElementById('training-question-container');
+  if(c)new MutationObserver(queueRender).observe(c,{childList:true,subtree:true,characterData:true});
+  queueRender();
+ });
+ // Convert LaTeX snippets to MathJax inline math delimiters in the exam display only.
+ window.qimmaRenderMath=renderMath;
 })();
 </script>
 
