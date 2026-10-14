@@ -51,6 +51,9 @@ const modelStatusSchema = new mongoose.Schema({
 });
 const ModelStatus = mongoose.model('ModelStatus', modelStatusSchema);
 
+const modelTimerSchema = new mongoose.Schema({ key: { type: String, unique: true, index: true }, minutes: { type: Number, default: 0 } }, { timestamps: true });
+const ModelTimer = mongoose.models.ModelTimer || mongoose.model('ModelTimer', modelTimerSchema);
+
 const attemptSchema = new mongoose.Schema({
     email: { type: String, required: true, lowercase: true, index: true },
     questionId: mongoose.Schema.Types.Mixed,
@@ -828,6 +831,15 @@ app.post('/api/admin/delete-user', async (req, res) => {
 });
 
 // ==================== حالة النماذج ====================
+
+app.post('/api/admin/model-timer/get', async (req, res) => {
+  try { const key=String(req.body?.key||'').trim(); if(!key) return res.status(400).json({success:false,message:'مفتاح النموذج مطلوب'}); const row=await ModelTimer.findOne({key}); res.set('Cache-Control','no-store'); res.json({success:true,minutes:row?.minutes||0}); }
+  catch(e){ console.error('model timer get',e); res.status(500).json({success:false,message:'تعذر تحميل وقت النموذج'}); }
+});
+app.post('/api/admin/model-timer', async (req, res) => {
+  try { const key=String(req.body?.key||'').trim(); const minutes=Math.max(0,Math.min(600,Math.round(Number(req.body?.minutes)||0))); if(!key) return res.status(400).json({success:false,message:'مفتاح النموذج مطلوب'}); await ModelTimer.updateOne({key},{$set:{minutes}},{upsert:true}); res.json({success:true,key,minutes}); }
+  catch(e){ console.error('model timer save',e); res.status(500).json({success:false,message:'تعذر حفظ وقت النموذج'}); }
+});
 
 app.get('/api/admin/models-status', async (req, res) => {
     try {
