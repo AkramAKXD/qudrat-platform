@@ -538,7 +538,13 @@ app.post('/api/admin/delete-model', async (req, res) => {
             ModelTimer.deleteOne({ key: modelKey }),
             Question.deleteMany(modelFilter),
             Attempt.deleteMany(modelFilter),
-            CompletedModel.deleteMany({ modelKey })
+            // امسح إنجازات هذا النموذج لكل الطلاب باستخدام مفتاح الإنجاز الفعلي
+            // (يختلف عن مفتاح الحذف مثل quant_practice_1).
+            CompletedModel.deleteMany({
+                modelKey: isMock
+                    ? `mock:qiyas_simulation:${targetNum}`
+                    : `${section}:${type === 'practice' ? 'training' : type === 'simulation' ? 'exam' : type}:${targetNum}`
+            })
         ]);
 
         // إعادة ترقيم النماذج التالية فقط داخل الفئة نفسها، مع تحديث كل المراجع المرتبطة بها.
