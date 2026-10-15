@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1064,8 +1065,7 @@ function toggleMobileSidebar(){document.body.classList.toggle('mobile-sidebar-op
 document.addEventListener('click',function(e){if(!document.body.classList.contains('mobile-sidebar-open'))return;const s=document.getElementById('appSidebar'),b=document.getElementById('mobileMenuToggle');if(s&&!s.contains(e.target)&&b&&!b.contains(e.target)){document.body.classList.remove('mobile-sidebar-open');b.setAttribute('aria-expanded','false')}if(s&&s.contains(e.target)&&e.target.closest('button')){document.body.classList.remove('mobile-sidebar-open');if(b)b.setAttribute('aria-expanded','false')}});
 </script>
 
-
-<script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['$$','$$'],['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['$$','$$'],['\\[','\\]']]}, options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body id="appBody">
@@ -2968,53 +2968,21 @@ setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibil
 <script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.closest('.math-helper-wrap'))return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
 <script id="qimma-optional-math-editor">
 (function(){
- const groups=[
-  {ids:['qText','qA','qB','qC','qD']},
-  {ids:['qiyasText','qiyasA','qiyasB','qiyasC','qiyasD']},
-  {ids:['editQText','editQA','editQB','editQC','editQD']}
- ];
- const digits=s=>String(s??'').replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
- let activeField=null;
- const choices=[
-  ['كسر','\\(\\frac{ }{ }\\)'],['نسبة','\\(\\, : \\,\\)'],['معادلة','\\(\\left(\\;\\right)=\\)'],['متباينة','\\(\\;\\leq\\;\\)'],['جذر','\\(\\sqrt{ }\\)'],['أكبر من','\\(\\;>\\;\\)'],['أصغر من','\\(\\;<\\;\\)']
- ];
- function insertAtCursor(el,text){
-  const start=el.selectionStart??el.value.length, end=el.selectionEnd??start;
-  el.value=el.value.slice(0,start)+text+el.value.slice(end);
-  el.focus(); const pos=start+text.length; el.setSelectionRange(pos,pos);
-  el.dispatchEvent(new Event('input',{bubbles:true}));
- }
- function install(){
-  groups.forEach(g=>{
-   const first=document.getElementById(g.ids[0]); if(!first||first.dataset.mathGroup==='1')return;
-   g.ids.forEach(id=>{const el=document.getElementById(id);if(el){el.dataset.mathGroup='1';el.addEventListener('focus',()=>activeField=el)}});
-   const box=document.createElement('div');
-   box.style.cssText='display:flex;flex-direction:column;gap:10px;padding:12px;margin:8px 0 14px;background:#f8fafc;border:1px solid #dbe3ed;border-radius:12px';
-   const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:700;color:#173b55';
-   const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','السؤال رياضي');
-   const title=document.createElement('span');title.textContent='السؤال رياضي';label.append(check,title);
-   const toolbar=document.createElement('div');toolbar.style.cssText='display:none;gap:7px;flex-wrap:wrap';
-   choices.forEach(([name,latex])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.style.cssText='width:auto;padding:7px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#243b53;font-size:14px;cursor:pointer';b.addEventListener('click',()=>{const target=activeField&&g.ids.includes(activeField.id)?activeField:document.getElementById(g.ids[0]);if(target){activeField=target;insertAtCursor(target,latex)}});toolbar.append(b)});
-   const hint=document.createElement('small');hint.style.cssText='display:none;color:#64748b';hint.textContent='اختر الحقل المطلوب ثم اختر رمزًا لإضافته. ستظهر المعادلة بشكل رياضي في الاختبار.';
-   box.append(label,toolbar,hint);first.parentNode.insertBefore(box,first);
-   check.addEventListener('change',()=>{toolbar.style.display=hint.style.display=check.checked?'flex':'none';g.ids.forEach(id=>{const el=document.getElementById(id);if(el){el.dataset.mathEnabled=check.checked?'1':'0';if(check.checked)el.value=digits(el.value)}})});
-  });
- }
+ const fields=['qText','qA','qB','qC','qD','qiyasText','qiyasA','qiyasB','qiyasC','qiyasD','editQText','editQA','editQB','editQC','editQD'];
+ function insertAt(el,value){const start=el.selectionStart??el.value.length,end=el.selectionEnd??start;el.setRangeText(value,start,end,'end');el.focus();}
+ function install(){fields.forEach(id=>{const el=document.getElementById(id);if(!el||el.dataset.mathHelper==='1')return;el.dataset.mathHelper='1';
+  const wrap=document.createElement('div');wrap.className='math-helper-wrap';
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='math-helper-toggle';toggle.textContent='∑';toggle.title='فتح أدوات الكتابة الرياضية';toggle.setAttribute('aria-label','فتح أدوات الكتابة الرياضية');toggle.setAttribute('aria-expanded','false');
+  const panel=document.createElement('div');panel.className='math-helper-panel';
+  const preview=document.createElement('div');preview.className='math-live-preview';preview.setAttribute('dir','rtl');preview.setAttribute('aria-live','polite');
+  const renderPreview=()=>{const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');let t=esc(el.value||'');t=t.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,'<span class="math-inline">\\(\\frac{$1}{$2}\\)</span>').replace(/\\sqrt\s*\{([^{}]*)\}/g,'<span class="math-inline">\\(\\sqrt{$1}\\)</span>').replace(/\\(times|div|pi)\b/g,m=>'<span class="math-inline">\\('+m+'\\)</span>').replace(/\^\{([^{}]*)\}/g,'<span class="math-inline">\\(^{ $1 }\\)</span>');preview.innerHTML=t.replace(/\n/g,'<br>');if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([preview]).catch(()=>{});};
+  const add=(visual,code,title)=>{const b=document.createElement('button');b.type='button';b.title=title;b.setAttribute('aria-label',title);if(visual==='fraction'){b.innerHTML='<span class="math-fraction-icon"><span>٢</span><i></i><span>٤</span></span>';}else b.textContent=visual;b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();insertAt(el,code);renderPreview();});panel.appendChild(b)};
+  add('fraction','\\frac{٢}{٤}','كسر: بسط ومقام');add('√','\\sqrt{}','جذر تربيعي');add('xⁿ','^{٢}','أس');add('×','\\times','ضرب');add('÷','\\div','قسمة');add('π','\\pi','باي');
+  el.addEventListener('input',renderPreview);toggle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const open=panel.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));});
+  el.insertAdjacentElement('afterend',wrap);wrap.append(toggle,panel);wrap.insertAdjacentElement('afterend',preview);renderPreview();
+ });}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
- // Render math inserted dynamically in the test, after the content has been added.
- function renderMath(root){
-  if(!root||!window.MathJax?.typesetPromise)return;
-  try{window.MathJax.typesetClear?.([root]);window.MathJax.typesetPromise([root]).catch(()=>{});}catch(e){}
- }
- let renderQueued=false;
- function queueRender(){if(renderQueued)return;renderQueued=true;setTimeout(()=>{renderQueued=false;const c=document.getElementById('training-question-container');if(c)renderMath(c);},150);}
- document.addEventListener('DOMContentLoaded',()=>{
-  const c=document.getElementById('training-question-container');
-  if(c)new MutationObserver(queueRender).observe(c,{childList:true,subtree:true,characterData:true});
-  queueRender();
- });
- // Convert LaTeX snippets to MathJax inline math delimiters in the exam display only.
- window.qimmaRenderMath=renderMath;
+ const original=window.openEditModal;if(typeof original==='function')window.openEditModal=async function(){install();return original.apply(this,arguments)};
 })();
 </script>
 
