@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1184,7 +1183,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 <li id="menu-quant"><button onclick="navigateTo('quant')">📐 القسم الكمي</button></li>
                 <li id="menu-verbal"><button onclick="navigateTo('verbal')">📚 القسم اللفظي</button></li>
                 <li id="menu-student-stats"><button onclick="navigateTo('student-stats')"><span class="nav-icon">▥</span><span>إحصائيات الطالب</span></button></li>
-                <li id="menu-student-reviews"><button onclick="navigateTo('student-reviews')"><span class="nav-icon">📝</span><span>مراجعة الاختبارات</span></button></li>
                 <li id="menu-qiyas"><button onclick="navigateTo('qiyas')"><svg class="nav-feature-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m8 12 2.5 2.5L16.5 9"/></svg><span>اختبار قياس المحاكي</span></button></li>
             </div>
             
@@ -1437,13 +1435,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     <article class="student-stat-card"><span class="stat-symbol">%</span><small>متوسط الدقة</small><strong id="student-average-score">—</strong><span>من 100</span></article>
                 </div>
                 <div class="stats-detail-grid"><section class="stats-detail-card"><h3>🎯 نقاط تحتاج إلى تقوية</h3><div id="student-weak-points">ستظهر هنا بعد تسجيل محاولاتك.</div></section><section class="stats-detail-card"><h3>🌱 خطوتك التالية</h3><p>استمر في التدريب، وراجع الأسئلة التي أخطأت فيها. ستصبح هذه اللوحة أدق كلما سُجّلت محاولاتك.</p><button class="primary-cta" onclick="navigateTo('quant')">ابدأ تدريبًا كميًا ←</button> <button class="secondary-cta" onclick="navigateTo('verbal')">ابدأ تدريبًا لفظيًا ←</button></section></div>
-                <button class="secondary-cta" onclick="navigateTo('student')">العودة إلى الرئيسية</button>
-            </div>
-
-            <div id="student-reviews-section" class="app-section">
-                <div class="stats-page-head"><span class="stats-kicker">مراجعة الأداء</span><h1>مراجعة الاختبارات 📝</h1><p>اختر اختبارًا سابقًا لمراجعة إجاباتك ومعرفة الإجابات الصحيحة.</p></div>
-                <div id="student-reviews-list" style="display:grid;gap:14px"><p>جاري تحميل اختباراتك السابقة...</p></div>
-                <div id="student-review-detail" style="margin-top:22px"></div>
                 <button class="secondary-cta" onclick="navigateTo('student')">العودة إلى الرئيسية</button>
             </div>
 
@@ -1708,7 +1699,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal')?.classList.add('active'); }
             else if (view === 'student-stats') { targetId = 'student-stats-section'; document.getElementById('menu-student-stats')?.classList.add('active'); loadStudentStats(); }
-            else if (view === 'student-reviews') { targetId = 'student-reviews-section'; document.getElementById('menu-student-reviews')?.classList.add('active'); loadStudentReviews(); }
             else if (view === 'qiyas') {
                 if (!checkAuth()) { switchView('login'); return; }
                 targetId = 'qiyas-models-section'; document.getElementById('menu-qiyas')?.classList.add('active'); renderQiyasModelsGrid();
@@ -2303,11 +2293,13 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));
             setTimeout(()=>document.getElementById('models-selection-section').classList.add('active-view'),50);
             try{
-                const [statusRes,namesRes,questionsRes,achievementRes]=await Promise.all([
+                const [statusRes,namesRes,questionsRes,achievementRes,reviewsRes]=await Promise.all([
                     fetch('/api/admin/models-status'),fetch('/api/custom-models'),fetch('/api/questions'),
-                    fetch('/api/student/achievement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')||''})})
+                    fetch('/api/student/achievement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')||''})}),
+                    fetch('/api/student/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')||''})})
                 ]);
-                const statusData=await statusRes.json(),namesData=await namesRes.json(),allQuestions=await questionsRes.json(),achievement=await achievementRes.json();
+                const statusData=await statusRes.json(),namesData=await namesRes.json(),allQuestions=await questionsRes.json(),achievement=await achievementRes.json(),reviewsData=await reviewsRes.json();
+                const previousReviews=reviewsData.success?(reviewsData.reviews||[]):[];
                 const sectionModels=statusData.success?(statusData.models?.[sectionType]||{}):{};
                 const names=namesData.models||{}, completed=achievement.success?(achievement.completedModels||[]):[];
                 const expectedType=mode==='exam'?'simulation':'practice';gridContainer.innerHTML='';let count=0;
@@ -2325,8 +2317,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     const done=completed.find(c=>c.modelKey===key);
                     const title=names[m.customKey]||`النموذج ${m.modelNumber}`;
                     const card=document.createElement('div');card.className='model-status-card';
-                    card.innerHTML=`<div class="model-status-info"><span style="font-size:26px">📘</span><div><strong>${title}</strong><div style="color:#64748b;font-size:13px;margin-top:5px">${qs.length} سؤال · ${mode==='exam'?'اختبار محاكي':'تدريب'}</div></div></div><div class="model-status-actions">${done?`<span class="model-status-badge done">✓ مكتمل</span><strong class="model-score">${Number(done.score)||0}/100</strong><button type="button" class="model-retry">إعادة الاختبار ↻</button>`:`<span class="model-status-badge pending">لم يتم الحل</span><button type="button" class="model-retry">ابدأ الآن ←</button>`}</div>`;
-                    card.querySelector('button').onclick=()=>selectModel(m.modelNumber);
+                    const reviewType=mode==='exam'?'simulation':'practice';
+                    const prior=previousReviews.find(r=>r.section===sectionType&&r.type===reviewType&&Number(r.model)===Number(m.modelNumber));
+                    card.innerHTML=`<div class="model-status-info"><span style="font-size:26px">📘</span><div><strong>${title}</strong><div style="color:#64748b;font-size:13px;margin-top:5px">${qs.length} سؤال · ${mode==='exam'?'اختبار محاكي':'تدريب'}</div></div></div><div class="model-status-actions">${done?`<span class="model-status-badge done">✓ مكتمل</span><strong class="model-score">${Number(done.score)||0}/100</strong><button type="button" class="model-retry">إعادة الاختبار ↻</button>`:`<span class="model-status-badge pending">لم يتم الحل</span><button type="button" class="model-retry">ابدأ الآن ←</button>`}${prior?`<button type="button" class="model-retry qimma-review-model-btn" style="background:#0f766e;color:white">مراجعة ←</button>`:''}</div>`;
+                    card.querySelector('.model-status-actions > button.model-retry').onclick=()=>selectModel(m.modelNumber);
+                    const reviewBtn=card.querySelector('.qimma-review-model-btn');if(reviewBtn)reviewBtn.onclick=()=>openInlineModelReview(sectionType,reviewType,Number(m.modelNumber));
                     gridContainer.appendChild(card);
                 });
                 if(!count)gridContainer.innerHTML='<p style="text-align:center;color:#64748b">لا توجد نماذج في هذا القسم وهذا النوع حاليًا.</p>';
@@ -2482,11 +2477,20 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             container.innerHTML = `<div style="background:#fff;border:1px solid #dbe3ed;padding:22px;border-radius:18px"><h3 style="margin:0 0 8px;color:#123b48">مراجعة الأسئلة</h3><p style="color:#64748b;margin-bottom:16px">اختر رقم السؤال للعودة إليه. الأسئلة غير المجابة موضحة بعبارة «غير مكتمل».</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px;margin-bottom:20px">${items}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>تمت الإجابة عن ${toArabicNumber(answered)} من ${toArabicNumber(total)}</span><button type="button" onclick="finishTrainingAttempt()" style="width:auto;background:#0f766e;color:white;padding:12px 22px">إنهاء التدريب وعرض النتيجة</button></div></div>`;
         }
         function returnToTrainingQuestion(index) { currentQuestionIndex=index; trainingReviewMode=false; renderTrainingQuestion(); }
-        function finishTrainingAttempt() {
+        async function finishTrainingAttempt() {
             const email=sessionStorage.getItem('sessionUserEmail')||'';
             currentCorrectCount = currentTrainingQuestions.reduce((sum,q,i) => sum + (Object.prototype.hasOwnProperty.call(trainingAnswers,i) && String(trainingAnswers[i])===String(q.correct_answer) ? 1 : 0),0);
             currentModelAnsweredCount = Object.keys(trainingAnswers).length;
             const total=currentTrainingQuestions.length, score=total?Math.round(currentCorrectCount/total*100):0;
+            // حفظ إجابات التدريب عند الإنهاء حتى تظهر مراجعتها للطالب والمشرف.
+            if(email){
+                const saves=currentTrainingQuestions.map((q,i)=>{
+                    if(!Object.prototype.hasOwnProperty.call(trainingAnswers,i))return Promise.resolve();
+                    const chosen=trainingAnswers[i],correct=String(chosen)===String(q.correct_answer);
+                    return fetch('/api/attempts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,questionId:q.id,section:q.section||currentSectionType,type:q.type||(currentActionMode==='exam'?'simulation':'practice'),model:q.model||selectedModelNum,chosenAnswer:chosen,correct,score:q.score||1})}).catch(()=>null);
+                });
+                await Promise.all(saves);
+            }
             recordQimmaModelCompletion(score,currentCorrectCount,total);
             const container=document.getElementById('training-container');
             container.innerHTML=`<div style="text-align:center;padding:32px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;color:#065f46"><div style="font-size:40px">✓</div><h3>انتهى التدريب</h3><div style="font-size:36px;font-weight:900;margin:15px">${score}/100</div><p>الإجابات الصحيحة: ${toArabicNumber(currentCorrectCount)} من ${toArabicNumber(total)}</p><p>الأسئلة المجابة: ${toArabicNumber(currentModelAnsweredCount)} من ${toArabicNumber(total)}</p><button class="model-retry" onclick="openModelsSelection(currentSectionType,'training')" style="margin:10px 6px 0">إعادة التدريب ↻</button><button onclick="navigateTo('student')" style="margin:10px 6px 0;width:auto;padding:12px 25px">العودة للرئيسية</button></div>`;
@@ -2598,6 +2602,19 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         function jsArg(value){return "'"+String(value??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'";}
         function reviewSectionName(section){return section==='verbal'?'اللفظي':section==='mock'?'محاكي قياس':'الكمي';}
         function reviewTypeName(type){return type==='qiyas_simulation'?'محاكي قياس':type==='simulation'?'اختبار محاكي':'تدريب';}
+        async function openInlineModelReview(section,type,model){
+            const list=document.getElementById('modelsGridContainer');
+            let detail=document.getElementById('inline-model-review-detail');
+            if(!detail){detail=document.createElement('div');detail.id='inline-model-review-detail';detail.style.cssText='margin-top:20px';list?.after(detail);}
+            detail.innerHTML='<p>جاري تحميل مراجعة الاختبار...</p>';
+            try{
+                const r=await fetch('/api/student/review-detail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail'),section,type,model})});
+                const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||'تعذر التحميل');
+                if(!d.items.length){detail.innerHTML='<p>لا توجد إجابات محفوظة لهذا الاختبار.</p>';return;}
+                detail.innerHTML=`<h2 style="color:#123b48">مراجعة ${reviewSectionName(section)} — نموذج ${model}</h2>`+d.items.map((x,i)=>`<article style="background:#fff;border:1px solid ${x.correct?'#86efac':'#fecaca'};border-right:5px solid ${x.correct?'#16a34a':'#dc2626'};border-radius:14px;padding:16px;margin:10px 0"><h3>السؤال ${i+1} ${x.correct?'✓':'✗'}</h3><div style="line-height:1.9">${window.qimmaMathDisplay?window.qimmaMathDisplay(x.question||'تعذر العثور على نص السؤال'):x.question||'تعذر العثور على نص السؤال'}</div>${x.image?`<img src="${x.image}" alt="صورة السؤال" style="max-width:100%;max-height:220px;display:block;margin:10px auto">`:''}<p style="color:${x.correct?'#15803d':'#b91c1c'}">إجابتك: ${x.chosenAnswer||'لم تسجل إجابة'}</p><p style="color:#15803d">الإجابة الصحيحة: ${x.correctAnswer||'غير متاحة'}</p>${(x.options||[]).map((o,j)=>`<div style="padding:7px;background:${['أ','ب','ج','د'][j]===x.correctAnswer?'#dcfce7':'#f8fafc'}">${['أ','ب','ج','د'][j]}) ${window.qimmaMathDisplay?window.qimmaMathDisplay(o):o}</div>`).join('')}</article>`).join('');
+                if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([detail]).catch(()=>{});detail.scrollIntoView({behavior:'smooth',block:'start'});
+            }catch(e){detail.innerHTML=`<p style="color:#b91c1c">${e.message||'تعذر تحميل المراجعة'}</p>`;}
+        }
         async function loadStudentReviews(){
             const list=document.getElementById('student-reviews-list'), detail=document.getElementById('student-review-detail');
             if(!list)return; list.innerHTML='<p>جاري تحميل اختباراتك السابقة...</p>'; if(detail)detail.innerHTML='';
