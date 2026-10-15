@@ -1,3 +1,4 @@
+
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -1204,6 +1205,144 @@ app.post('/api/admin/analytics', async (req, res) => {
             success: false,
             message: 'تعذر تحميل التحليلات'
         });
+    }
+});
+
+// ==================== درجات الطلاب ومراجعة الإجابات ====================
+
+function normalizeAttemptSection(attempt) {
+    return attempt.type === 'qiyas_simulation' ? 'mock' : (attempt.section || 'quant');
+}
+function latestUniqueAttempts(attempts) {
+    const latest = new Map();
+    for (const attempt of attempts) {
+        const key = `${attempt.email || ''}|${attempt.section || ''}|${attempt.type || ''}|${Number(attempt.model) || 1}|${String(attempt.questionId ?? `missing-${attempt._id}`)}`;
+        const previous = latest.get(key);
+        if (!previous || new Date(attempt.createdAt) >= new Date(previous.createdAt)) latest.set(key, attempt);
+    }
+    return [...latest.values()];
+}
+function buildReviewItems(attempts, questions) {
+    const questionMap = new Map();
+    for (const q of questions) questionMap.set(String(q.id), q);
+    return attempts.map(a => {
+        const q = questionMap.get(String(a.questionId));
+        return {
+            questionId: a.questionId,
+            question: q?.question || 'تعذر العثور على نص السؤال؛ ربما حُذف السؤال من المنصة.',
+            options: Array.isArray(q?.options) ? q.options : [],
+            image: q?.image || '',
+            chosenAnswer: a.chosenAnswer || '',
+            correctAnswer: q?.correct_answer || '',
+            correct: Boolean(a.correct),
+            score: Number(a.score) || 1,
+            createdAt: a.createdAt
+        };
+    });
+}
+function attemptModelFilter(section, type, model) {
+    const filter = { type: String(type || 'practice'), model: Number(model) || 1 };
+    if (section === 'mock' || type === 'qiyas_simulation') filter.type = 'qiyas_simulation';
+    else filter.section = section === 'verbal' ? 'verbal' : 'quant';
+    return filter;
+}
+
+app.post('/api/student/reviews', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        if (!email) return res.status(400).json({ success: false, message: 'البريد مطلوب' });
+        const user = await User.findOne({ email }).select('_id');
+        if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+        const attempts = latestUniqueAttempts(await Attempt.find({ email }).sort({ createdAt: 1 }).lean());
+        const groups = new Map();
+        for (const a of attempts) {
+            const section = normalizeAttemptSection(a), type = a.type || 'practice', model = Number(a.model) || 1;
+            const key = `${section}|${type}|${model}`;
+            if (!groups.has(key)) groups.set(key, { section, type, model, attempts: [], lastAttempt: a.createdAt });
+            const g = groups.get(key); g.attempts.push(a);
+            if (new Date(a.createdAt) > new Date(g.lastAttempt)) g.lastAttempt = a.createdAt;
+        }
+        const reviews = [...groups.values()].map(g => {
+            const correct = g.attempts.filter(a => a.correct).length;
+            return { section: g.section, type: g.type, model: g.model, answered: g.attempts.length, correct,
+                score: g.attempts.length ? Math.round(correct / g.attempts.length * 100) : 0, lastAttempt: g.lastAttempt };
+        }).sort((a,b) => new Date(b.lastAttempt) - new Date(a.lastAttempt));
+        res.set('Cache-Control', 'no-store');
+        res.json({ success: true, reviews });
+    } catch (error) {
+        console.error('POST /api/student/reviews:', error);
+        res.status(500).json({ success: false, message: 'تعذر تحميل الاختبارات السابقة' });
+    }
+});
+
+app.post('/api/student/review-detail', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const { section, type, model } = req.body || {};
+        if (!email || !type || !Number.isFinite(Number(model))) return res.status(400).json({ success: false, message: 'بيانات المراجعة غير مكتملة' });
+        const user = await User.findOne({ email }).select('_id');
+        if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+        const filter = { email, ...attemptModelFilter(section, type, model) };
+        const attempts = latestUniqueAttempts(await Attempt.find(filter).sort({ createdAt: 1 }).lean());
+        const ids = attempts.map(a => a.questionId).filter(id => id !== undefined && id !== null);
+        const questions = await Question.find({ id: { $in: ids } }).lean();
+        res.set('Cache-Control', 'no-store');
+        res.json({ success: true, items: buildReviewItems(attempts, questions) });
+    } catch (error) {
+        console.error('POST /api/student/review-detail:', error);
+        res.status(500).json({ success: false, message: 'تعذر تحميل تفاصيل الإجابات' });
+    }
+});
+
+app.post('/api/admin/grades', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const admin = await User.findOne({ email, role: 'admin' }).select('_id');
+        if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
+        const allAttempts = await Attempt.find({}).sort({ createdAt: 1 }).lean();
+        const attempts = latestUniqueAttempts(allAttempts);
+        const users = await User.find({ role: { $ne: 'admin' } }).select('name email').lean();
+        const userMap = new Map(users.map(u => [u.email, u]));
+        const groups = new Map();
+        for (const a of attempts) {
+            const section = normalizeAttemptSection(a), type = a.type || 'practice', model = Number(a.model) || 1;
+            const key = `${a.email}|${section}|${type}|${model}`;
+            if (!groups.has(key)) groups.set(key, { email: a.email, section, type, model, attempts: [], lastAttempt: a.createdAt });
+            const g = groups.get(key); g.attempts.push(a);
+            if (new Date(a.createdAt) > new Date(g.lastAttempt)) g.lastAttempt = a.createdAt;
+        }
+        const grades = [...groups.values()].map(g => {
+            const correct = g.attempts.filter(a => a.correct).length;
+            return { name: userMap.get(g.email)?.name || 'طالب غير معروف', email: g.email, section: g.section, type: g.type, model: g.model,
+                answered: g.attempts.length, correct, score: g.attempts.length ? Math.round(correct / g.attempts.length * 100) : 0, lastAttempt: g.lastAttempt };
+        }).sort((a,b) => new Date(b.lastAttempt) - new Date(a.lastAttempt));
+        res.set('Cache-Control', 'no-store');
+        res.json({ success: true, grades });
+    } catch (error) {
+        console.error('POST /api/admin/grades:', error);
+        res.status(500).json({ success: false, message: 'تعذر تحميل درجات الطلاب' });
+    }
+});
+
+app.post('/api/admin/grade-review', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const studentEmail = String(req.body?.studentEmail || '').trim().toLowerCase();
+        const { section, type, model } = req.body || {};
+        const admin = await User.findOne({ email, role: 'admin' }).select('_id');
+        if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
+        if (!studentEmail || !type || !Number.isFinite(Number(model))) return res.status(400).json({ success: false, message: 'بيانات المراجعة غير مكتملة' });
+        const student = await User.findOne({ email: studentEmail, role: { $ne: 'admin' } }).select('name email');
+        if (!student) return res.status(404).json({ success: false, message: 'الطالب غير موجود' });
+        const filter = { email: studentEmail, ...attemptModelFilter(section, type, model) };
+        const attempts = latestUniqueAttempts(await Attempt.find(filter).sort({ createdAt: 1 }).lean());
+        const ids = attempts.map(a => a.questionId).filter(id => id !== undefined && id !== null);
+        const questions = await Question.find({ id: { $in: ids } }).lean();
+        res.set('Cache-Control', 'no-store');
+        res.json({ success: true, studentName: student.name, items: buildReviewItems(attempts, questions) });
+    } catch (error) {
+        console.error('POST /api/admin/grade-review:', error);
+        res.status(500).json({ success: false, message: 'تعذر تحميل مراجعة الطالب' });
     }
 });
 
