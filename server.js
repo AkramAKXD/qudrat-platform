@@ -513,39 +513,74 @@ app.post('/api/add-custom-model', async (req, res) => {
 
 app.post('/api/admin/delete-model', async (req, res) => {
     try {
-        const { modelKey } = req.body;
+        const { modelKey } = req.body || {};
+        if (!modelKey) return res.status(400).json({ success: false, message: 'بيانات النموذج غير مكتملة.' });
 
-        if (!modelKey) {
-            return res.status(400).json({
-                success: false,
-                message: 'بيانات النموذج غير مكتملة.'
-            });
+        const parts = String(modelKey).split('_');
+        const targetNum = Number(parts.pop());
+        const categoryPrefix = parts.join('_');
+        if (!Number.isInteger(targetNum) || targetNum < 1 || !categoryPrefix) {
+            return res.status(400).json({ success: false, message: 'مفتاح النموذج غير صالح.' });
         }
 
-        const parts = modelKey.split('_');
-        const targetNum = Number(parts.pop());
-        const targetType = parts.pop();
-        const targetSec = parts.join('_');
+        const isMock = categoryPrefix === 'qiyas_simulation';
+        const type = isMock ? 'qiyas_simulation' : categoryPrefix.substring(categoryPrefix.indexOf('_') + 1);
+        const section = isMock ? null : categoryPrefix.split('_')[0];
+        const prefix = `${categoryPrefix}_`;
+        const modelFilter = isMock
+            ? { type: 'qiyas_simulation', model: targetNum }
+            : { section, type, model: targetNum };
 
-        await CustomModel.deleteOne({ key: modelKey });
-        await ModelStatus.deleteOne({ uniqueKey: modelKey });
+        // حذف بيانات النموذج المحذوف حتى لا تنتقل درجته إلى نموذج جديد يستخدم الرقم نفسه.
+        await Promise.all([
+            CustomModel.deleteOne({ key: modelKey }),
+            ModelStatus.deleteOne({ uniqueKey: modelKey }),
+            ModelTimer.deleteOne({ key: modelKey }),
+            Question.deleteMany(modelFilter),
+            Attempt.deleteMany(modelFilter),
+            CompletedModel.deleteMany({ modelKey })
+        ]);
 
-        await Question.deleteMany({
-            section: targetSec,
-            type: targetType,
-            model: targetNum
-        });
+        // إعادة ترقيم النماذج التالية فقط داخل الفئة نفسها، مع تحديث كل المراجع المرتبطة بها.
+        const remaining = await CustomModel.find({ key: { $regex: '^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') } }).lean();
+        const entries = remaining.map(item => ({ item, number: Number(item.key.slice(prefix.length)) }))
+            .filter(x => Number.isInteger(x.number) && x.number > targetNum)
+            .sort((a, b) => a.number - b.number);
 
-        res.json({
-            success: true,
-            message: '🗑️ تم الحذف بنجاح!'
-        });
+        const relatedData = new Map();
+        for (const { item } of entries) {
+            const [status, timer] = await Promise.all([
+                ModelStatus.findOne({ uniqueKey: item.key }).lean(),
+                ModelTimer.findOne({ key: item.key }).lean()
+            ]);
+            relatedData.set(item.key, { status, timer });
+            await CustomModel.deleteOne({ key: item.key });
+            await ModelStatus.deleteOne({ uniqueKey: item.key });
+            await ModelTimer.deleteOne({ key: item.key });
+        }
+
+        for (const { item, number } of entries) {
+            const newNumber = number - 1;
+            const newKey = `${prefix}${newNumber}`;
+            const oldNumberFilter = isMock
+                ? { type: 'qiyas_simulation', model: number }
+                : { section, type, model: number };
+            const newNumberUpdate = { $set: { model: newNumber } };
+            await Question.updateMany(oldNumberFilter, newNumberUpdate);
+            await Attempt.updateMany(oldNumberFilter, newNumberUpdate);
+            await CompletedModel.updateMany({ modelKey: item.key }, { $set: { modelKey: newKey, model: newNumber } });
+            await CustomModel.create({ key: newKey, name: item.name });
+
+            const saved = relatedData.get(item.key) || {};
+            if (saved.status) await ModelStatus.updateOne({ uniqueKey: newKey }, { $set: { active: saved.status.active } }, { upsert: true });
+            if (saved.timer) await ModelTimer.updateOne({ key: newKey }, { $set: { minutes: saved.timer.minutes } }, { upsert: true });
+        }
+
+        res.set('Cache-Control', 'no-store');
+        return res.json({ success: true, message: 'تم حذف النموذج وإعادة ترقيم النماذج المتبقية.' });
     } catch (error) {
         console.error('POST /api/admin/delete-model:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ أثناء الحذف'
-        });
+        return res.status(500).json({ success: false, message: '❌ حدث خطأ أثناء الحذف' });
     }
 });
 
