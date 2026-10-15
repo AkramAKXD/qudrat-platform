@@ -1161,11 +1161,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 </div>
 
                 <div class="form-group"><label>عدد الدرجات:</label><input type="number" id="editQScore" min="1" max="10" value="1"></div>
-                <div class="form-group"><label>نص السؤال:</label><textarea id="editQText" rows="2" required></textarea></div>
-                <div class="form-group"><label>الخيار أ:</label><input type="text" id="editQA" required></div>
-                <div class="form-group"><label>الخيار ب:</label><input type="text" id="editQB" required></div>
-                <div class="form-group"><label>الخيار ج:</label><input type="text" id="editQC" required></div>
-                <div class="form-group"><label>الخيار د:</label><input type="text" id="editQD" required></div>
+                <div class="form-group"><label>نص السؤال:</label><textarea id="editQText" rows="2" required></textarea><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('editQText')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                <div class="form-group"><label>الخيار أ:</label><input type="text" id="editQA" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('editQA')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                <div class="form-group"><label>الخيار ب:</label><input type="text" id="editQB" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('editQB')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                <div class="form-group"><label>الخيار ج:</label><input type="text" id="editQC" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('editQC')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                <div class="form-group"><label>الخيار د:</label><input type="text" id="editQD" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('editQD')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
                 <div class="form-group"><label>الإجابة الصحيحة:</label><select id="editQCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
                 <div class="modal-actions">
                     <button type="button" style="background: #f1f5f9; color: #475569;" onclick="closeEditModal()">إلغاء</button>
@@ -1484,11 +1484,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                         </div>
 
                         <div class="form-group"><label>درجات السؤال:</label><input type="number" id="qScore" value="1" min="1" max="10"></div>
-                        <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea></div>
-                        <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required></div>
-                        <div class="form-group"><label>الخيار ب:</label><input type="text" id="qB" required></div>
-                        <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required></div>
-                        <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required></div>
+                        <div class="form-group"><label>نص السؤال:</label><textarea id="qText" rows="2" required></textarea><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('qText')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                        <div class="form-group"><label>الخيار أ:</label><input type="text" id="qA" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('qA')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                        <div class="form-group"><label>الخيار ب:</label><input type="text" id="qB" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('qB')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                        <div class="form-group"><label>الخيار ج:</label><input type="text" id="qC" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('qC')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
+                        <div class="form-group"><label>الخيار د:</label><input type="text" id="qD" required><button type="button" class="superscript-insert-btn" onclick="insertArabicSuperscript('qD')" title="إدراج تربيع للحرف" aria-label="إدراج تربيع للحرف">س²</button></div>
                         <div class="form-group"><label>الإجابة الصحيحة:</label><select id="qCorrect"><option value="أ">أ</option><option value="ب">ب</option><option value="ج">ج</option><option value="د">د</option></select></div>
                         <button type="submit" style="background: #10b981;">حفظ السؤال 💾</button>
                     </form>
@@ -3074,6 +3074,25 @@ setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibil
  calc.append(screen,tools,editor,insertBtn,hint);panel.append(calc);bar.append(checkLabel,previewToggle);wrap.append(bar,panel,preview);if(first.nextSibling)first.parentNode.insertBefore(wrap,first.nextSibling);else first.parentNode.appendChild(wrap);render();});}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();window.qimmaMathDisplay=mathText;new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
 })();
+</script>
+
+
+<style>
+.superscript-insert-btn{display:inline-flex;align-items:center;justify-content:center;margin:5px 4px;padding:5px 10px;min-width:42px;border:1px solid #cbd5e1;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-weight:800;cursor:pointer;vertical-align:middle}
+.superscript-insert-btn:hover{background:#dbeafe}
+</style>
+<script>
+function insertArabicSuperscript(id){
+ const el=document.getElementById(id); if(!el)return;
+ const start=typeof el.selectionStart==='number'?el.selectionStart:el.value.length;
+ const end=typeof el.selectionEnd==='number'?el.selectionEnd:start;
+ const value=el.value||'';
+ const selected=value.slice(start,end);
+ const replacement=selected ? selected+'²' : '²';
+ el.value=value.slice(0,start)+replacement+value.slice(end);
+ el.focus(); const pos=start+replacement.length; if(el.setSelectionRange)el.setSelectionRange(pos,pos);
+ el.dispatchEvent(new Event('input',{bubbles:true}));
+}
 </script>
 
 </body>
