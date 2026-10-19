@@ -1614,6 +1614,9 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         let trainingTimerInterval = null;
         let trainingSecondsLeft = 0;
         let trainingReviewMode = false;
+        let examFlaggedQuestions = {};
+        let examReviewMode = false;
+        let examReturnFromReview = false;
         let trainingReturnFromReview = false;
         let selectedReviewContext = null;
         let verifiedForgotEmail = '';
@@ -2283,6 +2286,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
 
         async function selectQiyasModel(modelNum) {
             currentSectionType='mock'; currentActionMode='qiyas_simulation'; selectedModelNum=Number(modelNum);
+            try{const nr=await fetch('/api/custom-models');const nd=await nr.json();const st=await(await fetch('/api/admin/models-status')).json();const models=st.models?.[currentSectionType]||{};const m=Object.values(models).find(x=>Number(x.modelNumber)===Number(modelNum));window.qimmaCurrentModelTitle=(nd.models||{})[m?.customKey]||`النموذج ${modelNum}`;}catch(e){window.qimmaCurrentModelTitle=`النموذج ${modelNum}`;}
             showLoading('جاري التحميل...', 300, async () => {
                 const allQuestions = await (await fetch('/api/questions')).json();
                 currentTrainingQuestions = allQuestions.filter(q => q.type === 'qiyas_simulation' && Number(q.model) === Number(modelNum));
@@ -2338,13 +2342,14 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
 
         async function selectModel(modelNum) {
             selectedModelNum=Number(modelNum);
+            try{const nr=await fetch('/api/custom-models');const nd=await nr.json();const st=await(await fetch('/api/admin/models-status')).json();const models=st.models?.[currentSectionType]||{};const m=Object.values(models).find(x=>Number(x.modelNumber)===Number(modelNum));window.qimmaCurrentModelTitle=(nd.models||{})[m?.customKey]||`النموذج ${modelNum}`;}catch(e){window.qimmaCurrentModelTitle=`النموذج ${modelNum}`;}
             showLoading('جاري التحميل...',300,async()=>{
                 const allQuestions=await(await fetch('/api/questions')).json();
                 const expectedType=currentActionMode==='exam'?'simulation':'practice';
                 currentTrainingQuestions=allQuestions.filter(q=>q.section===currentSectionType&&Number(q.model)===Number(modelNum)&&q.type===expectedType);
                 document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));
                 if(!currentTrainingQuestions.length){document.getElementById('no-questions-section').classList.add('active-view');return;}
-                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;trainingAnswers={};trainingReviewMode=false;trainingReturnFromReview=false;
+                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;trainingAnswers={};trainingReviewMode=false;trainingReturnFromReview=false;examFlaggedQuestions={};examReviewMode=false;examReturnFromReview=false;
                 document.getElementById('training-section').classList.add('active-view');startTrainingTimer();renderTrainingQuestion();
             });
         }
@@ -2354,36 +2359,14 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             try {
                 const data = await (await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') }) })).json();
                 if(data.success) {
-                    const escapeAccountText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-                    container.innerHTML = data.users.map((u, i) => {
-                        const isAdmin = String(u.role || '').includes('Admin') || String(u.role || '').includes('مشرف');
-                        const passwordId = `account-password-${i}`;
-                        const safeEmail = escapeAccountText(u.email);
-                        const safeName = escapeAccountText(u.name);
-                        const safePass = escapeAccountText(u.pass || '');
-                        return `
-                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-                            <div><strong>${safeName}</strong><span style="color: #64748b; font-size: 13px; display: block;">${safeEmail}</span>
-                            ${!isAdmin ? `<div id="${passwordId}" style="display:none;color:#334155;font-size:13px;margin-top:6px;overflow-wrap:anywhere">كلمة المرور: <span>${safePass}</span></div>` : ''}</div>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                                ${!isAdmin ? `<button type="button" onclick="toggleAccountPassword('${passwordId}', this)" style="background:#2563eb;color:#fff;padding:6px 12px;border-radius:8px;width:auto;margin:0">👁️ إظهار كلمة المرور</button>` : ''}
-                                ${!isAdmin && u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${safeEmail}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
-                            </div>
-                        </div>`;
-                    }).join('');
-                } else {
-                    container.innerHTML = '<p style="color:red">تعذر تحميل الحسابات.</p>';
+                    container.innerHTML = data.users.map(u => `
+                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                            <div><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span></div>
+                            ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
+                        </div>
+                    `).join('');
                 }
             } catch (e) { container.innerHTML = '<p style="color: red;">خطأ في الاتصال.</p>'; }
-        }
-
-        function toggleAccountPassword(passwordId, button) {
-            const passwordRow = document.getElementById(passwordId);
-            if (!passwordRow) return;
-            const isVisible = passwordRow.style.display !== 'none';
-            passwordRow.style.display = isVisible ? 'none' : 'block';
-            button.textContent = isVisible ? '👁️ إظهار كلمة المرور' : '🙈 إخفاء كلمة المرور';
-            button.setAttribute('aria-pressed', String(!isVisible));
         }
 
         function confirmDeleteUser(userEmail) {
@@ -2476,17 +2459,17 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         function stopTrainingTimer() { if (trainingTimerInterval) clearInterval(trainingTimerInterval); trainingTimerInterval = null; }
         function startTrainingTimer() {
             stopTrainingTimer();
-            // المؤقت خاص بتدريب الكمي واللفظي فقط، وليس الاختبارات المحاكية.
-            if (currentActionMode !== 'training' || !['quant','verbal'].includes(currentSectionType)) return;
-            const mins = getTrainingModelMinutes(currentSectionType, 'practice', selectedModelNum);
+            // يستخدم المحاكي العادي نفس إعداد وقت النموذج الذي يحدده المشرف للتدريب.
+            if (!['training','exam'].includes(currentActionMode) || !['quant','verbal'].includes(currentSectionType)) return;
+            const mins = getTrainingModelMinutes(currentSectionType, currentActionMode==='exam'?'simulation':'practice', selectedModelNum);
             if (!mins) { trainingSecondsLeft = 0; return; }
             trainingSecondsLeft = mins * 60;
             trainingTimerInterval = setInterval(() => {
-                if (trainingReviewMode) return;
+                if (trainingReviewMode || examReviewMode) return;
                 trainingSecondsLeft = Math.max(0, trainingSecondsLeft - 1);
                 const el = document.getElementById('training-timer');
                 if (el) el.textContent = `الوقت ${toArabicNumber(Math.floor(trainingSecondsLeft/60)).padStart(2,'٠')}:${toArabicNumber(trainingSecondsLeft%60).padStart(2,'٠')}`;
-                if (trainingSecondsLeft <= 0) { stopTrainingTimer(); showTrainingReview(); }
+                if (trainingSecondsLeft <= 0) { stopTrainingTimer(); if(currentActionMode==='exam') showExamReview(); else showTrainingReview(); }
             }, 1000);
         }
         function saveTrainingAnswer(index, value) { trainingAnswers[index] = value; renderTrainingQuestion(); }
@@ -2529,6 +2512,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         function renderTrainingQuestion() {
             const container = document.getElementById('training-container');
             const trainingOnly = currentActionMode === 'training' && ['quant','verbal'].includes(currentSectionType);
+            if(currentActionMode==='exam' && ['quant','verbal'].includes(currentSectionType)){ renderOrdinaryExamQuestion(container); return; }
             if (trainingOnly && trainingReviewMode) { showTrainingReview(); return; }
             if (currentQuestionIndex >= currentTrainingQuestions.length) {
                 if (trainingOnly) { showTrainingReview(); return; }
@@ -2556,6 +2540,32 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     </div><div id="feedback" style="margin-top:20px;font-weight:bold;text-align:center"></div>
                 </div>`;
             if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([container]).catch(()=>{});
+        }
+
+        function renderOrdinaryExamQuestion(container){
+            if(examReviewMode){showExamReview();return;}
+            const q=currentTrainingQuestions[currentQuestionIndex]; if(!q){showExamReview();return;}
+            const opts=Array.isArray(q.options)?q.options:[q.options?.a,q.options?.b,q.options?.c,q.options?.d];
+            const selected=trainingAnswers[currentQuestionIndex];
+            const mins=getTrainingModelMinutes(currentSectionType,'simulation',selectedModelNum);
+            const timeText=mins?`الوقت ${toArabicNumber(Math.floor(trainingSecondsLeft/60)).padStart(2,'٠')}:${toArabicNumber(trainingSecondsLeft%60).padStart(2,'٠')}`:'بدون مؤقت';
+            const modelTitle=window.qimmaCurrentModelTitle||`النموذج ${selectedModelNum}`;
+            const studentName=sessionStorage.getItem('sessionUserName')||sessionStorage.getItem('sessionUserEmail')||'الطالب';
+            container.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;direction:ltr"><div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap"><div id="training-timer" style="background:#123b48;color:#fff;padding:10px 15px;border-radius:10px;font-weight:800">${timeText}</div><button type="button" onclick="toggleExamFlag()" style="width:auto;margin:0;padding:10px 14px;background:${examFlaggedQuestions[currentQuestionIndex]?'#fef3c7':'#e2e8f0'};color:#92400e;border:1px solid ${examFlaggedQuestions[currentQuestionIndex]?'#f59e0b':'#cbd5e1'}">${examFlaggedQuestions[currentQuestionIndex]?'⚑ تم وضع علامة':'⚐ وضع علامة'}</button></div><div style="direction:rtl;text-align:right;color:#334155"><strong>${modelTitle}</strong><div style="font-size:13px;color:#64748b">${studentName}</div></div></div><div style="background:#f8fafc;border:1px solid #cbd5e1;padding:22px;border-radius:18px"><div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap"><strong>السؤال ${toArabicNumber(currentQuestionIndex+1)} من ${toArabicNumber(currentTrainingQuestions.length)}</strong><span style="color:#64748b">اختر إجابة واحدة</span></div><p style="font-size:18px;font-weight:bold;line-height:1.9;margin-bottom:20px">${window.qimmaMathDisplay?window.qimmaMathDisplay(q.question):q.question}</p>${q.image?`<div style="margin-bottom:20px;text-align:center"><img src="${q.image}" style="max-width:100%;max-height:260px;border-radius:12px" alt="صورة السؤال"></div>`:''}<div style="display:flex;flex-direction:column;gap:12px">${opts.map((opt,i)=>{const letter=['أ','ب','ج','د'][i];return `<button type="button" onclick="saveExamAnswer(${currentQuestionIndex},'${letter}')" style="background:${selected===letter?'#dbeafe':'#fff'};color:#0f172a;text-align:right;border:2px solid ${selected===letter?'#2563eb':'#cbd5e1'};box-shadow:none">${letter}) ${window.qimmaMathDisplay?window.qimmaMathDisplay(opt):opt}</button>`}).join('')}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap">${examReturnFromReview?'<button type="button" onclick="backToExamReview()" style="width:auto;background:#e0f2fe;color:#075985;padding:10px 14px">↩ العودة إلى قائمة المراجعة</button>':''}<button type="button" onclick="goExamQuestion(-1)" ${currentQuestionIndex===0?'disabled':''} style="width:auto;background:#e2e8f0;color:#1e293b;padding:10px 18px">السابق</button><button type="button" onclick="${currentQuestionIndex===currentTrainingQuestions.length-1?'showExamReview()':'goExamQuestion(1)'}" style="width:auto;background:#0f766e;color:#fff;padding:10px 20px">${currentQuestionIndex===currentTrainingQuestions.length-1?'المراجعة ←':'التالي ←'}</button></div></div>`;
+            if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([container]).catch(()=>{});
+        }
+        function saveExamAnswer(index,value){trainingAnswers[index]=value;renderTrainingQuestion();}
+        function toggleExamFlag(){examFlaggedQuestions[currentQuestionIndex]=!examFlaggedQuestions[currentQuestionIndex];renderTrainingQuestion();}
+        function goExamQuestion(delta){if(examReviewMode)return;currentQuestionIndex=Math.max(0,Math.min(currentTrainingQuestions.length-1,currentQuestionIndex+delta));examReturnFromReview=false;renderTrainingQuestion();}
+        function showExamReview(){examReviewMode=true;stopTrainingTimer();const container=document.getElementById('training-container');const total=currentTrainingQuestions.length;const items=currentTrainingQuestions.map((q,i)=>{const done=Object.prototype.hasOwnProperty.call(trainingAnswers,i),flag=!!examFlaggedQuestions[i];return `<button type="button" onclick="returnToExamQuestion(${i})" style="padding:13px 10px;border:1px solid ${flag?'#f59e0b':'#dbe3ed'};border-radius:10px;background:${flag?'#fffbeb':'#fff'};color:#1e293b;text-align:right"><b>س${toArabicNumber(i+1)} ${flag?'⚑':''}</b>${done?'':'<small style="display:block;color:#b91c1c;margin-top:4px">لم يتم الحل</small>'}${flag?'<small style="display:block;color:#92400e;margin-top:4px">عليه علامة</small>':''}</button>`}).join('');container.innerHTML=`<div style="background:#fff;border:1px solid #dbe3ed;padding:22px;border-radius:18px"><h3 style="margin:0 0 8px;color:#123b48">مراجعة أسئلة الاختبار المحاكي</h3><p style="color:#64748b;margin-bottom:16px">الأسئلة غير المجابة تظهر بعبارة «لم يتم الحل»، والأسئلة المعلّمة تظهر بعلامة ⚑.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px;margin-bottom:20px">${items}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>تمت الإجابة عن ${toArabicNumber(Object.keys(trainingAnswers).length)} من ${toArabicNumber(total)}</span><button type="button" onclick="finishOrdinaryExam()" style="width:auto;background:#0f766e;color:white;padding:12px 22px">إنهاء المراجعة والاختبار وعرض النتيجة</button></div></div>`;}
+        function returnToExamQuestion(index){currentQuestionIndex=index;examReviewMode=false;examReturnFromReview=true;renderTrainingQuestion();}
+        function backToExamReview(){examReviewMode=true;examReturnFromReview=false;showExamReview();}
+        async function finishOrdinaryExam(){
+            stopTrainingTimer();const email=sessionStorage.getItem('sessionUserEmail')||'',total=currentTrainingQuestions.length;
+            currentCorrectCount=currentTrainingQuestions.reduce((sum,q,i)=>sum+(Object.prototype.hasOwnProperty.call(trainingAnswers,i)&&String(trainingAnswers[i])===String(q.correct_answer)?1:0),0);currentModelAnsweredCount=Object.keys(trainingAnswers).length;const score=total?Math.round(currentCorrectCount/total*100):0;
+            if(email){await Promise.all(currentTrainingQuestions.map((q,i)=>{if(!Object.prototype.hasOwnProperty.call(trainingAnswers,i))return Promise.resolve();const chosen=trainingAnswers[i];return fetch('/api/attempts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,questionId:q.id,section:q.section||currentSectionType,type:'simulation',model:q.model||selectedModelNum,chosenAnswer:chosen,correct:String(chosen)===String(q.correct_answer),score:q.score||1})}).catch(()=>null)}));}
+            await recordQimmaModelCompletion(score,currentCorrectCount,total);
+            document.getElementById('training-container').innerHTML=`<div style="text-align:center;padding:32px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;color:#065f46"><div style="font-size:40px">🏆</div><h3>انتهى الاختبار المحاكي</h3><div style="font-size:38px;font-weight:900;margin:15px">${score}/100</div><p>الإجابات الصحيحة: ${toArabicNumber(currentCorrectCount)} من ${toArabicNumber(total)}</p><p>الأسئلة المجابة: ${toArabicNumber(currentModelAnsweredCount)} من ${toArabicNumber(total)}</p><button class="model-retry" onclick="openModelsSelection(currentSectionType,'exam')" style="margin:10px 6px 0">إعادة الاختبار ↻</button><button class="model-retry" onclick="openInlineModelReview(currentSectionType,'simulation',selectedModelNum)" style="margin:10px 6px 0;background:#0f766e;color:white">مراجعة الإجابات</button><button onclick="navigateTo('student')" style="margin:10px 6px 0;width:auto;padding:12px 25px">العودة للرئيسية</button></div>`;
         }
 
         function checkAnswer(correctOpt, chosenOpt, btn) {
