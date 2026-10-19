@@ -31,6 +31,7 @@ const questionSchema = new mongoose.Schema({
     section: String,
     type: String,
     model: Number,
+    examSection: { type: Number, min: 1, max: 10, default: 1 },
     score: Number,
     question: String,
     options: [String],
@@ -269,6 +270,7 @@ app.post('/api/add-question', async (req, res) => {
             section,
             type,
             model,
+            examSection,
             score,
             question,
             options,
@@ -310,6 +312,7 @@ app.post('/api/add-question', async (req, res) => {
             section: section || 'quant',
             type: type || 'practice',
             model: modelNum,
+            examSection: type === 'simulation' ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1,
             score: Number(score) || 1,
             question,
             options,
@@ -339,6 +342,7 @@ app.post('/api/edit-question', async (req, res) => {
             section,
             type,
             model,
+            examSection,
             score,
             question,
             options,
@@ -354,6 +358,7 @@ app.post('/api/edit-question', async (req, res) => {
             targetQuestion.section = section || 'quant';
             targetQuestion.type = type || 'practice';
             targetQuestion.model = Number(model);
+            targetQuestion.examSection = type === 'simulation' ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1;
             targetQuestion.score = Number(score) || 1;
             targetQuestion.question = question;
             targetQuestion.options = options;
