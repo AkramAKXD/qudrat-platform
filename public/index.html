@@ -2354,14 +2354,36 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             try {
                 const data = await (await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') }) })).json();
                 if(data.success) {
-                    container.innerHTML = data.users.map(u => `
-                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <div><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span></div>
-                            ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
-                        </div>
-                    `).join('');
+                    const escapeAccountText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+                    container.innerHTML = data.users.map((u, i) => {
+                        const isAdmin = String(u.role || '').includes('Admin') || String(u.role || '').includes('مشرف');
+                        const passwordId = `account-password-${i}`;
+                        const safeEmail = escapeAccountText(u.email);
+                        const safeName = escapeAccountText(u.name);
+                        const safePass = escapeAccountText(u.pass || '');
+                        return `
+                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div><strong>${safeName}</strong><span style="color: #64748b; font-size: 13px; display: block;">${safeEmail}</span>
+                            ${!isAdmin ? `<div id="${passwordId}" style="display:none;color:#334155;font-size:13px;margin-top:6px;overflow-wrap:anywhere">كلمة المرور: <span>${safePass}</span></div>` : ''}</div>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                                ${!isAdmin ? `<button type="button" onclick="toggleAccountPassword('${passwordId}', this)" style="background:#2563eb;color:#fff;padding:6px 12px;border-radius:8px;width:auto;margin:0">👁️ إظهار كلمة المرور</button>` : ''}
+                                ${!isAdmin && u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${safeEmail}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
+                            </div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<p style="color:red">تعذر تحميل الحسابات.</p>';
                 }
             } catch (e) { container.innerHTML = '<p style="color: red;">خطأ في الاتصال.</p>'; }
+        }
+
+        function toggleAccountPassword(passwordId, button) {
+            const passwordRow = document.getElementById(passwordId);
+            if (!passwordRow) return;
+            const isVisible = passwordRow.style.display !== 'none';
+            passwordRow.style.display = isVisible ? 'none' : 'block';
+            button.textContent = isVisible ? '👁️ إظهار كلمة المرور' : '🙈 إخفاء كلمة المرور';
+            button.setAttribute('aria-pressed', String(!isVisible));
         }
 
         function confirmDeleteUser(userEmail) {
