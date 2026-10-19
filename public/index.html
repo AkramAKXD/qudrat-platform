@@ -1413,11 +1413,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 <div class="switch-link" style="margin-top: 25px;"><span onclick="navigateTo('student')">← العودة للوحة الطالب</span></div>
             </div>
 
-            <div id="student-model-review-section" class="app-section" style="background:#fff;border:1px solid #edf0ea;border-radius:25px;padding:clamp(18px,3vw,36px);box-shadow:0 22px 70px rgba(17,49,55,.08);min-height:450px">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px"><h2 style="margin:0;text-align:right">مراجعة الاختبار</h2><button type="button" onclick="backToModelList()" style="width:auto;margin:0;padding:10px 16px;background:#e8f0ed;color:#123b48">← العودة إلى النماذج</button></div>
-                <div id="student-model-review-detail"></div>
-            </div>
-
             <div id="qiyas-models-section" class="app-section">
                 <h2 style="color: #10b981;">⏱️ نماذج اختبار قياس التجريبي</h2>
                 <div class="model-grid" id="qiyasModelsGrid"></div>
@@ -1614,8 +1609,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         let trainingTimerInterval = null;
         let trainingSecondsLeft = 0;
         let trainingReviewMode = false;
-        let trainingReturnFromReview = false;
-        let selectedReviewContext = null;
         let verifiedForgotEmail = '';
         let globalQuestionsCache = [];
         let customModelNamesCache = {};
@@ -1706,7 +1699,6 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
             else if (view === 'verbal') { targetId = 'verbal-page'; document.getElementById('menu-verbal')?.classList.add('active'); }
             else if (view === 'student-stats') { targetId = 'student-stats-section'; document.getElementById('menu-student-stats')?.classList.add('active'); loadStudentStats(); }
-            else if (view === 'model-review') { targetId = 'student-model-review-section'; }
             else if (view === 'qiyas') {
                 if (!checkAuth()) { switchView('login'); return; }
                 targetId = 'qiyas-models-section'; document.getElementById('menu-qiyas')?.classList.add('active'); renderQiyasModelsGrid();
@@ -2344,7 +2336,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 currentTrainingQuestions=allQuestions.filter(q=>q.section===currentSectionType&&Number(q.model)===Number(modelNum)&&q.type===expectedType);
                 document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));
                 if(!currentTrainingQuestions.length){document.getElementById('no-questions-section').classList.add('active-view');return;}
-                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;trainingAnswers={};trainingReviewMode=false;trainingReturnFromReview=false;
+                currentQuestionIndex=0;currentCorrectCount=0;currentModelAnsweredCount=0;trainingAnswers={};trainingReviewMode=false;
                 document.getElementById('training-section').classList.add('active-view');startTrainingTimer();renderTrainingQuestion();
             });
         }
@@ -2355,13 +2347,24 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 const data = await (await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') }) })).json();
                 if(data.success) {
                     container.innerHTML = data.users.map(u => `
-                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <div><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span></div>
-                            ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
+                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center;">
+                            <div style="min-width:180px;flex:1"><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span><div id="account-pass-${encodeURIComponent(u.email).replace(/%/g,'_')}" style="display:none;margin-top:8px;padding:8px 10px;background:#f1f5f9;border-radius:8px;color:#0f172a;word-break:break-word">كلمة المرور: <strong>${u.pass ? String(u.pass).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;') : 'غير متاحة'}</strong></div></div>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                                <button type="button" onclick="toggleAccountPassword('${encodeURIComponent(u.email).replace(/%/g,'_')}',this)" style="background:#2563eb;color:#fff;padding:6px 12px;border-radius:8px;width:auto;margin:0">إظهار كلمة المرور 👁️</button>
+                                ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
+                            </div>
                         </div>
                     `).join('');
                 }
             } catch (e) { container.innerHTML = '<p style="color: red;">خطأ في الاتصال.</p>'; }
+        }
+
+        function toggleAccountPassword(safeEmail, button) {
+            const box = document.getElementById('account-pass-' + safeEmail);
+            if (!box) return;
+            const showing = box.style.display !== 'none';
+            box.style.display = showing ? 'none' : 'block';
+            button.textContent = showing ? 'إظهار كلمة المرور 👁️' : 'إخفاء كلمة المرور';
         }
 
         function confirmDeleteUser(userEmail) {
@@ -2484,8 +2487,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             }).join('');
             container.innerHTML = `<div style="background:#fff;border:1px solid #dbe3ed;padding:22px;border-radius:18px"><h3 style="margin:0 0 8px;color:#123b48">مراجعة الأسئلة</h3><p style="color:#64748b;margin-bottom:16px">اختر رقم السؤال للعودة إليه. الأسئلة غير المجابة موضحة بعبارة «غير مكتمل».</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px;margin-bottom:20px">${items}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>تمت الإجابة عن ${toArabicNumber(answered)} من ${toArabicNumber(total)}</span><button type="button" onclick="finishTrainingAttempt()" style="width:auto;background:#0f766e;color:white;padding:12px 22px">إنهاء التدريب وعرض النتيجة</button></div></div>`;
         }
-        function returnToTrainingQuestion(index) { currentQuestionIndex=index; trainingReviewMode=false; trainingReturnFromReview=true; renderTrainingQuestion(); }
-        function backToTrainingReview(){ trainingReviewMode=true; trainingReturnFromReview=false; showTrainingReview(); }
+        function returnToTrainingQuestion(index) { currentQuestionIndex=index; trainingReviewMode=false; renderTrainingQuestion(); }
         async function finishTrainingAttempt() {
             const email=sessionStorage.getItem('sessionUserEmail')||'';
             currentCorrectCount = currentTrainingQuestions.reduce((sum,q,i) => sum + (Object.prototype.hasOwnProperty.call(trainingAnswers,i) && String(trainingAnswers[i])===String(q.correct_answer) ? 1 : 0),0);
@@ -2521,7 +2523,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 const selected=trainingAnswers[currentQuestionIndex];
                 const mins=getTrainingModelMinutes(currentSectionType,'practice',selectedModelNum);
                 const timeText=mins?`الوقت ${toArabicNumber(Math.floor(trainingSecondsLeft/60)).padStart(2,'٠')}:${toArabicNumber(trainingSecondsLeft%60).padStart(2,'٠')}`:'بدون مؤقت';
-                container.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;direction:ltr"><div id="training-timer" style="background:#123b48;color:#fff;padding:9px 14px;border-radius:10px;font-weight:800">${timeText}</div><strong style="direction:rtl;color:#334155">السؤال ${toArabicNumber(currentQuestionIndex+1)} من ${toArabicNumber(currentTrainingQuestions.length)}</strong></div><div style="background:#f8fafc;border:1px solid #cbd5e1;padding:22px;border-radius:18px"><p style="font-size:18px;font-weight:bold;margin-bottom:20px">${(window.qimmaMathDisplay?window.qimmaMathDisplay(q.question):q.question)}</p>${q.image?`<div style="margin-bottom:20px;text-align:center"><img src="${q.image}" style="max-height:220px;border-radius:12px" alt="صورة"></div>`:''}<div style="display:flex;flex-direction:column;gap:12px">${opts.map((opt,i)=>{const letter=['أ','ب','ج','د'][i];return `<button type="button" onclick="saveTrainingAnswer(${currentQuestionIndex},'${letter}')" style="background:${selected===letter?'#dbeafe':'#fff'};color:#0f172a;text-align:right;border:2px solid ${selected===letter?'#2563eb':'#cbd5e1'};box-shadow:none">${letter}) ${(window.qimmaMathDisplay?window.qimmaMathDisplay(opt):opt)}</button>`;}).join('')}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap">${trainingReturnFromReview?`<button type="button" onclick="backToTrainingReview()" style="width:auto;background:#e0f2fe;color:#075985;padding:10px 14px">↩ العودة إلى المراجعة</button>`:''}<button type="button" onclick="goTrainingQuestion(-1)" ${currentQuestionIndex===0?'disabled':''} style="width:auto;background:#e2e8f0;color:#1e293b;padding:10px 18px">السابق</button><button type="button" onclick="${currentQuestionIndex===currentTrainingQuestions.length-1?'showTrainingReview()':'goTrainingQuestion(1)'}" style="width:auto;background:#0f766e;color:#fff;padding:10px 20px">${currentQuestionIndex===currentTrainingQuestions.length-1?'المراجعة ←':'التالي ←'}</button></div></div>`;
+                container.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;direction:ltr"><div id="training-timer" style="background:#123b48;color:#fff;padding:9px 14px;border-radius:10px;font-weight:800">${timeText}</div><strong style="direction:rtl;color:#334155">السؤال ${toArabicNumber(currentQuestionIndex+1)} من ${toArabicNumber(currentTrainingQuestions.length)}</strong></div><div style="background:#f8fafc;border:1px solid #cbd5e1;padding:22px;border-radius:18px"><p style="font-size:18px;font-weight:bold;margin-bottom:20px">${(window.qimmaMathDisplay?window.qimmaMathDisplay(q.question):q.question)}</p>${q.image?`<div style="margin-bottom:20px;text-align:center"><img src="${q.image}" style="max-height:220px;border-radius:12px" alt="صورة"></div>`:''}<div style="display:flex;flex-direction:column;gap:12px">${opts.map((opt,i)=>{const letter=['أ','ب','ج','د'][i];return `<button type="button" onclick="saveTrainingAnswer(${currentQuestionIndex},'${letter}')" style="background:${selected===letter?'#dbeafe':'#fff'};color:#0f172a;text-align:right;border:2px solid ${selected===letter?'#2563eb':'#cbd5e1'};box-shadow:none">${letter}) ${(window.qimmaMathDisplay?window.qimmaMathDisplay(opt):opt)}</button>`;}).join('')}</div><div style="display:flex;justify-content:space-between;gap:10px;margin-top:22px"><button type="button" onclick="goTrainingQuestion(-1)" ${currentQuestionIndex===0?'disabled':''} style="width:auto;background:#e2e8f0;color:#1e293b;padding:10px 18px">السابق</button><button type="button" onclick="${currentQuestionIndex===currentTrainingQuestions.length-1?'showTrainingReview()':'goTrainingQuestion(1)'}" style="width:auto;background:#0f766e;color:#fff;padding:10px 20px">${currentQuestionIndex===currentTrainingQuestions.length-1?'المراجعة ←':'التالي ←'}</button></div></div>`;
                 if (window.MathJax?.typesetPromise) window.MathJax.typesetPromise([container]).catch(()=>{});
                 return;
             }
@@ -2612,22 +2614,17 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         function reviewSectionName(section){return section==='verbal'?'اللفظي':section==='mock'?'محاكي قياس':'الكمي';}
         function reviewTypeName(type){return type==='qiyas_simulation'?'محاكي قياس':type==='simulation'?'اختبار محاكي':'تدريب';}
         async function openInlineModelReview(section,type,model){
-            selectedReviewContext={section,type,model,returnView:'models'};
-            navigateTo('model-review');
-            const detail=document.getElementById('student-model-review-detail');
-            detail.innerHTML='<p style="text-align:center;padding:25px">جاري تحميل مراجعة الاختبار...</p>';
+            const list=document.getElementById('modelsGridContainer');
+            let detail=document.getElementById('inline-model-review-detail');
+            if(!detail){detail=document.createElement('div');detail.id='inline-model-review-detail';detail.style.cssText='margin-top:20px';list?.after(detail);}
+            detail.innerHTML='<p>جاري تحميل مراجعة الاختبار...</p>';
             try{
                 const r=await fetch('/api/student/review-detail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail'),section,type,model})});
                 const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||'تعذر التحميل');
                 if(!d.items.length){detail.innerHTML='<p>لا توجد إجابات محفوظة لهذا الاختبار.</p>';return;}
-                detail.innerHTML=`<h3 style="color:#123b48;margin-bottom:16px">${reviewSectionName(section)} — نموذج ${model}</h3>`+d.items.map((x,i)=>`<article style="background:#fff;border:1px solid ${x.correct?'#86efac':'#fecaca'};border-right:5px solid ${x.correct?'#16a34a':'#dc2626'};border-radius:14px;padding:16px;margin:10px 0"><h3>السؤال ${i+1} ${x.correct?'✓':'✗'}</h3><div style="line-height:1.9">${window.qimmaMathDisplay?window.qimmaMathDisplay(x.question||'تعذر العثور على نص السؤال'):x.question||'تعذر العثور على نص السؤال'}</div>${x.image?`<img src="${x.image}" alt="صورة السؤال" style="max-width:100%;max-height:220px;display:block;margin:10px auto">`:''}<p style="color:${x.correct?'#15803d':'#b91c1c'}">إجابتك: ${x.chosenAnswer||'لم تسجل إجابة'}</p><p style="color:#15803d">الإجابة الصحيحة: ${x.correctAnswer||'غير متاحة'}</p>${(x.options||[]).map((o,j)=>`<div style="padding:7px;background:${['أ','ب','ج','د'][j]===x.correctAnswer?'#dcfce7':'#f8fafc'}">${['أ','ب','ج','د'][j]}) ${window.qimmaMathDisplay?window.qimmaMathDisplay(o):o}</div>`).join('')}</article>`).join('');
-                if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([detail]).catch(()=>{});
+                detail.innerHTML=`<h2 style="color:#123b48">مراجعة ${reviewSectionName(section)} — نموذج ${model}</h2>`+d.items.map((x,i)=>`<article style="background:#fff;border:1px solid ${x.correct?'#86efac':'#fecaca'};border-right:5px solid ${x.correct?'#16a34a':'#dc2626'};border-radius:14px;padding:16px;margin:10px 0"><h3>السؤال ${i+1} ${x.correct?'✓':'✗'}</h3><div style="line-height:1.9">${window.qimmaMathDisplay?window.qimmaMathDisplay(x.question||'تعذر العثور على نص السؤال'):x.question||'تعذر العثور على نص السؤال'}</div>${x.image?`<img src="${x.image}" alt="صورة السؤال" style="max-width:100%;max-height:220px;display:block;margin:10px auto">`:''}<p style="color:${x.correct?'#15803d':'#b91c1c'}">إجابتك: ${x.chosenAnswer||'لم تسجل إجابة'}</p><p style="color:#15803d">الإجابة الصحيحة: ${x.correctAnswer||'غير متاحة'}</p>${(x.options||[]).map((o,j)=>`<div style="padding:7px;background:${['أ','ب','ج','د'][j]===x.correctAnswer?'#dcfce7':'#f8fafc'}">${['أ','ب','ج','د'][j]}) ${window.qimmaMathDisplay?window.qimmaMathDisplay(o):o}</div>`).join('')}</article>`).join('');
+                if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([detail]).catch(()=>{});detail.scrollIntoView({behavior:'smooth',block:'start'});
             }catch(e){detail.innerHTML=`<p style="color:#b91c1c">${e.message||'تعذر تحميل المراجعة'}</p>`;}
-        }
-        function backToModelList(){
-            if(selectedReviewContext?.returnView==='models'){
-                openModelsSelection(selectedReviewContext.section, selectedReviewContext.type==='simulation'?'exam':'training');
-            }else navigateTo('student');
         }
         async function loadStudentReviews(){
             const list=document.getElementById('student-reviews-list'), detail=document.getElementById('student-review-detail');
