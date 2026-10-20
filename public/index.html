@@ -2003,7 +2003,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             const key=currentAdminTimerKey(), input=document.getElementById('admin-model-timer-minutes'), note=document.getElementById('admin-model-timer-note');
             if(!Number(adminCurrentSelectedModel)){if(note)note.textContent='اختر نموذجًا أولًا.';return;}
             const minutes=Math.max(0,Math.min(600,Number(input?.value)||0));
-            try{const r=await fetch('/api/admin/model-timer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,minutes})});const d=await r.json();if(note)note.textContent=d.success?`تم حفظ ${minutes} دقيقة في قاعدة البيانات.`:(d.message||'تعذر الحفظ');}catch(e){if(note)note.textContent='تعذر الاتصال بالخادم.';}
+            try{const r=await fetch('/api/admin/model-timer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,minutes})});const d=await r.json();if(note)note.textContent=d.success?(minutes===0?'تم حفظ النموذج بدون مؤقت.':'تم حفظ '+minutes+' دقيقة في قاعدة البيانات.'):(d.message||'تعذر الحفظ');if(d.success&&adminCurrentCat==='qiyas')renderQiyasModelsGrid();}catch(e){if(note)note.textContent='تعذر الاتصال بالخادم.';}
         }
 
         function renderAdminModels() {
@@ -2320,7 +2320,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     const done=completed.find(c=>c.modelKey===key);
                     const reviewReady=!!done && Date.now()-new Date(done.completedAt||0).getTime()>=24*60*60*1000;
                     const reviewLeft=done?Math.max(0,24*60*60*1000-(Date.now()-new Date(done.completedAt||0).getTime())):0;
-                    const reviewText=reviewReady?'مراجعة الاختبار ←':`المراجعة متاحة بعد ${Math.ceil(reviewLeft/3600000)} ساعة`;
+                    const reviewText=reviewReady?'مراجعة الاختبار ←':`⏳ ${formatQiyasUnlockCountdown(reviewLeft)}`;
                     const card=document.createElement('div');card.className='model-status-card';
                     const title=names[m.customKey]||`نموذج قياس ${m.modelNumber}`;
                     card.innerHTML=`<div class="model-status-info"><span style="font-size:26px">📝</span><div><strong>${title}</strong><div style="color:#64748b;font-size:13px;margin-top:5px">${qs.length} سؤال · ${sectionCount} أقسام</div></div></div><div class="model-status-actions">${done?`<span class="model-status-badge done">✓ مكتمل</span><strong class="model-score">${Number(done.score)||0}/100</strong><button class="model-retry" type="button">إعادة الاختبار ↻</button><button class="model-retry qiyas-review-btn" type="button" style="background:${reviewReady?'#0f766e':'#94a3b8'};color:white" ${reviewReady?'':'disabled'}>${reviewText}</button>`:`<span class="model-status-badge pending">لم يتم الحل</span><button class="model-retry" type="button">ابدأ الاختبار</button>`}</div>`;
@@ -2331,6 +2331,10 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 if(!count)grid.innerHTML='<p style="text-align:center">لا توجد نماذج قياس متاحة حاليًا.</p>';
             }catch(e){grid.innerHTML='<p style="color:#b91c1c;text-align:center">تعذر تحميل النماذج.</p>';}
         }
+
+        function formatQiyasUnlockCountdown(ms){const s=Math.max(0,Math.ceil(ms/1000));return s===0?'المراجعة متاحة الآن':`${toArabicNumber(Math.floor(s/3600)).toString().padStart(2,'٠')}:${toArabicNumber(Math.floor((s%3600)/60)).toString().padStart(2,'٠')}:${toArabicNumber(s%60).toString().padStart(2,'٠')}`;}
+        if(window.qiyasModelCountdownRefresh)clearInterval(window.qiyasModelCountdownRefresh);
+        window.qiyasModelCountdownRefresh=setInterval(()=>{const section=document.getElementById('qiyas-models-section');if(section?.classList.contains('active-view'))renderQiyasModelsGrid();},1000);
 
         async function selectQiyasModel(modelNum) {
             currentSectionType='mock'; currentActionMode='qiyas_simulation'; selectedModelNum=Number(modelNum);
