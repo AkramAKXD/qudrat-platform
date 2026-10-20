@@ -312,7 +312,7 @@ app.post('/api/add-question', async (req, res) => {
             section: section || 'quant',
             type: type || 'practice',
             model: modelNum,
-            examSection: type === 'simulation' ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1,
+            examSection: ['simulation','qiyas_simulation'].includes(type) ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1,
             score: Number(score) || 1,
             question,
             options,
@@ -358,7 +358,7 @@ app.post('/api/edit-question', async (req, res) => {
             targetQuestion.section = section || 'quant';
             targetQuestion.type = type || 'practice';
             targetQuestion.model = Number(model);
-            targetQuestion.examSection = type === 'simulation' ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1;
+            targetQuestion.examSection = ['simulation','qiyas_simulation'].includes(type) ? Math.min(10, Math.max(1, Number(examSection) || 1)) : 1;
             targetQuestion.score = Number(score) || 1;
             targetQuestion.question = question;
             targetQuestion.options = options;
