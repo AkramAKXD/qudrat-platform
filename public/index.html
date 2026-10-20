@@ -3140,7 +3140,7 @@ window.addEventListener('DOMContentLoaded',()=>{try{const s=JSON.parse(sessionSt
 setInterval(()=>{if(sessionStorage.getItem('sessionUserEmail')&&document.visibilityState==='visible'&&typeof updateQimmaProgress==='function')updateQimmaProgress()},12000);
 })();
 </script>
-<script id="qimma-scroll-to-active-view">document.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.closest('.math-helper-wrap'))return;setTimeout(function(){const active=document.querySelector('.app-section.active-view');if(active&&!active.id.includes('training-section')){active.scrollIntoView({block:'start',behavior:'smooth'});}},80);});</script>
+<!-- Removed automatic scroll-to-top/active-view behavior on button clicks to preserve the current scroll position. -->
 <script id="qimma-math-panel">
 (function(){
  const groups=[['qText','qA','qB','qC','qD'],['qiyasText','qiyasA','qiyasB','qiyasC','qiyasD'],['editQText','editQA','editQB','editQC','editQD']];let active=null;
