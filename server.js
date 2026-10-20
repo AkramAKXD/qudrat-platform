@@ -390,7 +390,13 @@ app.post('/api/edit-question', async (req, res) => {
 
 app.post('/api/move-question', async (req, res) => {
     try {
-        const { index, section, type, model } = req.body;
+        const { index, ids, section, type, model } = req.body;
+        if (Array.isArray(ids) && ids.length) {
+            const validIds = ids.filter(id => mongoose.isValidObjectId(id));
+            if (!validIds.length) return res.status(400).json({ success:false, message:'لم يتم تحديد أسئلة صالحة.' });
+            const result = await Question.updateMany({ _id: { $in: validIds } }, { $set: { section, type, model: Number(model) } });
+            return res.json({ success:true, modifiedCount: result.modifiedCount, message:'تم نقل الأسئلة المحددة بنجاح.' });
+        }
         const questions = await Question.find({});
 
         if (index !== undefined && index >= 0 && index < questions.length) {
@@ -419,6 +425,18 @@ app.post('/api/move-question', async (req, res) => {
             message: '❌ حدث خطأ أثناء النقل'
         });
     }
+});
+
+// تعديل قسم مجموعة أسئلة محددة (لمحاكي الكمي واللفظي فقط)
+app.post('/api/admin/bulk-question-section', async (req, res) => {
+    try {
+        const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(id => mongoose.isValidObjectId(id)) : [];
+        const examSection = Number(req.body?.examSection);
+        if (!ids.length) return res.status(400).json({ success:false, message:'حدد سؤالاً واحداً على الأقل.' });
+        if (!Number.isInteger(examSection) || examSection < 1 || examSection > 10) return res.status(400).json({ success:false, message:'القسم يجب أن يكون من 1 إلى 10.' });
+        const result = await Question.updateMany({ _id: { $in: ids }, section: { $in: ['quant','verbal'] }, type: 'simulation' }, { $set: { examSection } });
+        return res.json({ success:true, modifiedCount:result.modifiedCount, message:'تم تعديل القسم للأسئلة المحددة.' });
+    } catch (error) { console.error('bulk-question-section:', error); return res.status(500).json({ success:false, message:'حدث خطأ أثناء تعديل القسم.' }); }
 });
 
 // ==================== حذف سؤال ====================
