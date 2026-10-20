@@ -2315,11 +2315,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     if(!qs.length)return; count++;
                     qs.sort((a,b)=>getExamSection(a)-getExamSection(b));
                     const sectionCount=new Set(qs.map(getExamSection)).size;
-                    const reviewReady=!!done && Date.now()-new Date(done.completedAt||0).getTime()>=24*60*60*1000;
-                    const reviewLeft=done?Math.max(0,24*60*60*1000-(Date.now()-new Date(done.completedAt||0).getTime())):0;
-                    const reviewText=reviewReady?'مراجعة الاختبار ←':`المراجعة متاحة بعد ${Math.ceil(reviewLeft/3600000)} ساعة`; 
                     const key=`mock:qiyas_simulation:${m.modelNumber}`;
                     const done=completed.find(c=>c.modelKey===key);
+                    const reviewReady=!!done && Date.now()-new Date(done.completedAt||0).getTime()>=24*60*60*1000;
+                    const reviewLeft=done?Math.max(0,24*60*60*1000-(Date.now()-new Date(done.completedAt||0).getTime())):0;
+                    const reviewText=reviewReady?'مراجعة الاختبار ←':`المراجعة متاحة بعد ${Math.ceil(reviewLeft/3600000)} ساعة`;
                     const card=document.createElement('div');card.className='model-status-card';
                     const title=names[m.customKey]||`نموذج قياس ${m.modelNumber}`;
                     card.innerHTML=`<div class="model-status-info"><span style="font-size:26px">📝</span><div><strong>${title}</strong><div style="color:#64748b;font-size:13px;margin-top:5px">${qs.length} سؤال · ${sectionCount} أقسام</div></div></div><div class="model-status-actions">${done?`<span class="model-status-badge done">✓ مكتمل</span><strong class="model-score">${Number(done.score)||0}/100</strong><button class="model-retry" type="button">إعادة الاختبار ↻</button><button class="model-retry qiyas-review-btn" type="button" style="background:${reviewReady?'#0f766e':'#94a3b8'};color:white" ${reviewReady?'':'disabled'}>${reviewText}</button>`:`<span class="model-status-badge pending">لم يتم الحل</span><button class="model-retry" type="button">ابدأ الاختبار</button>`}</div>`;
