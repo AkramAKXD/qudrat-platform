@@ -1526,7 +1526,7 @@ app.post('/api/student/achievement/complete', async (req, res) => {
         const section = String(req.body?.section || '').trim();
         const type = String(req.body?.type || 'practice').trim();
         const model = Number(req.body?.model);
-        const score = Math.max(0, Math.min(100, Number((Number(req.body?.score) || 0).toFixed(2))));
+        const score = Math.max(0, Math.min(100, Math.round(Number(req.body?.score) || 0)));
         const correctCount = Math.max(0, Math.round(Number(req.body?.correctCount) || 0));
         const totalQuestions = Math.max(0, Math.round(Number(req.body?.totalQuestions) || 0));
         if (!email || !section || !Number.isInteger(model) || model < 1) {
