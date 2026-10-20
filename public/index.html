@@ -1088,6 +1088,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         </div>
     </div>
 
+    <div id="bulk-section-modal" class="custom-modal"><div class="modal-box"><h3>📚 تعديل قسم الأسئلة المحددة</h3><p style="color:#64748b;margin-bottom:14px">سيتم وضع جميع الأسئلة المحددة في القسم الذي تختاره.</p><div class="form-group"><label for="bulkTargetSection">القسم الجديد</label><select id="bulkTargetSection"><option value="1">القسم 1</option><option value="2">القسم 2</option><option value="3">القسم 3</option><option value="4">القسم 4</option><option value="5">القسم 5</option><option value="6">القسم 6</option><option value="7">القسم 7</option><option value="8">القسم 8</option><option value="9">القسم 9</option><option value="10">القسم 10</option></select></div><div class="modal-actions"><button type="button" style="background:#e2e8f0;color:#334155" onclick="closeBulkSectionModal()">إلغاء</button><button type="button" style="background:#0284c7" onclick="submitBulkSectionChange()">تأكيد التعديل</button></div></div></div>
     <div id="move-question-modal" class="custom-modal">
         <div class="modal-box">
             <h3>🚚 نقل السؤال إلى نموذج آخر</h3>
@@ -1555,6 +1556,11 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                         <div id="adminModelsGrid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;"></div>
                         <div id="modelTimerPanel" style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;background:#f4f8f0;border:1px solid #dce8cf;padding:14px;border-radius:14px;margin-bottom:16px"><div style="min-width:190px;flex:1"><label for="admin-model-timer-minutes">وقت النموذج بالدقائق (0 = بدون مؤقت)</label><input id="admin-model-timer-minutes" type="number" min="0" max="600" value="0"></div><button type="button" onclick="saveAdminModelTimer()" style="width:auto;margin:0">حفظ وقت النموذج</button><small id="admin-model-timer-note" style="width:100%;color:#64748b">يُحفظ الوقت في قاعدة البيانات ويُطبّق على الطلاب.</small></div>
                     </div>
+                    <div id="bulkQuestionToolbar" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;background:#ecfdf5;border:1px solid #a7f3d0;padding:12px;border-radius:12px;margin-top:12px;margin-bottom:12px">
+                        <button type="button" onclick="toggleSelectAllAdminQuestions()" style="width:auto;margin:0;background:#334155;padding:9px 14px">☑ تحديد الكل</button>
+                        <button type="button" onclick="confirmBulkQuestionSelection()" style="width:auto;margin:0;background:#0f766e;padding:9px 14px">تأكيد التحديد (<span id="bulkSelectedCount">0</span>)</button>
+                        <span id="bulkQuestionActions" class="hidden" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" onclick="openBulkMove()" style="width:auto;margin:0;background:#7c3aed;padding:9px 14px">🚚 نقل المحدد</button><button type="button" id="bulkSectionButton" onclick="openBulkSectionModal()" style="width:auto;margin:0;background:#0284c7;padding:9px 14px">📚 تعديل القسم للمحدد</button><button type="button" onclick="clearBulkQuestionSelection()" style="width:auto;margin:0;background:#64748b;padding:9px 14px">إلغاء التحديد</button></span>
+                    </div>
                     <div id="adminFilteredQuestionsList" style="margin-top: 15px; max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
@@ -1633,6 +1639,8 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         let adminCurrentCat = 'verbal'; 
         let adminCurrentSub = 'practice'; 
         let adminCurrentSelectedModel = null;
+        let bulkSelectedQuestionIds = new Set();
+        let bulkSelectionConfirmed = false;
 
         function showLoading(message = 'جاري المعالجة...', duration = 1200, callback) {
             document.getElementById('loadingMessage').innerText = message;
@@ -2063,6 +2071,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; gap:8px; align-items:center;">
+                                <label style="display:flex;align-items:center;gap:5px;background:#f0fdf4;padding:5px 8px;border-radius:8px;font-size:12px;margin:0"><input type="checkbox" class="bulk-question-check" data-qid="${q._id}" onchange="toggleBulkQuestionSelection(this)" ${bulkSelectedQuestionIds.has(String(q._id))?'checked':''} style="width:17px;height:17px"> تحديد</label>
                                 <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">${q.section}</span>
                                 <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-size:12px;">نموذج ${q.model}</span>
                             </div>
@@ -2081,7 +2090,18 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     </div>
                 `;
             }).join('');
+            updateBulkQuestionToolbar();
         }
+
+        function toggleBulkQuestionSelection(el){const id=String(el.dataset.qid||'');if(el.checked)bulkSelectedQuestionIds.add(id);else bulkSelectedQuestionIds.delete(id);bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
+        function toggleSelectAllAdminQuestions(){document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>{el.checked=true;bulkSelectedQuestionIds.add(String(el.dataset.qid));});bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
+        function clearBulkQuestionSelection(){bulkSelectedQuestionIds.clear();bulkSelectionConfirmed=false;document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>el.checked=false);updateBulkQuestionToolbar();}
+        function updateBulkQuestionToolbar(){const count=document.getElementById('bulkSelectedCount');if(count)count.textContent=bulkSelectedQuestionIds.size;const actions=document.getElementById('bulkQuestionActions');if(actions)actions.classList.toggle('hidden',!bulkSelectionConfirmed||bulkSelectedQuestionIds.size===0);const sectionBtn=document.getElementById('bulkSectionButton');if(sectionBtn)sectionBtn.classList.toggle('hidden',!['quant','verbal'].includes(adminCurrentCat)||adminCurrentSub!=='simulation');}
+        function confirmBulkQuestionSelection(){if(!bulkSelectedQuestionIds.size){alert('حدد سؤالاً واحداً على الأقل أولاً.');return;}bulkSelectionConfirmed=true;updateBulkQuestionToolbar();}
+        function openBulkSectionModal(){if(!bulkSelectionConfirmed||!bulkSelectedQuestionIds.size)return;if(!['quant','verbal'].includes(adminCurrentCat)||adminCurrentSub!=='simulation'){alert('تعديل القسم متاح فقط لمحاكي الكمي واللفظي.');return;}document.getElementById('bulk-section-modal').classList.add('active');}
+        function closeBulkSectionModal(){document.getElementById('bulk-section-modal').classList.remove('active');}
+        async function submitBulkSectionChange(){const examSection=Number(document.getElementById('bulkTargetSection').value);try{const r=await fetch('/api/admin/bulk-question-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:[...bulkSelectedQuestionIds],examSection})});const d=await r.json();if(!d.success){alert(d.message||'تعذر تعديل الأقسام');return;}closeBulkSectionModal();clearBulkQuestionSelection();const q=await fetch('/api/questions');globalQuestionsCache=await q.json();renderAdminQuestionsForSelectedModel();alert(`تم نقل ${d.modifiedCount} سؤال إلى القسم ${examSection}.`);}catch(e){alert('تعذر الاتصال بالخادم');}}
+        async function openBulkMove(){if(!bulkSelectionConfirmed||!bulkSelectedQuestionIds.size)return;await loadCustomModelsCache();document.getElementById('moveQIndex').value='-2';document.getElementById('moveQTargetSection').value='quant';document.getElementById('moveQTargetType').value='practice';await updateMoveModelDropdowns();document.getElementById('move-question-modal').classList.add('active');}
 
         async function openMoveModal(index) {
             await loadCustomModelsCache();
@@ -2127,11 +2147,12 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     const res = await fetch('/api/move-question', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ index, section: finalSection, type: targetType, model: Number(targetModel) })
+                        body: JSON.stringify(index === -2 ? { ids: [...bulkSelectedQuestionIds], section: finalSection, type: targetType, model: Number(targetModel) } : { index, section: finalSection, type: targetType, model: Number(targetModel) })
                     });
                     const data = await res.json();
                     if(data.success) {
                         closeMoveModal();
+                        if(index === -2) clearBulkQuestionSelection();
                         const resQ = await fetch('/api/questions');
                         globalQuestionsCache = await resQ.json();
                         renderAdminModels();
