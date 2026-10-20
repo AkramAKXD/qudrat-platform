@@ -2066,15 +2066,19 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 return;
             }
 
-            listContainer.innerHTML = filtered.map((q) => {
+            listContainer.innerHTML = filtered.map((q, questionPosition) => {
                 const originalIndex = globalQuestionsCache.findIndex(item => item === q);
                 let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
+                const showExamSection = ['quant','verbal'].includes(q.section) && q.type === 'simulation';
+                const examSectionLabel = showExamSection ? `<span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:6px;font-size:12px">القسم ${Number(q.examSection ?? q.sectionNumber ?? q.part ?? 1)}</span>` : '';
                 return `
                     <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <label style="display:flex;align-items:center;gap:5px;background:#f0fdf4;padding:5px 8px;border-radius:8px;font-size:12px;margin:0"><input type="checkbox" class="bulk-question-check" data-qid="${q._id}" onchange="toggleBulkQuestionSelection(this)" ${bulkSelectedQuestionIds.has(String(q._id))?'checked':''} style="width:17px;height:17px"> تحديد</label>
-                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">${q.section}</span>
+                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">السؤال ${questionPosition + 1}</span>
+                                <span style="background:#f1f5f9;color:#475569;padding:3px 10px;border-radius:6px;font-size:12px">${q.section === 'quant' ? 'كمي' : q.section === 'verbal' ? 'لفظي' : q.section}</span>
+                                ${examSectionLabel}
                                 <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-size:12px;">نموذج ${q.model}</span>
                             </div>
                             <div style="display:flex; gap:8px;">
@@ -2099,7 +2103,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
         function toggleSelectAllAdminQuestions(){document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>{el.checked=true;bulkSelectedQuestionIds.add(String(el.dataset.qid));});bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
         function clearBulkQuestionSelection(){bulkSelectedQuestionIds.clear();bulkSelectionConfirmed=false;document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>el.checked=false);updateBulkQuestionToolbar();}
         function updateBulkQuestionToolbar(){const count=document.getElementById('bulkSelectedCount');if(count)count.textContent=bulkSelectedQuestionIds.size;const actions=document.getElementById('bulkQuestionActions');if(actions)actions.classList.toggle('hidden',!bulkSelectionConfirmed||bulkSelectedQuestionIds.size===0);const cancel=document.getElementById('bulkCancelSelectionButton');if(cancel)cancel.classList.toggle('hidden',bulkSelectedQuestionIds.size===0);const sectionBtn=document.getElementById('bulkSectionButton');if(sectionBtn)sectionBtn.classList.toggle('hidden',!['quant','verbal'].includes(adminCurrentCat)||adminCurrentSub!=='simulation');}
-        function showBulkQuestionNotice(message,success=true){const el=document.getElementById('bulkQuestionNotice');if(!el)return;el.textContent=message;el.style.display='block';el.style.color=success?'#166534':'#991b1b';el.style.background=success?'#dcfce7':'#fee2e2';el.style.border='1px solid '+(success?'#86efac':'#fca5a5');el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+        let bulkNoticeTimer=null; function showBulkQuestionNotice(message,success=true){const el=document.getElementById('bulkQuestionNotice');if(!el)return;el.textContent=message;el.style.display='block';el.style.color=success?'#166534':'#991b1b';el.style.background=success?'#dcfce7':'#fee2e2';el.style.border='1px solid '+(success?'#86efac':'#fca5a5');if(bulkNoticeTimer)clearTimeout(bulkNoticeTimer);bulkNoticeTimer=setTimeout(()=>{el.style.display='none';},5000);}
         function confirmBulkQuestionSelection(){if(!bulkSelectedQuestionIds.size){alert('حدد سؤالاً واحداً على الأقل أولاً.');return;}bulkSelectionConfirmed=true;updateBulkQuestionToolbar();}
         function openBulkSectionModal(){if(!bulkSelectionConfirmed||!bulkSelectedQuestionIds.size)return;if(!['quant','verbal'].includes(adminCurrentCat)||adminCurrentSub!=='simulation'){alert('تعديل القسم متاح فقط لمحاكي الكمي واللفظي.');return;}document.getElementById('bulk-section-modal').classList.add('active');}
         function closeBulkSectionModal(){document.getElementById('bulk-section-modal').classList.remove('active');}
@@ -2881,7 +2885,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
             e.preventDefault();
             showLoading('حفظ...', 500, async () => {
                 const res = await (await fetch('/api/add-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ section: qSection.value, type: qType.value, examSection: qType.value==='simulation'?Number(document.getElementById('qExamSection').value||1):1, model: qModel.value, image: qImage.value || null, score: qScore.value, question: qText.value, options: [qA.value, qB.value, qC.value, qD.value], correct_answer: qCorrect.value }) })).json();
-                if(res.success) { showAlert('q', res.message, true); questionForm.reset(); toggleExamSectionField('add'); document.getElementById('addImagePreviewContainer').innerHTML = ''; updateModelDropdowns(); loadAdminStats(); }
+                if(res.success) { showAlert('q', res.message, true); ['qText','qA','qB','qC','qD','qImage'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); document.getElementById('qImageFile').value=''; document.getElementById('addImagePreviewContainer').innerHTML = ''; toggleExamSectionField('add'); loadAdminStats(); document.getElementById('qText').focus({preventScroll:true}); }
                 else showAlert('q', res.message, false);
             });
         });
