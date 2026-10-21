@@ -630,6 +630,12 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
         const oldModelNum = Number(oldParts.pop());
         const oldType = oldParts.pop();
         const oldSec = oldParts.join('_');
+        // نماذج محاكي قياس مفتاحها qiyas_simulation_N لكن أسئلتها محفوظة بنوع qiyas_simulation،
+        // وليس بالقسم qiyas والنوع simulation؛ لذلك نبحث عنها بالنوع ورقم النموذج فقط.
+        const oldIsQiyas = oldSec === 'qiyas' && oldType === 'simulation';
+        const oldQuestionFilter = (number) => oldIsQiyas
+            ? { type: 'qiyas_simulation', model: Number(number) }
+            : { section: oldSec, type: oldType, model: Number(number) };
 
         let targetSectionPrefix = '';
         let updatedSection = 'quant';
@@ -702,15 +708,13 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
         // نقل الأسئلة التابعة للنموذج
         await Question.updateMany(
+            oldQuestionFilter(oldModelNum),
             {
-                section: oldSec,
-                type: oldType,
-                model: oldModelNum
-            },
-            {
-                section: updatedSection,
-                type: updatedType,
-                model: assignedModelNum
+                $set: {
+                    section: updatedSection,
+                    type: updatedType,
+                    model: assignedModelNum
+                }
             }
         );
 
@@ -748,14 +752,8 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
                 if (entry.number !== newNumber) {
                     await Question.updateMany(
-                        {
-                            section: oldSec,
-                            type: oldType,
-                            model: entry.number
-                        },
-                        {
-                            $set: { model: newNumber }
-                        }
+                        oldQuestionFilter(entry.number),
+                        { $set: { model: newNumber } }
                     );
 
                     const oldStatusKey = entry.item.key;
