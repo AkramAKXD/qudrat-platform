@@ -1,3 +1,4 @@
+```json
 {
   "name": "qudrat-platform",
   "version": "1.0.0",
@@ -8,9 +9,11 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "mongoose": "^8.0.0"
+    "mongoose": "^8.0.0",
+    "nodemailer": "^7.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
   }
 }
+```
