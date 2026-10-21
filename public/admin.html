@@ -113,7 +113,7 @@
       <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>كلمة المرور</th><th>الصلاحية</th></tr></thead>
       <tbody>${(data.users || []).map(u => `<tr>
         <td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.email)}</td>
-        <td>غير قابلة للعرض</td>
+        <td dir="ltr" style="text-align:left;white-space:nowrap">${escapeHtml(u.pass)}</td>
         <td><span class="role">${escapeHtml(u.role)}</span></td>
       </tr>`).join('')}</tbody>
     </table>`;
