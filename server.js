@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,139 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: 'student' }
 });
 const User = mongoose.model('User', userSchema);
+
+// رموز استعادة كلمة المرور: مخزنة كتجزئة وتنتهي صلاحيتها تلقائياً.
+const passwordResetSchema = new mongoose.Schema({
+    email: { type: String, required: true, lowercase: true, index: true },
+    codeHash: { type: String, required: true },
+    expiresAt: { type: Date, required: true, index: { expires: 0 } },
+    attempts: { type: Number, default: 0 },
+    verifiedTokenHash: { type: String, default: '' },
+    verifiedExpiresAt: { type: Date, default: null }
+}, { timestamps: true });
+const PasswordReset = mongoose.models.PasswordReset || mongoose.model('PasswordReset', passwordResetSchema);
+
+function sha256(value) { return crypto.createHash('sha256').update(String(value)).digest('hex'); }
+function getMailTransport() {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT || 587);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    if (!host || !user || !pass) return null;
+    return nodemailer.createTransport({ host, port, secure: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true', auth: { user, pass } });
+}
+function resetEmailFrom() { return process.env.SMTP_FROM || process.env.SMTP_USER || ''; }
+
+
+const SESSION_COOKIE = 'qumma_user_session';
+const SESSION_TTL = 8 * 60 * 60;
+const SESSION_SECRET = process.env.SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || '';
+
+function hashPassword(password) {
+    const salt = crypto.randomBytes(16).toString('base64url');
+    const derived = crypto.scryptSync(String(password), salt, 64).toString('base64url');
+    return `scrypt$${salt}$${derived}`;
+}
+function verifyPassword(password, stored) {
+    const value = String(stored || '');
+    if (value.startsWith('scrypt$')) {
+        const [, salt, expectedText] = value.split('$');
+        if (!salt || !expectedText) return false;
+        const expected = Buffer.from(expectedText, 'base64url');
+        const actual = crypto.scryptSync(String(password), salt, expected.length);
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+    }
+    // ترحيل تدريجي للحسابات القديمة عند أول تسجيل دخول ناجح.
+    return value.length > 0 && value === String(password);
+}
+function makeUserToken(payload) {
+    if (!SESSION_SECRET) return '';
+    const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const signature = crypto.createHmac('sha256', SESSION_SECRET).update(body).digest('base64url');
+    return `${body}.${signature}`;
+}
+function readUserToken(token) {
+    if (!SESSION_SECRET || !token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const expected = crypto.createHmac('sha256', SESSION_SECRET).update(parts[0]).digest();
+    let actual;
+    try { actual = Buffer.from(parts[1], 'base64url'); } catch { return null; }
+    if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) return null;
+    try {
+        const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+        if (!payload.email || !payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+        return payload;
+    } catch { return null; }
+}
+function setUserSessionCookie(res, token) {
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${SESSION_TTL}${secure}`);
+}
+function clearUserSessionCookie(res) {
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
+}
+async function getAuthenticatedUser(req) {
+    const token = readUserToken(getRequestCookie(req, SESSION_COOKIE));
+    if (!token) return null;
+    const user = await User.findOne({ email: String(token.email).toLowerCase() }).select('name email role pass');
+    if (!user || user.role !== token.role) return null;
+    return user;
+}
+async function requireAdminAuth(req, res, next) {
+    try {
+        // نقاط قراءة عامة لازمة لعرض النماذج والوقت للطلاب؛ لا تغيّر بيانات.
+        if (req.path === '/models-status' || req.path === '/model-timer/get') return next();
+        // جلسة صفحة admin.html المستقلة، أو جلسة الدخول المعتادة للموقع.
+        const pageSession = readAdminPageToken(getRequestCookie(req, ADMIN_PAGE_COOKIE));
+        let user = null;
+        if (pageSession) user = await User.findOne({ email: String(pageSession.email).toLowerCase(), role: 'admin' }).select('name email role');
+        if (!user) {
+            const token = readUserToken(getRequestCookie(req, SESSION_COOKIE));
+            if (token && token.role === 'admin') user = await User.findOne({ email: String(token.email).toLowerCase(), role: 'admin' }).select('name email role');
+        }
+        if (!user) return res.status(401).json({ success: false, message: 'يلزم تسجيل الدخول بحساب مشرف للوصول إلى هذه العملية.' });
+        req.authUser = user;
+        next();
+    } catch (error) {
+        console.error('Admin authorization error:', error.message);
+        return res.status(500).json({ success: false, message: 'تعذر التحقق من صلاحية المشرف.' });
+    }
+}
+const loginAttemptBuckets = new Map();
+function loginRateLimit(req, res, next) {
+    const now = Date.now();
+    const key = String(req.ip || req.socket?.remoteAddress || 'unknown');
+    const windowMs = 15 * 60 * 1000;
+    let bucket = loginAttemptBuckets.get(key);
+    if (!bucket || now >= bucket.resetAt) {
+        bucket = { count: 0, resetAt: now + windowMs };
+        loginAttemptBuckets.set(key, bucket);
+    }
+    if (bucket.count >= 10) {
+        res.set('Retry-After', String(Math.max(1, Math.ceil((bucket.resetAt - now) / 1000))));
+        return res.status(429).json({ success: false, message: 'محاولات دخول كثيرة. انتظر 15 دقيقة ثم حاول مجددًا.' });
+    }
+    bucket.count += 1;
+    if (loginAttemptBuckets.size > 5000) {
+        for (const [bucketKey, value] of loginAttemptBuckets) if (now >= value.resetAt) loginAttemptBuckets.delete(bucketKey);
+    }
+    next();
+}
+
+async function requireUserAuth(req, res, next) {
+    try {
+        const user = await getAuthenticatedUser(req);
+        if (!user) return res.status(401).json({ success: false, message: 'انتهت الجلسة؛ سجّل الدخول مجددًا.' });
+        req.authUser = user;
+        next();
+    } catch (error) {
+        console.error('User authorization error:', error.message);
+        return res.status(500).json({ success: false, message: 'تعذر التحقق من الجلسة.' });
+    }
+}
+
 
 const questionSchema = new mongoose.Schema({
     id: Number,
@@ -89,7 +223,7 @@ async function initAdmin() {
             await User.create({
                 name: process.env.ADMIN_NAME || 'مشرف قمة',
                 email: adminEmail,
-                pass: adminPassword,
+                pass: hashPassword(adminPassword),
                 role: 'admin'
             });
 
@@ -101,11 +235,24 @@ async function initAdmin() {
 }
 
 
+// ترحيل كلمات المرور القديمة إلى scrypt عند تشغيل الخادم؛ لا تُعرض كلمات المرور لأي واجهة.
+async function migrateLegacyPasswords() {
+    let migrated = 0;
+    for await (const user of User.find({}).select('pass').cursor()) {
+        if (!String(user.pass || '').startsWith('scrypt$')) {
+            user.pass = hashPassword(String(user.pass || ''));
+            await user.save();
+            migrated++;
+        }
+    }
+    if (migrated) console.log(`🔐 تم تشفير كلمات مرور ${migrated} حساباً قديماً.`);
+}
+
 // ==================== دخول مستقل لرابط لوحة المشرف فقط ====================
 // لا يغيّر هذا القسم تسجيل دخول الطلاب أو المشرف داخل الموقع ولا يحمي بقية واجهات API.
 const ADMIN_PAGE_COOKIE = 'qumma_admin_page_session';
 const ADMIN_PAGE_TTL = 8 * 60 * 60;
-const ADMIN_PAGE_SECRET = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || '';
+const ADMIN_PAGE_SECRET = process.env.ADMIN_SESSION_SECRET || process.env.SESSION_SECRET || process.env.ADMIN_PASSWORD || '';
 
 function makeAdminPageToken(payload) {
     const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -145,14 +292,15 @@ function clearAdminPageCookie(res) {
     res.setHeader('Set-Cookie', `${ADMIN_PAGE_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
 }
 
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', loginRateLimit, async (req, res) => {
     try {
         const email = String(req.body?.email || '').trim().toLowerCase();
         const pass = String(req.body?.pass || '');
         if (!email || !pass) return res.status(400).json({ success: false, message: 'أدخل البريد الإلكتروني وكلمة المرور.' });
         if (!ADMIN_PAGE_SECRET) return res.status(500).json({ success: false, message: 'أضف ADMIN_SESSION_SECRET في إعدادات Render.' });
         const admin = await User.findOne({ email, role: 'admin' }).select('name email pass');
-        if (!admin || String(admin.pass) !== pass) return res.status(401).json({ success: false, message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
+        if (!admin || !verifyPassword(pass, admin.pass)) return res.status(401).json({ success: false, message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
+        if (!String(admin.pass).startsWith('scrypt$')) { admin.pass = hashPassword(pass); await admin.save(); }
         const token = makeAdminPageToken({ email: admin.email, exp: Math.floor(Date.now() / 1000) + ADMIN_PAGE_TTL });
         setAdminPageCookie(res, token);
         res.set('Cache-Control', 'no-store');
@@ -193,7 +341,7 @@ app.post('/api/admin/private-users', async (req, res) => {
         if (!session) return res.status(401).json({ success: false, message: 'يرجى تسجيل الدخول بحساب المشرف.' });
         const admin = await User.findOne({ email: session.email, role: 'admin' }).select('name email');
         if (!admin) return res.status(401).json({ success: false, message: 'حساب المشرف غير متاح.' });
-        const users = await User.find({}).select('name email pass role').lean();
+        const users = await User.find({}).select('name email role').lean();
         res.set('Cache-Control', 'no-store');
         return res.json({
             success: true,
@@ -201,7 +349,6 @@ app.post('/api/admin/private-users', async (req, res) => {
             users: users.map(user => ({
                 name: user.name,
                 email: user.email,
-                pass: user.pass,
                 role: user.role === 'admin' ? 'مشرف (Admin)' : 'طالب (Student)'
             }))
         });
@@ -210,6 +357,16 @@ app.post('/api/admin/private-users', async (req, res) => {
         return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم.' });
     }
 });
+
+// حماية جميع واجهات الإدارة اللاحقة بجلسة خادمية موثوقة.
+app.use('/api/admin', requireAdminAuth);
+
+// حماية عمليات تعديل المحتوى التي تحمل مسارات قديمة خارج /api/admin.
+app.post('/api/add-question', requireAdminAuth);
+app.post('/api/edit-question', requireAdminAuth);
+app.post('/api/move-question', requireAdminAuth);
+app.post('/api/delete-question', requireAdminAuth);
+app.post('/api/add-custom-model', requireAdminAuth);
 
 // ==================== تسجيل حساب جديد ====================
 
@@ -236,7 +393,7 @@ app.post('/api/register', async (req, res) => {
         await User.create({
             name: name.trim(),
             email: normalizedEmail,
-            pass,
+            pass: hashPassword(pass),
             role: 'student'
         });
 
@@ -255,112 +412,149 @@ app.post('/api/register', async (req, res) => {
 
 // ==================== تسجيل الدخول ====================
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginRateLimit, async (req, res) => {
     try {
-        const { email, pass } = req.body;
-
-        const normalizedEmail = String(email || '').trim().toLowerCase();
-
-        const user = await User.findOne({
-            email: normalizedEmail,
-            pass: pass
-        });
-
-        if (!user) {
-            return res.json({
-                success: false,
-                message: '❌ بيانات الدخول خاطئة!'
-            });
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const pass = String(req.body?.pass || '');
+        if (!email || !pass) return res.status(400).json({ success: false, message: 'أدخل البريد الإلكتروني وكلمة المرور.' });
+        const user = await User.findOne({ email }).select('name email role pass');
+        if (!user || !verifyPassword(pass, user.pass)) {
+            return res.status(401).json({ success: false, message: '❌ بيانات الدخول خاطئة!' });
         }
-
-        res.json({
-            success: true,
-            name: user.name,
-            role: user.role,
-            email: user.email
-        });
+        if (!SESSION_SECRET) return res.status(500).json({ success: false, message: 'إعداد جلسات الدخول غير مكتمل. أضف SESSION_SECRET في إعدادات Render.' });
+        if (!String(user.pass).startsWith('scrypt$')) { user.pass = hashPassword(pass); await user.save(); }
+        const token = makeUserToken({ email: user.email, role: user.role, exp: Math.floor(Date.now() / 1000) + SESSION_TTL });
+        setUserSessionCookie(res, token);
+        res.set('Cache-Control', 'no-store');
+        return res.json({ success: true, name: user.name, role: user.role, email: user.email });
     } catch (error) {
         console.error('POST /api/login:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم'
-        });
+        res.status(500).json({ success: false, message: '❌ حدث خطأ في الخادم' });
     }
 });
 
-// ==================== التحقق من البريد الإلكتروني ====================
+app.post('/api/logout', (req, res) => {
+    clearUserSessionCookie(res);
+    res.set('Cache-Control', 'no-store');
+    res.json({ success: true });
+});
 
-app.post('/api/check-email', async (req, res) => {
+// ==================== استعادة كلمة المرور عبر رمز البريد ====================
+
+// رسالة موحّدة لمنع كشف ما إذا كان البريد مسجلاً.
+const resetRequestBuckets = new Map();
+function allowResetRequest(key) {
+    const now = Date.now();
+    const bucket = resetRequestBuckets.get(key);
+    if (!bucket || now - bucket.start > 15 * 60 * 1000) {
+        resetRequestBuckets.set(key, { start: now, count: 1 });
+        return true;
+    }
+    if (bucket.count >= 4) return false;
+    bucket.count += 1;
+    return true;
+}
+
+app.post('/api/password-reset/request', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const genericMessage = 'إذا كان البريد مسجلاً وكانت خدمة البريد مهيأة، فستصلك رسالة تحتوي على رمز الاستعادة خلال دقائق.';
+    if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'أدخل بريدًا إلكترونيًا صحيحًا.' });
+    }
+    const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    if (!allowResetRequest('ip:' + ip) || !allowResetRequest('email:' + email)) {
+        return res.status(429).json({ success: false, message: 'تم تجاوز عدد المحاولات. انتظر 15 دقيقة ثم حاول مجددًا.' });
+    }
+    const transport = getMailTransport();
+    if (!transport) {
+        console.error('Password recovery is not configured: set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM.');
+        return res.status(503).json({ success: false, message: 'خدمة البريد غير مهيأة بعد. يلزم إكمال إعدادات البريد في Render.' });
+    }
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
-
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: 'يرجى إدخال البريد الإلكتروني.'
-            });
+        const user = await User.findOne({ email }).select('_id name email');
+        if (user) {
+            const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+            await PasswordReset.deleteMany({ email });
+            await PasswordReset.create({ email, codeHash: sha256(code), expiresAt: new Date(Date.now() + 10 * 60 * 1000), attempts: 0 });
+            try {
+                await transport.sendMail({
+                    from: resetEmailFrom(),
+                    to: email,
+                    subject: 'رمز استعادة كلمة المرور - منصة قِمّة',
+                    text: `مرحبًا ${user.name || ''}،\n\nرمز استعادة كلمة المرور لمنصة قِمّة هو: ${code}\n\nتنتهي صلاحية الرمز خلال 10 دقائق، ويمكن استخدامه مرة واحدة فقط. إذا لم تطلب الاستعادة فتجاهل هذه الرسالة.`,
+                    html: `<div dir="rtl" style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:16px;color:#123b48"><h2>استعادة كلمة المرور — قِمّة</h2><p>مرحبًا ${String(user.name || 'بك').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}،</p><p>استخدم الرمز التالي لإعادة تعيين كلمة المرور:</p><div style="font-size:32px;letter-spacing:8px;font-weight:bold;background:#f0fdfa;padding:18px;text-align:center;border-radius:12px;color:#0f766e">${code}</div><p>تنتهي صلاحية الرمز خلال <b>10 دقائق</b>، ويُستخدم مرة واحدة فقط.</p><p style="color:#64748b;font-size:13px">إذا لم تطلب استعادة كلمة المرور، فتجاهل هذه الرسالة.</p></div>`
+                });
+            } catch (mailError) {
+                await PasswordReset.deleteMany({ email });
+                console.error('Password recovery email delivery failed:', mailError.message);
+                return res.status(502).json({ success: false, message: 'تعذر إرسال رسالة التحقق. راجع إعدادات البريد في Render ثم حاول مجددًا.' });
+            }
         }
-
-        const user = await User.findOne({ email }).select('_id');
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ هذا البريد الإلكتروني غير مسجل لدينا.'
-            });
-        }
-
-        return res.json({
-            success: true,
-            message: 'تم التحقق من البريد الإلكتروني.'
-        });
+        return res.json({ success: true, message: genericMessage });
     } catch (error) {
-        console.error('POST /api/check-email:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'تعذر التحقق من البريد حالياً.'
-        });
+        console.error('POST /api/password-reset/request:', error.message);
+        return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم. حاول لاحقًا.' });
     }
 });
 
-// ==================== إعادة تعيين كلمة المرور ====================
-
-app.post('/api/reset-password', async (req, res) => {
+app.post('/api/password-reset/verify', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const code = String(req.body?.code || '').trim();
+    if (!email || !/^\d{6}$/.test(code)) return res.status(400).json({ success: false, message: 'أدخل البريد ورمز التحقق المكوّن من 6 أرقام.' });
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
-        const newPass = String(req.body?.newPass || '');
-
-        if (!email || !newPass || newPass.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: 'يرجى إدخال البريد وكلمة مرور من 6 أحرف على الأقل.'
-            });
+        const record = await PasswordReset.findOne({ email });
+        if (!record || record.expiresAt.getTime() <= Date.now() || record.attempts >= 5) {
+            return res.status(400).json({ success: false, message: 'الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.' });
         }
+        if (record.codeHash !== sha256(code)) {
+            record.attempts += 1;
+            await record.save();
+            return res.status(400).json({ success: false, message: 'رمز التحقق غير صحيح.' });
+        }
+        const resetToken = crypto.randomBytes(32).toString('base64url');
+        record.verifiedTokenHash = sha256(resetToken);
+        record.verifiedExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        record.codeHash = 'used';
+        await record.save();
+        return res.json({ success: true, resetToken, message: 'تم التحقق من البريد. أدخل كلمة المرور الجديدة.' });
+    } catch (error) {
+        console.error('POST /api/password-reset/verify:', error.message);
+        return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم. حاول مجددًا.' });
+    }
+});
 
+app.post('/api/password-reset/complete', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const resetToken = String(req.body?.resetToken || '');
+    const newPass = String(req.body?.newPass || '');
+    if (!email || resetToken.length < 32) return res.status(400).json({ success: false, message: 'أعد التحقق من بريدك الإلكتروني.' });
+    if (newPass.length < 8 || newPass.length > 128) return res.status(400).json({ success: false, message: 'اجعل كلمة المرور من 8 أحرف على الأقل وبحد أقصى 128 حرفًا.' });
+    try {
+        const record = await PasswordReset.findOne({ email, verifiedTokenHash: sha256(resetToken) });
+        if (!record || !record.verifiedExpiresAt || record.verifiedExpiresAt.getTime() <= Date.now() || record.codeHash !== 'used') {
+            return res.status(400).json({ success: false, message: 'انتهت صلاحية التحقق. ابدأ الاستعادة من جديد.' });
+        }
         const user = await User.findOne({ email });
-
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ هذا البريد الإلكتروني غير مسجل لدينا.'
-            });
+            await PasswordReset.deleteMany({ email });
+            return res.status(400).json({ success: false, message: 'تعذر إكمال الاستعادة. ابدأ العملية من جديد.' });
         }
-
-        user.pass = newPass;
+        user.pass = hashPassword(newPass);
         await user.save();
-
-        res.json({
-            success: true,
-            message: '✅ تم تحديث كلمة المرور بنجاح!'
-        });
+        await PasswordReset.deleteMany({ email });
+        return res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.' });
     } catch (error) {
-        console.error('POST /api/reset-password:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم'
-        });
+        console.error('POST /api/password-reset/complete:', error.message);
+        return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم. حاول لاحقًا.' });
     }
 });
+
+// المسارات القديمة لا تسمح بتغيير كلمة المرور دون رمز تحقق موثوق.
+app.post('/api/check-email', (req, res) => res.status(410).json({ success: false, message: 'استخدم خطوات استعادة كلمة المرور الجديدة.' }));
+app.post('/api/reset-password', (req, res) => res.status(410).json({ success: false, message: 'استخدم رمز التحقق المرسل إلى بريدك الإلكتروني لإعادة تعيين كلمة المرور.' }));
 
 // ==================== جلب الأسئلة ====================
 
@@ -931,7 +1125,6 @@ app.post('/api/admin/users', async (req, res) => {
             users: users.map(user => ({
                 name: user.name,
                 email: user.email,
-                pass: user.pass,
                 role: user.role === 'admin'
                     ? 'مشرف (Admin)'
                     : 'طالب (Student)'
@@ -1158,21 +1351,17 @@ app.post('/api/admin/toggle-model', async (req, res) => {
 
 // ==================== تسجيل إجابة الطالب ====================
 
-app.post('/api/attempts', async (req, res) => {
+app.post('/api/attempts', requireUserAuth, async (req, res) => {
     try {
         const {
-            email,
             questionId,
             section,
             type,
             model,
-            chosenAnswer,
-            correct,
-            score
+            chosenAnswer
         } = req.body || {};
 
-        const normalizedEmail =
-            String(email || '').trim().toLowerCase();
+        const normalizedEmail = req.authUser.email;
 
         if (!normalizedEmail) {
             return res.status(400).json({
@@ -1192,15 +1381,18 @@ app.post('/api/attempts', async (req, res) => {
             });
         }
 
+        const question = await Question.findOne({ id: Number(questionId) }).select('correct_answer score section type model');
+        if (!question) return res.status(400).json({ success: false, message: 'السؤال غير موجود؛ لم تُسجّل المحاولة.' });
+        const isCorrect = String(chosenAnswer ?? '') === String(question.correct_answer ?? '');
         await Attempt.create({
             email: normalizedEmail,
             questionId,
-            section,
-            type,
-            model: Number(model) || 1,
-            chosenAnswer,
-            correct: Boolean(correct),
-            score: Number(score) || 1
+            section: section || question.section || 'quant',
+            type: type || question.type || 'practice',
+            model: Number(model) || Number(question.model) || 1,
+            chosenAnswer: String(chosenAnswer ?? ''),
+            correct: isCorrect,
+            score: Number(question.score) || 1
         });
 
         res.json({ success: true });
@@ -1215,10 +1407,9 @@ app.post('/api/attempts', async (req, res) => {
 
 // ==================== إحصائيات الطالب ====================
 
-app.post('/api/student/stats', async (req, res) => {
+app.post('/api/student/stats', requireUserAuth, async (req, res) => {
     try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
 
         if (!email) {
             return res.status(400).json({
@@ -1420,9 +1611,9 @@ function attemptModelFilter(section, type, model) {
     return filter;
 }
 
-app.post('/api/student/reviews', async (req, res) => {
+app.post('/api/student/reviews', requireUserAuth, async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         if (!email) return res.status(400).json({ success: false, message: 'البريد مطلوب' });
         const user = await User.findOne({ email }).select('_id');
         if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
@@ -1448,9 +1639,9 @@ app.post('/api/student/reviews', async (req, res) => {
     }
 });
 
-app.post('/api/student/review-detail', async (req, res) => {
+app.post('/api/student/review-detail', requireUserAuth, async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const { section, type, model } = req.body || {};
         if (!email || !type || !Number.isFinite(Number(model))) return res.status(400).json({ success: false, message: 'بيانات المراجعة غير مكتملة' });
         const user = await User.findOne({ email }).select('_id');
@@ -1469,7 +1660,7 @@ app.post('/api/student/review-detail', async (req, res) => {
 
 app.post('/api/admin/grades', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const admin = await User.findOne({ email, role: 'admin' }).select('_id');
         if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
         const allAttempts = await Attempt.find({}).sort({ createdAt: 1 }).lean();
@@ -1499,7 +1690,7 @@ app.post('/api/admin/grades', async (req, res) => {
 
 app.post('/api/admin/grade-review', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const studentEmail = String(req.body?.studentEmail || '').trim().toLowerCase();
         const { section, type, model } = req.body || {};
         const admin = await User.findOne({ email, role: 'admin' }).select('_id');
@@ -1524,8 +1715,7 @@ app.post('/api/admin/grade-review', async (req, res) => {
 
 app.post('/api/admin/delete-statistics', async (req, res) => {
     try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
 
         const scope = String(req.body?.scope || '');
 
@@ -1605,10 +1795,10 @@ async function getAchievementRequired() {
 }
 
 // يقرأ الطالب الهدف والإنجاز المسجل في قاعدة البيانات
-app.post('/api/student/achievement', async (req, res) => {
+app.post('/api/student/achievement', requireUserAuth, async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         if (!email) return res.status(400).json({ success: false, message: 'البريد مطلوب' });
         const user = await User.findOne({ email }).select('_id role');
         if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
@@ -1630,9 +1820,9 @@ app.post('/api/student/achievement', async (req, res) => {
 });
 
 // يُستدعى عند إنهاء نموذج؛ المفتاح الفريد يمنع احتساب النموذج مرتين
-app.post('/api/student/achievement/complete', async (req, res) => {
+app.post('/api/student/achievement/complete', requireUserAuth, async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const section = String(req.body?.section || '').trim();
         const type = String(req.body?.type || 'practice').trim();
         const model = Number(req.body?.model);
@@ -1673,7 +1863,7 @@ app.post('/api/student/achievement/complete', async (req, res) => {
 // إعداد الهدف للمشرف فقط
 app.post('/api/admin/achievement-settings', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const requiredModels = Number(req.body?.requiredModels);
         const admin = await User.findOne({ email, role: 'admin' }).select('_id email');
         if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
@@ -1694,7 +1884,7 @@ app.post('/api/admin/achievement-settings', async (req, res) => {
 
 app.post('/api/admin/achievement-settings/get', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
+        const email = req.authUser.email;
         const admin = await User.findOne({ email, role: 'admin' }).select('_id');
         if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
         res.json({ success: true, requiredModels: await getAchievementRequired() });
@@ -1722,6 +1912,7 @@ async function startServer() {
 
         console.log('🚀 تم الاتصال بقاعدة بيانات MongoDB Atlas بنجاح!');
 
+        await migrateLegacyPasswords();
         await initAdmin();
 
         app.listen(PORT, () => {
