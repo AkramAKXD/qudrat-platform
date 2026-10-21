@@ -31,7 +31,7 @@
     .back{background:#eff6ff;color:#1d4ed8}.logout{background:#fef2f2;color:#b91c1c}
     .table-wrap{overflow:auto;margin-top:24px;border:1px solid var(--line);border-radius:14px}
     table{width:100%;border-collapse:collapse;min-width:560px}th,td{padding:14px;text-align:right;border-bottom:1px solid var(--line);font-size:14px}th{background:#f1f5f9;color:#334155}tr:last-child td{border-bottom:0}tbody tr:hover{background:#f8fafc}
-    .role{display:inline-block;padding:5px 9px;border-radius:20px;background:#ecfdf5;color:#047857;font-size:12px}
+    .role{display:inline-block;padding:5px 9px;border-radius:20px;background:#ecfdf5;color:#047857;font-size:12px}.reset-pass{border:0;border-radius:9px;padding:8px 11px;background:#dbeafe;color:#1d4ed8;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.reset-pass:hover{background:#bfdbfe}
     @media(max-width:520px){.card{padding:24px 20px}.dash-head h1{font-size:20px}}
   </style>
 </head>
@@ -110,14 +110,46 @@
     }
     $('welcome').textContent = 'مرحبًا، ' + (data.adminName || 'مشرف قِمّة');
     $('tableWrap').innerHTML = `<table>
-      <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>كلمة المرور</th><th>الصلاحية</th></tr></thead>
+      <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>إدارة كلمة المرور</th><th>الصلاحية</th></tr></thead>
       <tbody>${(data.users || []).map(u => `<tr>
         <td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.email)}</td>
-        <td>غير قابلة للعرض</td>
+        <td>${String(u.role).includes('طالب') ? `<button type="button" class="reset-pass" data-email="${escapeHtml(u.email)}">تعيين كلمة مرور جديدة</button>` : '—'}</td>
         <td><span class="role">${escapeHtml(u.role)}</span></td>
       </tr>`).join('')}</tbody>
     </table>`;
   }
+
+  $('tableWrap').addEventListener('click', async event => {
+    const button = event.target.closest('.reset-pass');
+    if (!button) return;
+    const email = button.dataset.email;
+    const newPassword = prompt(`أدخل كلمة مرور جديدة للطالب: ${email}\nيجب ألا تقل عن 8 أحرف.`);
+    if (newPassword === null) return;
+    if (newPassword.length < 8) {
+      showMessage($('tableMessage'), 'كلمة المرور يجب ألا تقل عن 8 أحرف.');
+      return;
+    }
+    const confirmPassword = prompt('أعد كتابة كلمة المرور الجديدة للتأكيد:');
+    if (confirmPassword === null) return;
+    if (newPassword !== confirmPassword) {
+      showMessage($('tableMessage'), 'كلمتا المرور غير متطابقتين. لم يتم إجراء أي تغيير.');
+      return;
+    }
+    button.disabled = true;
+    button.textContent = 'جارٍ التحديث...';
+    try {
+      const {response, data} = await api('/api/admin/set-student-password', {
+        method: 'POST',
+        body: JSON.stringify({email, newPassword})
+      });
+      showMessage($('tableMessage'), data.message || (response.ok ? 'تم التحديث.' : 'تعذر تغيير كلمة المرور.'), response.ok && data.success ? 'ok' : 'error');
+    } catch {
+      showMessage($('tableMessage'), 'تعذر الاتصال بالخادم. حاول مرة أخرى.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'تعيين كلمة مرور جديدة';
+    }
+  });
 
   function showLogin(message='') {
     dashboard.style.display = 'none';
