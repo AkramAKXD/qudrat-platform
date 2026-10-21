@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -98,6 +99,121 @@ async function initAdmin() {
         console.error('Error initializing admin:', e);
     }
 }
+
+
+// ==================== جلسة المشرف وحماية واجهات الإدارة ====================
+const ADMIN_SESSION_COOKIE = 'qumma_admin_session';
+const ADMIN_SESSION_TTL_SECONDS = 8 * 60 * 60;
+const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || '';
+
+function signAdminPayload(payload) {
+    const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const signature = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(encoded).digest('base64url');
+    return `${encoded}.${signature}`;
+}
+
+function verifyAdminToken(token) {
+    if (!ADMIN_SESSION_SECRET || !token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const expected = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(parts[0]).digest();
+    let actual;
+    try { actual = Buffer.from(parts[1], 'base64url'); } catch { return null; }
+    if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) return null;
+    try {
+        const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+        if (!payload.email || !payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+        return payload;
+    } catch { return null; }
+}
+
+function getCookie(req, name) {
+    const header = req.headers.cookie || '';
+    for (const part of header.split(';')) {
+        const index = part.indexOf('=');
+        if (index < 0) continue;
+        if (part.slice(0, index).trim() === name) return decodeURIComponent(part.slice(index + 1).trim());
+    }
+    return '';
+}
+
+function setAdminCookie(res, token) {
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${ADMIN_SESSION_TTL_SECONDS}${secure}`);
+}
+
+function clearAdminCookie(res) {
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
+}
+
+function requireAdminSession(req, res, next) {
+    const session = verifyAdminToken(getCookie(req, ADMIN_SESSION_COOKIE));
+    if (!session) return res.status(401).json({ success: false, message: 'انتهت الجلسة أو لم تسجل الدخول. يرجى تسجيل الدخول بحساب المشرف.' });
+    req.adminSession = session;
+    next();
+}
+
+// حماية جميع واجهات الإدارة وأي واجهات قديمة تُجري تعديلات على المحتوى.
+app.use((req, res, next) => {
+    const protectedPaths = new Set([
+        '/api/add-question', '/api/edit-question', '/api/move-question',
+        '/api/delete-question', '/api/add-custom-model'
+    ]);
+    const isAdminApi = req.path.startsWith('/api/admin/');
+    const isAdminMutation = protectedPaths.has(req.path);
+    if (!isAdminApi && !isAdminMutation) return next();
+    if (['/api/admin/login', '/api/admin/session', '/api/admin/logout'].includes(req.path)) return next();
+    return requireAdminSession(req, res, next);
+});
+
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const pass = String(req.body?.pass || '');
+        if (!email || !pass) return res.status(400).json({ success: false, message: 'أدخل البريد الإلكتروني وكلمة المرور.' });
+        if (!ADMIN_SESSION_SECRET) {
+            return res.status(500).json({ success: false, message: 'إعداد جلسات المشرف غير مكتمل. أضف ADMIN_SESSION_SECRET في إعدادات Render.' });
+        }
+        const admin = await User.findOne({ email, role: 'admin' }).select('name email pass role');
+        if (!admin || String(admin.pass) !== pass) {
+            return res.status(401).json({ success: false, message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' });
+        }
+        const token = signAdminPayload({
+            email: admin.email,
+            exp: Math.floor(Date.now() / 1000) + ADMIN_SESSION_TTL_SECONDS
+        });
+        setAdminCookie(res, token);
+        res.set('Cache-Control', 'no-store');
+        return res.json({ success: true, name: admin.name, email: admin.email });
+    } catch (error) {
+        console.error('POST /api/admin/login:', error);
+        return res.status(500).json({ success: false, message: 'تعذر تسجيل الدخول حالياً.' });
+    }
+});
+
+app.get('/api/admin/session', async (req, res) => {
+    try {
+        const session = verifyAdminToken(getCookie(req, ADMIN_SESSION_COOKIE));
+        if (!session) return res.status(401).json({ success: false, message: 'يرجى تسجيل الدخول.' });
+        const admin = await User.findOne({ email: session.email, role: 'admin' }).select('name email');
+        if (!admin) {
+            clearAdminCookie(res);
+            return res.status(401).json({ success: false, message: 'حساب المشرف غير متاح.' });
+        }
+        res.set('Cache-Control', 'no-store');
+        return res.json({ success: true, name: admin.name, email: admin.email });
+    } catch (error) {
+        console.error('GET /api/admin/session:', error);
+        return res.status(500).json({ success: false, message: 'تعذر التحقق من الجلسة.' });
+    }
+});
+
+app.post('/api/admin/logout', (req, res) => {
+    clearAdminCookie(res);
+    res.set('Cache-Control', 'no-store');
+    res.json({ success: true });
+});
 
 // ==================== تسجيل حساب جديد ====================
 
@@ -798,12 +914,8 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 
 app.post('/api/admin/users', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        });
+        const email = String(req.adminSession?.email || '').trim().toLowerCase();
+        const admin = await User.findOne({ email, role: 'admin' }).select('name email');
 
         if (!admin) {
             return res.status(403).json({
@@ -812,14 +924,15 @@ app.post('/api/admin/users', async (req, res) => {
             });
         }
 
-        const users = await User.find({});
+        const users = await User.find({}).select('name email role').lean();
 
+        res.set('Cache-Control', 'no-store');
         res.json({
             success: true,
+            adminName: admin.name,
             users: users.map(user => ({
                 name: user.name,
                 email: user.email,
-                pass: user.pass,
                 role: user.role === 'admin'
                     ? 'مشرف (Admin)'
                     : 'طالب (Student)'
