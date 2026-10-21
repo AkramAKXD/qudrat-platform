@@ -1,19 +1,17 @@
-```json
 {
-  "name": "qudrat-platform",
-  "version": "1.0.0",
-  "description": "منصة قدرات التدريبية",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.19.2",
-    "mongoose": "^8.0.0",
-    "nodemailer": "^7.0.3"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+"name": "qudrat-platform",
+"version": "1.0.0",
+"description": "منصة قدرات التدريبية",
+"main": "server.js",
+"scripts": {
+"start": "node server.js"
+},
+"dependencies": {
+"express": "^4.19.2",
+"mongoose": "^8.0.0",
+"nodemailer": "^7.0.3"
+},
+"engines": {
+"node": ">=18.0.0"
 }
-```
+}
