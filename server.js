@@ -358,6 +358,31 @@ app.post('/api/admin/private-users', async (req, res) => {
     }
 });
 
+// تعيين كلمة مرور جديدة لطالب من لوحة المشرف؛ لا نكشف كلمة المرور القديمة أبداً.
+app.post('/api/admin/set-student-password', async (req, res) => {
+    try {
+        const session = readAdminPageToken(getRequestCookie(req, ADMIN_PAGE_COOKIE));
+        if (!session) return res.status(401).json({ success: false, message: 'انتهت الجلسة. سجّل الدخول مجدداً.' });
+        const admin = await User.findOne({ email: session.email, role: 'admin' }).select('_id');
+        if (!admin) return res.status(403).json({ success: false, message: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.' });
+
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const newPassword = String(req.body?.newPassword || '');
+        if (!email || newPassword.length < 8) {
+            return res.status(400).json({ success: false, message: 'أدخل بريد الطالب وكلمة مرور جديدة لا تقل عن 8 أحرف.' });
+        }
+        const student = await User.findOne({ email, role: { $ne: 'admin' } });
+        if (!student) return res.status(404).json({ success: false, message: 'لم يتم العثور على حساب طالب بهذا البريد.' });
+        student.pass = hashPassword(newPassword);
+        await student.save();
+        res.set('Cache-Control', 'no-store');
+        return res.json({ success: true, message: 'تم تعيين كلمة المرور الجديدة بنجاح. أرسلها للطالب عبر قناة آمنة.' });
+    } catch (error) {
+        console.error('POST /api/admin/set-student-password:', error);
+        return res.status(500).json({ success: false, message: 'تعذر تغيير كلمة المرور حالياً.' });
+    }
+});
+
 // حماية جميع واجهات الإدارة اللاحقة بجلسة خادمية موثوقة.
 app.use('/api/admin', requireAdminAuth);
 
