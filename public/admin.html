@@ -99,7 +99,7 @@
   }
 
   async function loadAdminData() {
-    const {response, data} = await api('/api/admin/users', {
+    const {response, data} = await api('/api/admin/private-users', {
       method:'POST',
       body:JSON.stringify({})
     });
