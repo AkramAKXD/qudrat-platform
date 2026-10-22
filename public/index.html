@@ -2501,7 +2501,7 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 document.getElementById('forgot-step-1').classList.add('hidden');
                 document.getElementById('forgot-step-2').classList.remove('hidden');
                 document.getElementById('forgot-step-3').classList.add('hidden');
-                showAlert('forgot', 'تم إرسال رمز التحقق إلى بريدك الإلكتروني إذا كان العنوان مسجلًا لدينا. إذا لم تجد الرسالة في البريد الوارد، فتحقّق من مجلد الرسائل غير المرغوب فيها (Spam) أو البريد الترويجي، ثم أدخل الرمز هنا.', true);
+                showAlert('forgot', 'تم إرسال رمز التحقق إلى بريدك الإلكتروني إذا كان العنوان مسجلًا لدينا. إذا لم تجد الرسالة، فتأكّد من تفقد جميع أقسام البريد الوارد لديك، ثم أدخل الرمز هنا.', true);
             } catch (error) {
                 showAlert('forgot', 'تعذر الاتصال بالخادم. حاول مرة أخرى.', false);
             } finally {
