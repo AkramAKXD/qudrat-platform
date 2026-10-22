@@ -359,27 +359,42 @@ app.post('/api/forgot-password/request', async (req, res) => {
             return res.json({ success: true, message: 'إذا كان البريد مسجلًا لدينا، فستصلك رسالة تحتوي على رمز الاستعادة.' });
         }
 
-        const mailer = getMailer();
-        if (!mailer) {
-            console.error('Password reset email is not configured: set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and SMTP_FROM.');
+        const appsScriptUrl = String(process.env.GOOGLE_APPS_SCRIPT_URL || '').trim();
+        const resetApiSecret = String(process.env.RESET_API_SECRET || '');
+        if (!appsScriptUrl || !resetApiSecret) {
+            console.error('Password reset email is not configured: missing GOOGLE_APPS_SCRIPT_URL or RESET_API_SECRET.');
             return res.status(503).json({ success: false, message: 'خدمة البريد غير مهيأة حاليًا. يرجى المحاولة لاحقًا.' });
         }
 
         const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+
+        // Apps Script يتولى إرسال البريد فقط؛ الخادم يحتفظ بالرمز المشفّر ويتحقق منه.
+        const mailResponse = await fetch(appsScriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secret: resetApiSecret, email, code }),
+            signal: AbortSignal.timeout(20000)
+        });
+
+        let mailResult;
+        try {
+            mailResult = await mailResponse.json();
+        } catch {
+            throw new Error(`Password email service returned a non-JSON response (HTTP ${mailResponse.status}).`);
+        }
+
+        if (!mailResponse.ok || mailResult?.success !== true) {
+            // لا نطبع محتوى الطلب أو المفتاح السري في السجلات.
+            console.error('Password email service failed:', mailResult?.error || `HTTP ${mailResponse.status}`);
+            return res.status(502).json({ success: false, message: 'تعذر إرسال الرمز حاليًا. حاول لاحقًا.' });
+        }
+
         const codeHash = hashResetValue(`${email}:${code}`);
         resetCodes.set(email, {
             codeHash,
             expiresAt: now + RESET_CODE_TTL_MS,
             attempts: 0,
             lastSentAt: now
-        });
-        // لا نرسل الرمز إلا للبريد المسجل، ولا نعيده أبدًا في استجابة API.
-        await mailer.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: email,
-            subject: 'رمز استعادة كلمة المرور - قِمّة',
-            text: `مرحبًا بك في قِمّة،\n\nرمز استعادة كلمة المرور الخاص بك هو: ${code}\n\nصلاحية الرمز 10 دقائق، ويُستخدم مرة واحدة فقط. لا تشارك الرمز مع أي شخص.\n\nإذا لم تطلب استعادة كلمة المرور، فتجاهل هذه الرسالة.`,
-            html: `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.9"><h2>استعادة كلمة المرور - قِمّة</h2><p>رمز الاستعادة الخاص بك:</p><div style="font-size:30px;font-weight:bold;letter-spacing:8px;padding:12px 20px;background:#f2f7f5;border-radius:10px;display:inline-block">${code}</div><p>تنتهي صلاحية الرمز خلال <b>10 دقائق</b>، ويُستخدم مرة واحدة فقط.</p><p>لا تشارك هذا الرمز مع أي شخص. إذا لم تطلب الاستعادة، فتجاهل الرسالة.</p></div>`
         });
 
         return res.json({ success: true, message: 'إذا كان البريد مسجلًا لدينا، فستصلك رسالة تحتوي على رمز الاستعادة.' });
