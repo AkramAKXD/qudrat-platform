@@ -1278,19 +1278,25 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
 
             <div id="forgot-section" class="app-section">
                 <h1>🔑 استعادة كلمة المرور</h1>
+                <p style="color:#64748b;margin-bottom:18px">سنرسل رمزًا مؤقتًا إلى بريدك المسجل للتحقق من ملكية الحساب.</p>
                 <div id="forgot-alert" class="alert"></div>
                 <div id="forgot-step-1">
-                    <div class="form-group"><label>البريد المسجل:</label><input type="email" id="forgotEmail" placeholder="student@gmail.com"></div>
-                    <button type="button" onclick="verifyForgotEmail()">تحقق 🔍</button>
+                    <div class="form-group"><label for="forgotEmail">البريد الإلكتروني المسجل:</label><input type="email" id="forgotEmail" autocomplete="email" placeholder="student@gmail.com"></div>
+                    <button type="button" onclick="requestForgotCode()">إرسال رمز التحقق ✉️</button>
                 </div>
-                <div id="forgot-step-2" class="hidden" style="margin-top: 15px;">
-                    <div class="form-group"><label>كلمة المرور الجديدة:</label>
+                <div id="forgot-step-2" class="hidden" style="margin-top:15px">
+                    <div class="form-group"><label for="forgotCode">رمز التحقق المكوّن من 6 أرقام:</label><input type="text" id="forgotCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000"></div>
+                    <button type="button" onclick="verifyForgotCode()">تحقق من الرمز 🔐</button>
+                    <button type="button" onclick="requestForgotCode(true)" style="margin-top:8px;background:#64748b">إرسال رمز جديد</button>
+                </div>
+                <div id="forgot-step-3" class="hidden" style="margin-top:15px">
+                    <div class="form-group"><label for="newPasswordInput">كلمة المرور الجديدة:</label>
                         <div class="password-container">
-                            <input type="password" id="newPasswordInput" minlength="6" maxlength="18" placeholder="كلمة المرور الجديدة">
+                            <input type="password" id="newPasswordInput" minlength="6" maxlength="128" autocomplete="new-password" placeholder="6 أحرف على الأقل">
                             <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newPasswordInput', this)" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg class="password-eye-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                         </div>
                     </div>
-                    <button type="button" onclick="submitNewPassword()" style="background: #10b981;">تحديث كلمة المرور ✅</button>
+                    <button type="button" onclick="submitNewPassword()" style="background:#10b981">حفظ كلمة المرور الجديدة ✅</button>
                 </div>
                 <div class="switch-link"><span onclick="switchView('login')">العودة لتسجيل الدخول</span></div>
             </div>
@@ -1723,6 +1729,10 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                 targetId = 'forgot-section';
                 document.getElementById('forgot-step-1').classList.remove('hidden');
                 document.getElementById('forgot-step-2').classList.add('hidden');
+                document.getElementById('forgot-step-3').classList.add('hidden');
+                document.getElementById('forgotCode').value = '';
+                document.getElementById('newPasswordInput').value = '';
+                resetSessionToken = '';
             }
             else if (view === 'student') { targetId = 'student-dashboard'; document.getElementById('menu-student')?.classList.add('active'); loadStudentStats(); }
             else if (view === 'quant') { targetId = 'quant-page'; document.getElementById('menu-quant')?.classList.add('active'); }
@@ -2469,29 +2479,59 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
               : '<path d="M2.2 12s3.5-6.2 9.8-6.2 9.8 6.2 9.8 6.2-3.5 6.2-9.8 6.2S2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3"/>';
         }
 
-        async function verifyForgotEmail() {
-            const emailInput = document.getElementById('forgotEmail');
-            const email = (emailInput.value || '').trim().toLowerCase();
+        let resetSessionToken = '';
+
+        async function requestForgotCode(isResend = false) {
+            const email = (document.getElementById('forgotEmail').value || '').trim().toLowerCase();
             if (!email) { showAlert('forgot', 'يرجى إدخال البريد الإلكتروني أولاً.', false); return; }
-            const button = document.querySelector('#forgot-step-1 button');
+            const button = document.querySelector(isResend ? '#forgot-step-2 button:last-child' : '#forgot-step-1 button');
             if (button) button.disabled = true;
             try {
-                const response = await fetch('/api/check-email', {
+                const response = await fetch('/api/forgot-password/request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
                 });
                 const result = await response.json();
                 if (!response.ok || !result.success) {
-                    showAlert('forgot', result.message || 'هذا البريد الإلكتروني غير مسجل لدينا.', false);
+                    showAlert('forgot', result.message || 'تعذر إرسال الرمز. حاول لاحقًا.', false);
                     return;
                 }
-                verifiedForgotEmail = email;
-                document.getElementById('forgot-alert').style.display = 'none';
+                resetSessionToken = '';
                 document.getElementById('forgot-step-1').classList.add('hidden');
                 document.getElementById('forgot-step-2').classList.remove('hidden');
+                document.getElementById('forgot-step-3').classList.add('hidden');
+                showAlert('forgot', result.message || 'إذا كان البريد مسجلًا لدينا فستصلك رسالة بالرمز.', true);
             } catch (error) {
-                showAlert('forgot', 'تعذر التحقق من البريد حالياً. حاول مرة أخرى.', false);
+                showAlert('forgot', 'تعذر الاتصال بالخادم. حاول مرة أخرى.', false);
+            } finally {
+                if (button) button.disabled = false;
+            }
+        }
+
+        async function verifyForgotCode() {
+            const email = (document.getElementById('forgotEmail').value || '').trim().toLowerCase();
+            const code = (document.getElementById('forgotCode').value || '').trim();
+            if (!/^\d{6}$/.test(code)) { showAlert('forgot', 'أدخل الرمز المكوّن من 6 أرقام.', false); return; }
+            const button = document.querySelector('#forgot-step-2 button');
+            if (button) button.disabled = true;
+            try {
+                const response = await fetch('/api/forgot-password/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAlert('forgot', result.message || 'رمز التحقق غير صحيح.', false);
+                    return;
+                }
+                resetSessionToken = result.resetToken;
+                document.getElementById('forgot-step-2').classList.add('hidden');
+                document.getElementById('forgot-step-3').classList.remove('hidden');
+                showAlert('forgot', 'تم التحقق بنجاح. اختر كلمة مرور جديدة.', true);
+            } catch (error) {
+                showAlert('forgot', 'تعذر التحقق من الرمز حاليًا.', false);
             } finally {
                 if (button) button.disabled = false;
             }
@@ -2499,13 +2539,17 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
 
         async function submitNewPassword() {
             const newPass = document.getElementById('newPasswordInput').value;
-            if (!verifiedForgotEmail) { showAlert('forgot', 'تحقق من البريد الإلكتروني أولاً.', false); return; }
-            if (!newPass || newPass.length < 6) { showAlert('forgot', 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.', false); return; }
+            if (!resetSessionToken) { showAlert('forgot', 'جلسة الاستعادة غير صالحة. ابدأ العملية من جديد.', false); return; }
+            if (!newPass || newPass.length < 6 || newPass.length > 128) {
+                showAlert('forgot', 'يجب أن تكون كلمة المرور بين 6 و128 حرفًا.', false); return;
+            }
+            const button = document.querySelector('#forgot-step-3 button');
+            if (button) button.disabled = true;
             try {
                 const response = await fetch('/api/reset-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: verifiedForgotEmail, newPass })
+                    body: JSON.stringify({ resetToken: resetSessionToken, newPass })
                 });
                 const result = await response.json();
                 if (!response.ok || !result.success) {
@@ -2513,11 +2557,14 @@ document.addEventListener('click',function(e){if(!document.body.classList.contai
                     return;
                 }
                 showAlert('forgot', result.message || 'تم تحديث كلمة المرور بنجاح.', true);
-                verifiedForgotEmail = '';
+                resetSessionToken = '';
                 document.getElementById('newPasswordInput').value = '';
-                setTimeout(() => switchView('login'), 900);
+                document.getElementById('forgotCode').value = '';
+                setTimeout(() => switchView('login'), 1200);
             } catch (error) {
                 showAlert('forgot', 'تعذر الاتصال بالخادم. حاول مرة أخرى.', false);
+            } finally {
+                if (button) button.disabled = false;
             }
         }
 
