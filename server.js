@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,45 @@ const userSchema = new mongoose.Schema({
     role: { type: String, default: 'student' }
 });
 const User = mongoose.model('User', userSchema);
+
+// ==================== رموز استعادة كلمة المرور (مؤقتة ومحدودة) ====================
+const resetCodes = new Map();       // email -> { codeHash, expiresAt, attempts, lastSentAt }
+const resetSessions = new Map();    // tokenHash -> { email, expiresAt }
+const resetRequestLimits = new Map();
+const RESET_CODE_TTL_MS = 10 * 60 * 1000;
+const RESET_SESSION_TTL_MS = 10 * 60 * 1000;
+const RESET_RESEND_COOLDOWN_MS = 60 * 1000;
+const RESET_MAX_ATTEMPTS = 5;
+
+function hashResetValue(value) {
+    return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+function cleanExpiredResetData() {
+    const now = Date.now();
+    for (const [email, item] of resetCodes) {
+        if (item.expiresAt <= now) resetCodes.delete(email);
+    }
+    for (const [tokenHash, item] of resetSessions) {
+        if (item.expiresAt <= now) resetSessions.delete(tokenHash);
+    }
+    for (const [key, item] of resetRequestLimits) {
+        if (item.expiresAt <= now) resetRequestLimits.delete(key);
+    }
+}
+function getMailer() {
+    const host = process.env.SMTP_HOST;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    if (!host || !user || !pass) return null;
+    const port = Number(process.env.SMTP_PORT || 587);
+    return nodemailer.createTransport({
+        host,
+        port,
+        secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465,
+        auth: { user, pass }
+    });
+}
+
 
 const questionSchema = new mongoose.Schema({
     id: Number,
@@ -288,77 +328,138 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ==================== التحقق من البريد الإلكتروني ====================
+// ==================== استعادة كلمة المرور بالبريد ورمز مؤقت ====================
 
-app.post('/api/check-email', async (req, res) => {
+// إرسال رمز الاستعادة. الاستجابة موحدة حتى لا نكشف إن كان البريد مسجلاً.
+app.post('/api/forgot-password/request', async (req, res) => {
+    cleanExpiredResetData();
     try {
         const email = String(req.body?.email || '').trim().toLowerCase();
-
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                message: 'يرجى إدخال البريد الإلكتروني.'
-            });
+        const ip = String(req.ip || req.socket?.remoteAddress || 'unknown');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ success: false, message: 'أدخل بريدًا إلكترونيًا صحيحًا.' });
         }
 
-        const user = await User.findOne({ email }).select('_id');
+        const now = Date.now();
+        const limitKey = `${ip}:${email}`;
+        const limit = resetRequestLimits.get(limitKey);
+        if (limit && limit.count >= 5 && limit.expiresAt > now) {
+            return res.status(429).json({ success: false, message: 'تم تجاوز عدد المحاولات. حاول لاحقًا.' });
+        }
+        if (limit && limit.expiresAt > now) limit.count += 1;
+        else resetRequestLimits.set(limitKey, { count: 1, expiresAt: now + 15 * 60 * 1000 });
 
+        const previous = resetCodes.get(email);
+        if (previous && now - previous.lastSentAt < RESET_RESEND_COOLDOWN_MS) {
+            return res.status(429).json({ success: false, message: 'انتظر دقيقة قبل طلب رمز جديد.' });
+        }
+
+        const user = await User.findOne({ email }).select('_id email');
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ هذا البريد الإلكتروني غير مسجل لدينا.'
-            });
+            return res.json({ success: true, message: 'إذا كان البريد مسجلًا لدينا، فستصلك رسالة تحتوي على رمز الاستعادة.' });
         }
 
-        return res.json({
-            success: true,
-            message: 'تم التحقق من البريد الإلكتروني.'
+        const mailer = getMailer();
+        if (!mailer) {
+            console.error('Password reset email is not configured: set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and SMTP_FROM.');
+            return res.status(503).json({ success: false, message: 'خدمة البريد غير مهيأة حاليًا. يرجى المحاولة لاحقًا.' });
+        }
+
+        const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+        const codeHash = hashResetValue(`${email}:${code}`);
+        resetCodes.set(email, {
+            codeHash,
+            expiresAt: now + RESET_CODE_TTL_MS,
+            attempts: 0,
+            lastSentAt: now
         });
+        // لا نرسل الرمز إلا للبريد المسجل، ولا نعيده أبدًا في استجابة API.
+        await mailer.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to: email,
+            subject: 'رمز استعادة كلمة المرور - قِمّة',
+            text: `مرحبًا بك في قِمّة،\n\nرمز استعادة كلمة المرور الخاص بك هو: ${code}\n\nصلاحية الرمز 10 دقائق، ويُستخدم مرة واحدة فقط. لا تشارك الرمز مع أي شخص.\n\nإذا لم تطلب استعادة كلمة المرور، فتجاهل هذه الرسالة.`,
+            html: `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.9"><h2>استعادة كلمة المرور - قِمّة</h2><p>رمز الاستعادة الخاص بك:</p><div style="font-size:30px;font-weight:bold;letter-spacing:8px;padding:12px 20px;background:#f2f7f5;border-radius:10px;display:inline-block">${code}</div><p>تنتهي صلاحية الرمز خلال <b>10 دقائق</b>، ويُستخدم مرة واحدة فقط.</p><p>لا تشارك هذا الرمز مع أي شخص. إذا لم تطلب الاستعادة، فتجاهل الرسالة.</p></div>`
+        });
+
+        return res.json({ success: true, message: 'إذا كان البريد مسجلًا لدينا، فستصلك رسالة تحتوي على رمز الاستعادة.' });
     } catch (error) {
-        console.error('POST /api/check-email:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'تعذر التحقق من البريد حالياً.'
-        });
+        console.error('POST /api/forgot-password/request:', error.message);
+        return res.status(500).json({ success: false, message: 'تعذر إرسال الرمز حاليًا. حاول لاحقًا.' });
     }
 });
 
-// ==================== إعادة تعيين كلمة المرور ====================
-
-app.post('/api/reset-password', async (req, res) => {
+// التحقق من الرمز وإصدار جلسة استعادة عشوائية مرتبطة بالبريد وصالحة مرة واحدة.
+app.post('/api/forgot-password/verify', async (req, res) => {
+    cleanExpiredResetData();
     try {
         const email = String(req.body?.email || '').trim().toLowerCase();
-        const newPass = String(req.body?.newPass || '');
-
-        if (!email || !newPass || newPass.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: 'يرجى إدخال البريد وكلمة مرور من 6 أحرف على الأقل.'
-            });
+        const code = String(req.body?.code || '').trim();
+        const item = resetCodes.get(email);
+        if (!item || item.expiresAt <= Date.now()) {
+            resetCodes.delete(email);
+            return res.status(400).json({ success: false, message: 'الرمز غير صالح أو انتهت صلاحيته. اطلب رمزًا جديدًا.' });
+        }
+        item.attempts += 1;
+        if (item.attempts > RESET_MAX_ATTEMPTS) {
+            resetCodes.delete(email);
+            return res.status(429).json({ success: false, message: 'تجاوزت عدد المحاولات. اطلب رمزًا جديدًا.' });
+        }
+        if (!/^\d{6}$/.test(code) || hashResetValue(`${email}:${code}`) !== item.codeHash) {
+            if (item.attempts >= RESET_MAX_ATTEMPTS) resetCodes.delete(email);
+            return res.status(400).json({ success: false, message: 'رمز التحقق غير صحيح.' });
         }
 
-        const user = await User.findOne({ email });
+        resetCodes.delete(email); // الرمز صالح لاستخدام واحد فقط
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        resetSessions.set(hashResetValue(resetToken), {
+            email,
+            expiresAt: Date.now() + RESET_SESSION_TTL_MS
+        });
+        return res.json({
+            success: true,
+            resetToken,
+            message: 'تم التحقق من الرمز. يمكنك الآن تعيين كلمة مرور جديدة.'
+        });
+    } catch (error) {
+        console.error('POST /api/forgot-password/verify:', error.message);
+        return res.status(500).json({ success: false, message: 'تعذر التحقق من الرمز حاليًا.' });
+    }
+});
 
+// لا يمكن تغيير كلمة المرور إلا برمز جلسة ناتج عن تحقق ناجح، وتُستهلك الجلسة بعد الاستخدام.
+app.post('/api/reset-password', async (req, res) => {
+    cleanExpiredResetData();
+    try {
+        const newPass = String(req.body?.newPass || '');
+        const resetToken = String(req.body?.resetToken || '');
+        if (newPass.length < 6 || newPass.length > 128) {
+            return res.status(400).json({ success: false, message: 'يجب أن تكون كلمة المرور بين 6 و128 حرفًا.' });
+        }
+        if (!/^[a-f0-9]{64}$/i.test(resetToken)) {
+            return res.status(401).json({ success: false, message: 'جلسة الاستعادة غير صالحة. ابدأ العملية من جديد.' });
+        }
+
+        const tokenHash = hashResetValue(resetToken);
+        const session = resetSessions.get(tokenHash);
+        if (!session || session.expiresAt <= Date.now()) {
+            resetSessions.delete(tokenHash);
+            return res.status(401).json({ success: false, message: 'انتهت جلسة الاستعادة. اطلب رمزًا جديدًا.' });
+        }
+
+        const user = await User.findOne({ email: session.email });
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: '❌ هذا البريد الإلكتروني غير مسجل لدينا.'
-            });
+            resetSessions.delete(tokenHash);
+            return res.status(400).json({ success: false, message: 'تعذر استعادة الحساب. ابدأ العملية من جديد.' });
         }
 
         user.pass = newPass;
         await user.save();
-
-        res.json({
-            success: true,
-            message: '✅ تم تحديث كلمة المرور بنجاح!'
-        });
+        resetSessions.delete(tokenHash);
+        return res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح.' });
     } catch (error) {
-        console.error('POST /api/reset-password:', error);
-        res.status(500).json({
-            success: false,
-            message: '❌ حدث خطأ في الخادم'
-        });
+        console.error('POST /api/reset-password:', error.message);
+        return res.status(500).json({ success: false, message: 'حدث خطأ في الخادم.' });
     }
 });
 
