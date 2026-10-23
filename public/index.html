@@ -1187,6 +1187,22 @@ html.qm-fx .section-big-card:hover,html.qm-fx .skill-card:hover,html.qm-fx .stud
 @media(max-width:760px){html.qm-fx button.qm-k{box-shadow:0 3px 0 var(--kd),0 6px 12px rgba(18,59,72,.14),inset 0 1px 0 rgba(255,255,255,.4)!important}}
 
 </style>
+<style id="qm-auth-slide-perf">
+/* ===== sliding overlay panel (like the reference video) ===== */
+.auth-section .auth-visual-panel{will-change:auto;z-index:4}
+.auth-section.qm-sliding .auth-visual-panel{transition:transform .75s cubic-bezier(.65,0,.25,1)!important;will-change:transform;animation:none!important}
+.auth-section.qm-sliding .auth-form-area{transition:opacity .45s ease;opacity:0;animation:none!important}
+#login-section.auth-section.active-view .auth-visual-panel,
+#register-section.auth-section.active-view .auth-visual-panel{animation:none!important}
+#login-section.auth-section.active-view .auth-form-area,
+#register-section.auth-section.active-view .auth-form-area{animation:qmFormFade .55s ease .05s both!important}
+@keyframes qmFormFade{from{opacity:0}to{opacity:1}}
+/* ===== performance: same look, much lighter on desktop ===== */
+body::before,body::after{filter:none!important;animation:none!important;opacity:.55}
+*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.auth-orbit-b,.auth-3d-stack,.auth-mini-cube,#landing-section .orbit-one,#landing-section .orbit-two,.hero-title em .qm-word,#postLoginTopbar::after,.note-score,.note-book,.hero-photo-main img{animation:none!important}
+.hero-photo-main,.hero-photo-main img,.qm-word,.qm-cp{will-change:auto!important}
+</style>
 </head>
 <body id="appBody">
 
@@ -1375,7 +1391,7 @@ html.qm-fx .section-big-card:hover,html.qm-fx .skill-card:hover,html.qm-fx .stud
             </div>
 
             <div id="login-section" class="app-section auth-section auth-login">
-                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">∑</span><span class="auth-mini-cube">△</span></div><span class="auth-panel-kicker">قِمّة · منصة القدرات</span><strong>أهلاً بعودتك</strong><p>خطوتك القادمة تبدأ من هنا.<br>تعلّم بثقة، وتقدّم كل يوم.</p><button type="button" class="auth-panel-switch" onclick="switchView('register')">إنشاء حساب جديد <span>←</span></button></div>
+                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">∑</span><span class="auth-mini-cube">△</span></div><span class="auth-panel-kicker">قِمّة · منصة القدرات</span><strong>أهلاً بعودتك</strong><p>خطوتك القادمة تبدأ من هنا.<br>تعلّم بثقة، وتقدّم كل يوم.</p><button type="button" class="auth-panel-switch" onclick="authSlide('register')">إنشاء حساب جديد <span>←</span></button></div>
                 <div class="auth-form-area">
                 <h1>🎯 مرحباً بك مجدداً!</h1>
                 <div id="login-alert" class="alert"></div>
@@ -1420,7 +1436,7 @@ html.qm-fx .section-big-card:hover,html.qm-fx .skill-card:hover,html.qm-fx .stud
             </div>
 
             <div id="register-section" class="app-section auth-section auth-register">
-                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">√</span><span class="auth-mini-cube">π</span></div><span class="auth-panel-kicker">ابدأ رحلتك اليوم</span><strong>اصنع فرصتك</strong><p>درّب عقلك، واكتشف مستواك،<br>واقترب من هدفك بثبات.</p><button type="button" class="auth-panel-switch" onclick="switchView('login')">لديك حساب؟ سجّل الدخول <span>←</span></button></div>
+                <div class="auth-visual-panel"><div class="auth-panel-orbit auth-orbit-a"></div><div class="auth-panel-orbit auth-orbit-b"></div><div class="auth-3d-stack"><span class="auth-stack-sheet sheet-back"></span><span class="auth-stack-sheet sheet-mid"></span><span class="auth-stack-sheet sheet-front">√</span><span class="auth-mini-cube">π</span></div><span class="auth-panel-kicker">ابدأ رحلتك اليوم</span><strong>اصنع فرصتك</strong><p>درّب عقلك، واكتشف مستواك،<br>واقترب من هدفك بثبات.</p><button type="button" class="auth-panel-switch" onclick="authSlide('login')">لديك حساب؟ سجّل الدخول <span>←</span></button></div>
                 <div class="auth-form-area">
                 <h1>✨ انضم إلى نخبة المتفوقين</h1>
                 <div id="reg-alert" class="alert"></div>
@@ -1892,7 +1908,7 @@ html.qm-fx .section-big-card:hover,html.qm-fx .skill-card:hover,html.qm-fx .stud
                     document.body.classList.remove('is-navigating');
                 }, 360);
             };
-            if (previousView && previousView !== target) {
+            if (previousView && previousView !== target && !(previousView.classList.contains('auth-section') && target.classList.contains('auth-section'))) {
                 previousView.style.pointerEvents = 'none';
                 previousView.style.opacity = '0';
                 previousView.style.transform = 'translateY(-6px) scale(.995)';
@@ -3741,6 +3757,18 @@ if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers
 }
 })();
 
+</script>
+<script>
+function authSlide(to){
+  var from=document.querySelector('.auth-section.active-view');
+  var target=document.getElementById(to==='login'?'login-section':'register-section');
+  if(!from||from===target||matchMedia('(max-width:760px)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches||from.classList.contains('qm-sliding')){switchView(to);return;}
+  var p=from.querySelector('.auth-visual-panel'),f=from.querySelector('.auth-form-area');
+  var pr=p.getBoundingClientRect(),fr=f.getBoundingClientRect();
+  from.classList.add('qm-sliding');
+  requestAnimationFrame(function(){p.style.transform='translateX('+(fr.left-pr.left)+'px)';});
+  setTimeout(function(){switchView(to);from.classList.remove('qm-sliding');p.style.transform='';},780);
+}
 </script>
 </body>
 </html>
