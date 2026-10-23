@@ -1197,6 +1197,7 @@ html.qm-fx .section-big-card:hover,html.qm-fx .skill-card:hover,html.qm-fx .stud
 #login-section.auth-section.active-view .auth-form-area,
 #register-section.auth-section.active-view .auth-form-area{animation:qmFormFade .55s ease .05s both!important}
 @keyframes qmFormFade{from{opacity:0}to{opacity:1}}
+body.qm-auth-swap #page-transition-bar,body.qm-auth-swap #loading-overlay{display:none!important}
 /* ===== performance: same look, much lighter on desktop ===== */
 body::before,body::after{filter:none!important;animation:none!important;opacity:.55}
 *,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -3519,7 +3520,7 @@ function runCurtain(){
 if(typeof orig==='function'){
   window.switchView=function(view){
     var args=[].slice.call(arguments);
-    if(first||inner){first=false;return orig.apply(this,args);}
+    if(first||inner||window.__qmAuthSwap){first=false;return orig.apply(this,args);}
     var cur=sessionStorage.getItem('currentView');
     if(view===cur&&document.querySelector('.app-section.active-view')&&!busy)return orig.apply(this,args);
     pending=args;
@@ -3533,7 +3534,7 @@ var SEL='.section-big-card,.skill-card,.student-stat-card,.stats-detail-card,.mo
 function visible(e){return e.offsetParent!==null||getComputedStyle(e).position==='fixed';}
 function stag(n){return {amount:Math.min(.6,Math.max(.1,n*.06))};}
 function enter(section,delay){
-  if(!section)return;
+  if(!section||window.__qmAuthSwap)return;
   if(section.id==='landing-section'){landingEnter(delay);return;}
   var els=[].slice.call(section.querySelectorAll(SEL)).filter(visible).slice(0,40);
   if(!els.length)return;
@@ -3767,7 +3768,7 @@ function authSlide(to){
   var pr=p.getBoundingClientRect(),fr=f.getBoundingClientRect();
   from.classList.add('qm-sliding');
   requestAnimationFrame(function(){p.style.transform='translateX('+(fr.left-pr.left)+'px)';});
-  setTimeout(function(){switchView(to);from.classList.remove('qm-sliding');p.style.transform='';},780);
+  setTimeout(function(){window.__qmAuthSwap=true;document.body.classList.add('qm-auth-swap');switchView(to);from.classList.remove('qm-sliding');p.style.transform='';setTimeout(function(){window.__qmAuthSwap=false;document.body.classList.remove('qm-auth-swap');},500);},780);
 }
 </script>
 </body>
