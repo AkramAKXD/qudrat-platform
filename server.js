@@ -662,7 +662,7 @@ app.post('/api/admin/bulk-question-section', async (req, res) => {
         const examSection = Number(req.body?.examSection);
         if (!ids.length) return res.status(400).json({ success:false, message:'حدد سؤالاً واحداً على الأقل.' });
         if (!Number.isInteger(examSection) || examSection < 1 || examSection > 10) return res.status(400).json({ success:false, message:'القسم يجب أن يكون من 1 إلى 10.' });
-        const result = await Question.updateMany({ _id: { $in: ids }, section: { $in: ['quant','verbal'] }, type: 'simulation' }, { $set: { examSection } });
+        const result = await Question.updateMany({ _id: { $in: ids }, $or: [{ section: { $in: ['quant','verbal'] }, type: 'simulation' }, { type: 'qiyas_simulation' }] }, { $set: { examSection } });
         return res.json({ success:true, modifiedCount:result.modifiedCount, message:'تم تعديل القسم للأسئلة المحددة.' });
     } catch (error) { console.error('bulk-question-section:', error); return res.status(500).json({ success:false, message:'حدث خطأ أثناء تعديل القسم.' }); }
 });
