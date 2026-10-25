@@ -2213,8 +2213,10 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                 return;
             }
 
+            // تجهيز فهرس الأسئلة مرة واحدة لتقليل البطء عند عرض أعداد كبيرة من الأسئلة.
+            const originalIndexes = new Map(globalQuestionsCache.map((item, index) => [String(item._id), index]));
             listContainer.innerHTML = filtered.map((q, questionPosition) => {
-                const originalIndex = globalQuestionsCache.findIndex(item => item === q);
+                const originalIndex = originalIndexes.get(String(q._id)) ?? -1;
                 let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
                 const showExamSection = (['quant','verbal'].includes(q.section) && q.type === 'simulation') || q.type === 'qiyas_simulation';
                 const examSectionLabel = showExamSection ? `<span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:6px;font-size:12px">القسم ${Number(q.examSection ?? q.sectionNumber ?? q.part ?? 1)}</span>` : '';
