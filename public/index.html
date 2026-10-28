@@ -1779,6 +1779,8 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         let selectedReviewContext = null;
         let verifiedForgotEmail = '';
         let globalQuestionsCache = [];
+        let adminQuestionPage = 0;
+        const ADMIN_QUESTION_PAGE_SIZE = 30;
         let customModelNamesCache = {};
 
         let adminCurrentCat = 'verbal'; 
@@ -2108,6 +2110,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         }
 
         function adminSelectMainCategory(cat) {
+            adminQuestionPage = 0;
             adminCurrentCat = cat;
             adminCurrentSelectedModel = null;
             ['verbal', 'quant', 'qiyas'].forEach(c => {
@@ -2126,6 +2129,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         }
 
         function adminSelectSubCategory(sub) {
+            adminQuestionPage = 0;
             adminCurrentSub = sub;
             adminCurrentSelectedModel = null;
             ['Practice', 'Simulation'].forEach(s => {
@@ -2191,6 +2195,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         }
 
         function adminSelectModel(mNum) {
+            adminQuestionPage = 0;
             adminCurrentSelectedModel = mNum;
             renderAdminModels();
             renderAdminQuestionsForSelectedModel();
@@ -2213,9 +2218,13 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                 return;
             }
 
-            // تجهيز فهرس الأسئلة مرة واحدة لتقليل البطء عند عرض أعداد كبيرة من الأسئلة.
+            // عرض 30 سؤالاً فقط في كل صفحة لتجنب إنشاء آلاف عناصر DOM دفعة واحدة.
+            const pageCount = Math.max(1, Math.ceil(filtered.length / ADMIN_QUESTION_PAGE_SIZE));
+            adminQuestionPage = Math.min(Math.max(0, adminQuestionPage), pageCount - 1);
+            const pageStart = adminQuestionPage * ADMIN_QUESTION_PAGE_SIZE;
+            const visibleQuestions = filtered.slice(pageStart, pageStart + ADMIN_QUESTION_PAGE_SIZE);
             const originalIndexes = new Map(globalQuestionsCache.map((item, index) => [String(item._id), index]));
-            listContainer.innerHTML = filtered.map((q, questionPosition) => {
+            listContainer.innerHTML = visibleQuestions.map((q, questionPosition) => {
                 const originalIndex = originalIndexes.get(String(q._id)) ?? -1;
                 let opts = Array.isArray(q.options) ? q.options : [q.options.a, q.options.b, q.options.c, q.options.d];
                 const showExamSection = (['quant','verbal'].includes(q.section) && q.type === 'simulation') || q.type === 'qiyas_simulation';
@@ -2225,7 +2234,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <label style="display:flex;align-items:center;gap:5px;background:#f0fdf4;padding:5px 8px;border-radius:8px;font-size:12px;margin:0"><input type="checkbox" class="bulk-question-check" data-qid="${q._id}" onchange="toggleBulkQuestionSelection(this)" ${bulkSelectedQuestionIds.has(String(q._id))?'checked':''} style="width:17px;height:17px"> تحديد</label>
-                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">السؤال ${questionPosition + 1}</span>
+                                <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">السؤال ${pageStart + questionPosition + 1}</span>
                                 <span style="background:#f1f5f9;color:#475569;padding:3px 10px;border-radius:6px;font-size:12px">${q.section === 'quant' ? 'كمي' : q.section === 'verbal' ? 'لفظي' : q.section}</span>
                                 ${examSectionLabel}
                                 <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-size:12px;">نموذج ${q.model}</span>
@@ -2245,11 +2254,20 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                     </div>
                 `;
             }).join('');
+            if (pageCount > 1) {
+                listContainer.insertAdjacentHTML('beforeend', `<div style="display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:18px;background:#f8fafc;border-radius:12px;margin:12px 0"><button type="button" ${adminQuestionPage===0?'disabled':''} onclick="changeAdminQuestionPage(-1)" style="width:auto;margin:0;padding:8px 16px">السابق</button><span style="font-weight:700;color:#334155">صفحة ${adminQuestionPage+1} من ${pageCount} — ${filtered.length} سؤالاً</span><button type="button" ${adminQuestionPage>=pageCount-1?'disabled':''} onclick="changeAdminQuestionPage(1)" style="width:auto;margin:0;padding:8px 16px">التالي</button></div>`);
+            }
             updateBulkQuestionToolbar();
         }
 
+        function changeAdminQuestionPage(direction) {
+            adminQuestionPage = Math.max(0, adminQuestionPage + Number(direction || 0));
+            renderAdminQuestionsForSelectedModel();
+            document.getElementById('adminFilteredQuestionsList')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+
         function toggleBulkQuestionSelection(el){const id=String(el.dataset.qid||'');if(el.checked)bulkSelectedQuestionIds.add(id);else bulkSelectedQuestionIds.delete(id);bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
-        function toggleSelectAllAdminQuestions(){document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>{el.checked=true;bulkSelectedQuestionIds.add(String(el.dataset.qid));});bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
+        function toggleSelectAllAdminQuestions(){const targetType=adminCurrentCat==='qiyas'?'qiyas_simulation':adminCurrentSub;globalQuestionsCache.forEach(q=>{const matches=adminCurrentCat==='qiyas'?(q.type==='qiyas_simulation'&&Number(q.model)===Number(adminCurrentSelectedModel)):(q.section===adminCurrentCat&&q.type===targetType&&Number(q.model)===Number(adminCurrentSelectedModel));if(matches)bulkSelectedQuestionIds.add(String(q._id));});document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>{el.checked=true;});bulkSelectionConfirmed=false;updateBulkQuestionToolbar();}
         function clearBulkQuestionSelection(){bulkSelectedQuestionIds.clear();bulkSelectionConfirmed=false;document.querySelectorAll('#adminFilteredQuestionsList .bulk-question-check').forEach(el=>el.checked=false);updateBulkQuestionToolbar();}
         function updateBulkQuestionToolbar(){const count=document.getElementById('bulkSelectedCount');if(count)count.textContent=bulkSelectedQuestionIds.size;const actions=document.getElementById('bulkQuestionActions');if(actions)actions.classList.toggle('hidden',!bulkSelectionConfirmed||bulkSelectedQuestionIds.size===0);const cancel=document.getElementById('bulkCancelSelectionButton');if(cancel)cancel.classList.toggle('hidden',bulkSelectedQuestionIds.size===0);const sectionBtn=document.getElementById('bulkSectionButton');if(sectionBtn)sectionBtn.classList.toggle('hidden',!(adminCurrentCat==='qiyas'||adminCurrentCat==='qiyas_simulation'||(['quant','verbal'].includes(adminCurrentCat)&&adminCurrentSub==='simulation')));}
         let bulkNoticeTimer=null; function showBulkQuestionNotice(message,success=true){const el=document.getElementById('bulkQuestionNotice');if(!el)return;el.textContent=message;el.style.display='block';el.style.color=success?'#166534':'#991b1b';el.style.background=success?'#dcfce7':'#fee2e2';el.style.border='1px solid '+(success?'#86efac':'#fca5a5');if(bulkNoticeTimer)clearTimeout(bulkNoticeTimer);bulkNoticeTimer=setTimeout(()=>{el.style.display='none';},5000);}
@@ -3004,32 +3022,30 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         }
 
         async function loadAdminStats() {
+            const el = document.getElementById('statsText');
+            if (!el) return;
+            // لا نحمل بنك الأسئلة كاملاً لمجرد عرض الإحصاءات؛ هذا كان يرسل صور الأسئلة
+            // ويكرر طلبات ثقيلة كلما فتح المشرف لوحة التحكم.
+            el.innerHTML = '<p style="text-align:center;color:#64748b;padding:18px">جاري تحميل الإحصائيات...</p>';
             try {
-                const questions = await (await fetch('/api/questions')).json();
-                globalQuestionsCache = questions;
-                const el = document.getElementById('statsText');
-                if (el) el.innerHTML = `<div class="student-stat-grid"><article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${questions.length}</strong></article><article class="student-stat-card"><small>نماذج مضافة</small><strong id="admin-model-count">…</strong></article><article class="student-stat-card"><small>عدد الطلاب</small><strong id="admin-student-count">…</strong></article></div><p style="color:#64748b">لإظهار ترتيب النماذج حسب الإجابات الصحيحة ودرجات الطلاب، يجب تسجيل محاولات الاختبارات في الخادم أولًا.</p>`;
-                const [modelsRes, usersRes] = await Promise.allSettled([
-                    fetch('/api/custom-models').then(r=>r.json()),
-                    fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})}).then(r=>r.json())
-                ]);
-                if(modelsRes.status==='fulfilled') { const e=document.getElementById('admin-model-count'); if(e)e.textContent=Object.keys(modelsRes.value.models||{}).length; }
-                if(usersRes.status==='fulfilled' && usersRes.value.success) { const e=document.getElementById('admin-student-count'); if(e)e.textContent=usersRes.value.users.filter(u=>(u.role||'').includes('Student')).length; }
-                try {
-                    const analytics = await (await fetch('/api/admin/analytics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})})).json();
-                    if(analytics.success) {
-                        const stats=document.getElementById('statsText');
-                        stats.innerHTML=`<div class="student-stat-grid">
-                        <article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${analytics.questionCount}</strong></article>
-                        <article class="student-stat-card"><small>النماذج المضافة</small><strong>${analytics.modelCount}</strong></article>
-                        <article class="student-stat-card"><small>الطلاب</small><strong>${analytics.studentCount}</strong></article>
-                        <article class="student-stat-card"><small>متوسط الدقة</small><strong>${analytics.averageScore}%</strong></article>
-                        <article class="student-stat-card"><small>الإجابات المسجلة</small><strong>${analytics.attemptsCount}</strong></article></div>
-                        <h3 style="text-align:right;margin:22px 0 12px">النماذج الأكثر إجابات صحيحة</h3>
-                        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr><th>النموذج</th><th>إجابات صحيحة</th><th>عدد الإجابات</th><th>الطلاب</th><th>متوسط الدقة</th></tr></thead><tbody>${analytics.popularModels.map((m,i)=>`<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">${i+1}. ${m.section==='verbal'?'لفظي':m.section==='mock'?'محاكي قياس':'كمي'} — نموذج ${m.model}</td><td>${m.correctAnswers}</td><td>${m.answers}</td><td>${m.students}</td><td>${m.averageScore}%</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px">ستظهر نتائج ترتيب النماذج بعد تسجيل محاولات الطلاب.</td></tr>'}</tbody></table></div>`;
-                    }
-                } catch(e) {}
-            } catch (e) { const el=document.getElementById('statsText'); if(el)el.textContent='تعذر تحميل الإحصائيات؛ تحقق من اتصال الخادم.'; }
+                const response = await fetch('/api/admin/analytics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') })
+                });
+                const analytics = await response.json();
+                if (!response.ok || !analytics.success) throw new Error(analytics.message || 'تعذر تحميل الإحصائيات');
+                el.innerHTML = `<div class="student-stat-grid">
+                    <article class="student-stat-card"><small>إجمالي الأسئلة</small><strong>${analytics.questionCount}</strong></article>
+                    <article class="student-stat-card"><small>النماذج المضافة</small><strong>${analytics.modelCount}</strong></article>
+                    <article class="student-stat-card"><small>الطلاب</small><strong>${analytics.studentCount}</strong></article>
+                    <article class="student-stat-card"><small>متوسط الدقة</small><strong>${analytics.averageScore}%</strong></article>
+                    <article class="student-stat-card"><small>الإجابات المسجلة</small><strong>${analytics.attemptsCount}</strong></article></div>
+                    <h3 style="text-align:right;margin:22px 0 12px">النماذج الأكثر إجابات صحيحة</h3>
+                    <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:right"><thead><tr><th>النموذج</th><th>إجابات صحيحة</th><th>عدد الإجابات</th><th>الطلاب</th><th>متوسط الدقة</th></tr></thead><tbody>${(analytics.popularModels || []).map((m,i)=>`<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0">${i+1}. ${m.section==='verbal'?'لفظي':m.section==='mock'?'محاكي قياس':'كمي'} — نموذج ${m.model}</td><td>${m.correctAnswers}</td><td>${m.answers}</td><td>${m.students}</td><td>${m.averageScore}%</td></tr>`).join('')||'<tr><td colspan="5" style="padding:18px">ستظهر نتائج ترتيب النماذج بعد تسجيل محاولات الطلاب.</td></tr>'}</tbody></table></div>`;
+            } catch (e) {
+                el.innerHTML = `<p style="color:#b91c1c;padding:18px">${e.message || 'تعذر تحميل الإحصائيات؛ تحقق من اتصال الخادم.'}</p>`;
+            }
         }
         async function loadStudentStats() {
             const email = sessionStorage.getItem('sessionUserEmail');
