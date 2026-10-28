@@ -3798,5 +3798,48 @@ function authSlide(to){
   setTimeout(function(){window.__qmAuthSwap=true;document.body.classList.add('qm-auth-swap');switchView(to);from.classList.remove('qm-sliding');p.style.transform='';setTimeout(function(){window.__qmAuthSwap=false;document.body.classList.remove('qm-auth-swap');},500);},780);
 }
 </script>
+
+<script id="qimma-exam-persist-v1">
+(function(){
+ const KEY='qimma-active-attempt-v1'; let restoring=false;
+ function active(){const el=document.getElementById('training-section');return !!(el&&el.classList.contains('active-view'));}
+ function save(){try{
+   if(!active()||!Array.isArray(currentTrainingQuestions)||!currentTrainingQuestions.length||!['training','exam','qiyas_simulation'].includes(currentActionMode))return;
+   const c=document.getElementById('training-container');const txt=c?.innerText||'';
+   if(/انتهى التدريب|أتممت النموذج|اكتملت المحاولة|نتيجتك|تم إنهاء الاختبار/.test(txt)){localStorage.removeItem(KEY);return;}
+   const state={email:sessionStorage.getItem('sessionUserEmail')||'',section:currentSectionType,mode:currentActionMode,model:Number(selectedModelNum),index:Number(currentQuestionIndex)||0,answers:trainingAnswers||{},flags:examFlaggedQuestions||{},trainingReview:!!trainingReviewMode,examReview:!!examReviewMode,examIntro:!!examSectionIntro,qiyasStarted:!!window.qiyasExamStarted,qiyasReview:!!window.qiyasReviewOnly,qiyasReturn:!!window.qiyasReturnFromReview,qiyasRemaining:Number(qiyasSecondsLeft)||0,trainingRemaining:Number(trainingSecondsLeft)||0,savedAt:Date.now(),title:window.qimmaCurrentModelTitle||''};
+   localStorage.setItem(KEY,JSON.stringify(state));
+ }catch(e){}}
+ async function restore(){if(restoring)return;restoring=true;try{
+   const state=JSON.parse(localStorage.getItem(KEY)||'null');
+   if(!state||!state.email||state.email!==(sessionStorage.getItem('sessionUserEmail')||'')||!sessionStorage.getItem('sessionUserEmail'))return;
+   if(!['training','exam','qiyas_simulation'].includes(state.mode)||!state.model)return;
+   const res=await fetch('/api/questions',{cache:'no-store'});if(!res.ok)throw Error('questions');const all=await res.json();
+   currentSectionType=state.section;currentActionMode=state.mode;selectedModelNum=Number(state.model);window.qimmaCurrentModelTitle=state.title||`النموذج ${state.model}`;
+   if(state.mode==='qiyas_simulation')currentTrainingQuestions=all.filter(q=>q.type==='qiyas_simulation'&&Number(q.model)===Number(state.model));
+   else {const expected=state.mode==='exam'?'simulation':'practice';currentTrainingQuestions=all.filter(q=>q.section===state.section&&Number(q.model)===Number(state.model)&&q.type===expected);if(state.mode==='exam'&&['quant','verbal'].includes(state.section))currentTrainingQuestions.sort((a,b)=>getExamSection(a)-getExamSection(b));}
+   if(!currentTrainingQuestions.length){localStorage.removeItem(KEY);return;}
+   currentQuestionIndex=Math.max(0,Math.min(currentTrainingQuestions.length-1,Number(state.index)||0));trainingAnswers=state.answers&&typeof state.answers==='object'?state.answers:{};examFlaggedQuestions=state.flags&&typeof state.flags==='object'?state.flags:{};trainingReviewMode=!!state.trainingReview;examReviewMode=!!state.examReview;examSectionIntro=!!state.examIntro;trainingReturnFromReview=false;examReturnFromReview=false;
+   currentCorrectCount=0;currentModelAnsweredCount=Object.keys(trainingAnswers).length;window.qiyasExamStarted=!!state.qiyasStarted;window.qiyasReviewOnly=!!state.qiyasReview;window.qiyasReturnFromReview=!!state.qiyasReturn;window.qiyasFontMode=window.qiyasFontMode||'normal';
+   document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));document.getElementById('training-section')?.classList.add('active-view');
+   if(state.mode==='qiyas_simulation'){
+     if(window.qiyasExamStarted&&!window.qiyasReviewOnly){qiyasSecondsLeft=Math.max(0,Number(state.qiyasRemaining)||0);renderQiyasQuestion(document.getElementById('training-container'));if(qiyasSecondsLeft>0)startQiyasTimer();}
+     else if(window.qiyasReviewOnly)renderTrainingQuestion();else renderQiyasWelcome();
+   }else{
+     trainingSecondsLeft=Math.max(0,Number(state.trainingRemaining)||0);
+     if(state.mode==='exam')renderTrainingQuestion();else renderTrainingQuestion();
+     if(state.mode==='exam'||state.mode==='training')startTrainingTimer();
+   }
+   requestAnimationFrame(()=>window.scrollTo(0,0));
+ }catch(e){console.warn('تعذر استعادة محاولة الاختبار:',e);}finally{restoring=false;}}
+ document.addEventListener('click',()=>setTimeout(save,0),true);
+ window.addEventListener('beforeunload',save);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
+ setInterval(save,700);
+ document.addEventListener('DOMContentLoaded',()=>setTimeout(restore,250));
+ window.qimmaClearSavedAttempt=()=>{try{localStorage.removeItem(KEY);}catch(e){}};
+})();
+</script>
+
 </body>
 </html>
