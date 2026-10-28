@@ -1204,6 +1204,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 .auth-orbit-b,.auth-3d-stack,.auth-mini-cube,#landing-section .orbit-one,#landing-section .orbit-two,.hero-title em .qm-word,#postLoginTopbar::after,.note-score,.note-book,.hero-photo-main img{animation:none!important}
 .hero-photo-main,.hero-photo-main img,.qm-word,.qm-cp{will-change:auto!important}
 </style>
+<style id="qimma-native-scroll-performance">html,body{scroll-behavior:auto!important}#adminFilteredQuestionsList{scroll-behavior:auto!important;overflow-anchor:none}</style>
 </head>
 <body id="appBody">
 
@@ -3489,9 +3490,9 @@ var fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
 de.classList.add('qm-fx');
 if(window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
 
-/* ---------- Lenis smooth scroll ---------- */
+/* ---------- Native scroll for responsive mouse-wheel scrolling ---------- */
 var lenis=null,curtainOn=false;
-if(window.Lenis){
+if(false && window.Lenis){
   try{
     lenis=new Lenis({lerp:.1,smoothWheel:true,wheelMultiplier:.95,
       prevent:function(n){return !!(n&&n.closest&&n.closest('.custom-modal,.sidebar-menu,[data-lenis-prevent],#adminFilteredQuestionsList,[style*="overflow"],textarea,details'));}});
