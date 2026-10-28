@@ -482,7 +482,9 @@ app.post('/api/reset-password', async (req, res) => {
 
 app.get('/api/questions', async (req, res) => {
     try {
-        const questions = await Question.find({});
+        // lean() يقلل استهلاك الذاكرة والوقت عند تحميل بنك الأسئلة الكبير.
+        const questions = await Question.find({}).lean();
+        res.set('Cache-Control', 'no-store');
         res.json(questions);
     } catch (error) {
         console.error('GET /api/questions:', error);
@@ -1400,100 +1402,54 @@ app.post('/api/student/stats', async (req, res) => {
 
 app.post('/api/admin/analytics', async (req, res) => {
     try {
-        const email =
-            String(req.body?.email || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        });
-
+        const email = String(req.body?.email || '').trim().toLowerCase();
+        const admin = await User.findOne({ email, role: 'admin' }).select('_id').lean();
         if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: 'ليس لديك صلاحية'
-            });
+            return res.status(403).json({ success: false, message: 'ليس لديك صلاحية' });
         }
 
-        const [
-            questionCount,
-            modelCount,
-            studentCount,
-            attempts
-        ] = await Promise.all([
+        // اجعل قاعدة البيانات تحسب الإحصاءات بدل تحميل كل المحاولات إلى ذاكرة Node.js.
+        const [questionCount, modelCount, studentCount, totals, groupedAttempts] = await Promise.all([
             Question.countDocuments(),
             CustomModel.countDocuments(),
             User.countDocuments({ role: { $ne: 'admin' } }),
-            Attempt.find({}).lean()
+            Attempt.aggregate([
+                { $group: { _id: null, attemptsCount: { $sum: 1 }, correctCount: { $sum: { $cond: [{ $eq: ['$correct', true] }, 1, 0] } } } }
+            ]),
+            Attempt.aggregate([
+                { $group: {
+                    _id: {
+                        section: { $cond: [{ $eq: ['$type', 'qiyas_simulation'] }, 'mock', { $ifNull: ['$section', 'quant'] }] },
+                        model: { $ifNull: ['$model', 1] }
+                    },
+                    correctAnswers: { $sum: { $cond: [{ $eq: ['$correct', true] }, 1, 0] } },
+                    answers: { $sum: 1 },
+                    studentsSet: { $addToSet: '$email' }
+                } },
+                { $project: {
+                    _id: 0, section: '$_id.section', model: '$_id.model', correctAnswers: 1, answers: 1,
+                    students: { $size: '$studentsSet' },
+                    averageScore: { $cond: [{ $gt: ['$answers', 0] }, { $round: [{ $multiply: [{ $divide: ['$correctAnswers', '$answers'] }, 100] }, 0] }, 0] }
+                } },
+                { $sort: { correctAnswers: -1 } },
+                { $limit: 10 }
+            ])
         ]);
 
-        const averageScore = attempts.length
-            ? Math.round(
-                attempts.filter(attempt => attempt.correct).length /
-                attempts.length * 100
-            )
-            : 0;
-
-        const groups = new Map();
-
-        attempts.forEach(attempt => {
-            const section = attempt.type === 'qiyas_simulation'
-                ? 'mock'
-                : (attempt.section || 'quant');
-
-            const modelNum = Number(attempt.model) || 1;
-            const key = `${section}|${modelNum}`;
-
-            if (!groups.has(key)) {
-                groups.set(key, {
-                    section,
-                    model: modelNum,
-                    correctAnswers: 0,
-                    answers: 0,
-                    studentsSet: new Set()
-                });
-            }
-
-            const group = groups.get(key);
-
-            group.answers++;
-
-            if (attempt.correct) {
-                group.correctAnswers++;
-            }
-
-            group.studentsSet.add(attempt.email);
-        });
-
-        const popularModels = [...groups.values()]
-            .map(group => ({
-                section: group.section,
-                model: group.model,
-                correctAnswers: group.correctAnswers,
-                answers: group.answers,
-                students: group.studentsSet.size,
-                averageScore: Math.round(
-                    group.correctAnswers / group.answers * 100
-                )
-            }))
-            .sort((a, b) => b.correctAnswers - a.correctAnswers)
-            .slice(0, 10);
-
+        const total = totals[0] || { attemptsCount: 0, correctCount: 0 };
+        res.set('Cache-Control', 'no-store');
         res.json({
             success: true,
             questionCount,
             modelCount,
             studentCount,
-            averageScore,
-            attemptsCount: attempts.length,
-            popularModels
+            averageScore: total.attemptsCount ? Math.round(total.correctCount / total.attemptsCount * 100) : 0,
+            attemptsCount: total.attemptsCount,
+            popularModels: groupedAttempts
         });
     } catch (error) {
         console.error('POST /api/admin/analytics:', error);
-        res.status(500).json({
-            success: false,
-            message: 'تعذر تحميل التحليلات'
-        });
+        res.status(500).json({ success: false, message: 'تعذر تحميل التحليلات' });
     }
 });
 
