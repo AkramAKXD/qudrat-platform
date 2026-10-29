@@ -1076,6 +1076,7 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
   };
 })();
 </script>
+<script>
 function toggleMobileSidebar(){document.body.classList.toggle('mobile-sidebar-open');const b=document.getElementById('mobileMenuToggle');if(b)b.setAttribute('aria-expanded',document.body.classList.contains('mobile-sidebar-open')?'true':'false');}
 document.addEventListener('click',function(e){if(!document.body.classList.contains('mobile-sidebar-open'))return;const s=document.getElementById('appSidebar'),b=document.getElementById('mobileMenuToggle');if(s&&!s.contains(e.target)&&b&&!b.contains(e.target)){document.body.classList.remove('mobile-sidebar-open');b.setAttribute('aria-expanded','false')}if(s&&s.contains(e.target)&&e.target.closest('button')){document.body.classList.remove('mobile-sidebar-open');if(b)b.setAttribute('aria-expanded','false')}});
 </script>
