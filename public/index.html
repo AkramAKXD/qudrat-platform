@@ -1059,24 +1059,6 @@ button:focus-visible,a:focus-visible,.sidebar-menu button:focus-visible{outline:
 }
 </style>
 <script>
-/* Qimma security: send same-origin HttpOnly session cookies with API calls and avoid caching private API responses. */
-(function(){
-  if (window.__qimmaSecureFetchInstalled) return;
-  window.__qimmaSecureFetchInstalled = true;
-  const nativeFetch = window.fetch.bind(window);
-  window.fetch = function(input, init) {
-    const options = Object.assign({}, init || {});
-    let url = '';
-    try { url = new URL(typeof input === 'string' ? input : input.url, window.location.href).pathname; } catch (_) {}
-    if (url.startsWith('/api/')) {
-      if (!options.credentials) options.credentials = 'same-origin';
-      if (!options.cache) options.cache = 'no-store';
-    }
-    return nativeFetch(input, options);
-  };
-})();
-</script>
-<script>
 function toggleMobileSidebar(){document.body.classList.toggle('mobile-sidebar-open');const b=document.getElementById('mobileMenuToggle');if(b)b.setAttribute('aria-expanded',document.body.classList.contains('mobile-sidebar-open')?'true':'false');}
 document.addEventListener('click',function(e){if(!document.body.classList.contains('mobile-sidebar-open'))return;const s=document.getElementById('appSidebar'),b=document.getElementById('mobileMenuToggle');if(s&&!s.contains(e.target)&&b&&!b.contains(e.target)){document.body.classList.remove('mobile-sidebar-open');b.setAttribute('aria-expanded','false')}if(s&&s.contains(e.target)&&e.target.closest('button')){document.body.classList.remove('mobile-sidebar-open');if(b)b.setAttribute('aria-expanded','false')}});
 </script>
@@ -2969,9 +2951,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 
 
         function logout() {
-            showLoading('خروج...', 1000, async () => {
-                // Invalidate the HttpOnly server session as well as the local UI session.
-                try { await fetch('/api/admin/logout', { method: 'POST', cache: 'no-store' }); } catch (_) {}
+            showLoading('خروج...', 1000, () => {
                 sessionStorage.clear();
                 updateAuthStateUI();
                 navigateTo('landing');
