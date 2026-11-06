@@ -443,6 +443,86 @@ body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0
         .math-helper-panel.open{display:flex}
         .math-helper-panel button{width:auto!important;min-width:48px;min-height:44px;margin:0!important;padding:6px 10px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:17px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;display:inline-flex;align-items:center;justify-content:center}.math-helper-panel button:hover{background:#e0f2fe!important}.math-fraction-icon{display:inline-grid;grid-template-rows:auto 2px auto;min-width:23px;line-height:1.05;text-align:center;font-size:14px}.math-fraction-icon i{display:block;height:2px;background:currentColor;margin:2px 0}.math-helper-note{font-size:11px;color:#64748b;width:100%}.math-live-preview{direction:rtl;text-align:right;margin-top:8px;padding:10px 12px;border:1px dashed #94a3b8;border-radius:9px;background:#fff;color:#0f172a;min-height:42px;white-space:pre-wrap;overflow-wrap:anywhere}.math-live-preview:empty:before{content:'معاينة السؤال أو الإجابة الرياضية تظهر هنا أثناء الكتابة';color:#94a3b8;font-size:12px}
     .qimma-perm-category-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.qimma-perm-category-tabs button{width:auto;margin:0;flex:1;min-width:110px;padding:10px 12px}.qimma-perm-category-tabs button.active-tab{background:#0f766e;color:#fff;border-color:#0f766e}.qimma-account-search{margin:0 0 14px!important;background:#fff!important;border:1px solid #dbe5e8!important}.qimma-account-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:13px;border-bottom:1px solid #e8eef0}.qimma-account-actions{display:flex;gap:8px;flex-wrap:wrap}.qimma-account-actions button{width:auto;margin:0;padding:8px 12px;font-size:12px}.qimma-perm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}.qimma-perm-option{display:flex;align-items:center;gap:9px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px}.qimma-perm-option input{width:18px;height:18px;flex:0 0 auto}@media(max-width:650px){.qimma-account-row{align-items:stretch}.qimma-account-actions{width:100%}.qimma-account-actions button{flex:1}}
+
+
+/* QIMMA UIVERSE BUTTON ADAPTATION — scoped to existing controls only */
+/* Main CTA: angular Uiverse primary button, recolored to Qimma teal/lime */
+.hero-buttons .primary-cta,
+button.primary-cta:not(.auth-submit-button){
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  border:1px solid #123f49!important;border-radius:4px!important;
+  background:linear-gradient(110deg,#164e63 0%,#176b64 62%,#1b806e 100%)!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px rgba(22,78,99,.18)!important;
+  clip-path:polygon(5% 0,100% 0,95% 100%,0 100%);
+  transition:background-position .35s ease,filter .25s ease,transform .25s ease!important;
+}
+.hero-buttons .primary-cta span,button.primary-cta:not(.auth-submit-button) span{color:#d8f66b!important}
+.hero-buttons .primary-cta:hover,button.primary-cta:not(.auth-submit-button):hover{background:linear-gradient(110deg,#0f3444,#176b64 55%,#8bbd36)!important;filter:saturate(1.12)}
+
+/* Secondary actions: diagonal swipe, matching the platform green */
+.secondary-cta{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  border:1.5px solid #176b64!important;border-radius:10px!important;
+  background:#fff!important;color:#164e63!important;
+}
+.secondary-cta::before{
+  content:"";position:absolute;inset:0 auto 0 -45px;width:0;
+  background:linear-gradient(110deg,#164e63,#176b64);transform:skewX(28deg);
+  transition:width .45s ease;z-index:-1;pointer-events:none;
+}
+.secondary-cta:hover{color:#fff!important;border-color:#164e63!important}
+.secondary-cta:hover::before{width:150%}
+
+/* Model cards: Uiverse 3D/progress feel without changing their labels or click handlers */
+.model-btn{isolation:isolate;perspective:700px!important;overflow:hidden!important}
+.model-btn::after{content:'ابدأ الآن ←';position:absolute;inset:auto 0 0;height:3px;width:0;background:#9acb43;opacity:1!important;transition:width .4s ease!important}
+.model-btn:hover::after{width:100%}
+.model-btn::before{transition:transform .25s ease,background .25s ease!important}
+.model-btn:hover::before{transform:rotateY(18deg) rotateX(8deg) scale(1.08)!important}
+
+/* Uiverse toggle switch skin for permission checkboxes only */
+.qimma-perm-option input[type="checkbox"]{
+  appearance:none!important;-webkit-appearance:none!important;position:relative!important;
+  width:38px!important;min-width:38px!important;height:20px!important;padding:0!important;
+  margin:0 2px!important;border:0!important;border-radius:20px!important;
+  background:#cbd5d1!important;box-shadow:inset 0 1px 3px #0002!important;
+  cursor:pointer;transition:background .22s ease!important;flex:0 0 38px!important;
+}
+.qimma-perm-option input[type="checkbox"]::after{
+  content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;
+  border-radius:50%;background:#fff;box-shadow:0 2px 5px #0003;transition:transform .22s ease!important;
+}
+.qimma-perm-option input[type="checkbox"]:checked{background:#16836d!important}
+.qimma-perm-option input[type="checkbox"]:checked::after{transform:translateX(-18px)}
+
+/* Round animated checkmark for bulk question selection */
+.bulk-question-check{
+  appearance:none!important;-webkit-appearance:none!important;width:22px!important;height:22px!important;
+  min-width:22px!important;padding:0!important;margin:0!important;border:2px solid #78918a!important;
+  border-radius:50%!important;background:#fff!important;display:inline-grid!important;place-content:center!important;
+  cursor:pointer;transition:background .25s,border-color .25s,transform .25s!important;
+}
+.bulk-question-check::before{content:"✓";font-size:14px;font-weight:900;color:#fff;transform:scale(0);transition:transform .2s ease}
+.bulk-question-check:checked{background:#16836d!important;border-color:#16836d!important;transform:rotate(360deg)}
+.bulk-question-check:checked::before{transform:scale(1)}
+
+/* Delete controls: compact red icon that expands on hover */
+button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{
+  min-width:44px!important;min-height:42px!important;width:auto!important;
+  border-radius:22px!important;background:#173f4a!important;color:#fff!important;
+  border:1px solid #173f4a!important;transition:width .3s ease,background .3s ease,transform .2s ease!important;
+}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{
+  background:#b8323c!important;border-color:#b8323c!important;color:#fff!important;
+}
+
+@media(max-width:600px){
+ .hero-buttons .primary-cta,.hero-buttons .secondary-cta{width:100%!important;min-height:48px!important;clip-path:none;border-radius:12px!important}
+ .qimma-perm-option{gap:10px!important}
+}
+@media(prefers-reduced-motion:reduce){.secondary-cta::before,.model-btn::before,.qimma-perm-option input,.bulk-question-check{transition:none!important}}
+
 </style>
 
 <style id="qimma-extra-polish">
@@ -3928,4 +4008,3 @@ function authSlide(to){
 
 </body>
 </html>
-
