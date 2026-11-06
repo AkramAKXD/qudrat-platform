@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     pass: { type: String, required: true },
-    role: { type: String, default: 'student' }
+    role: { type: String, default: 'student' },
+    organizerPermissions: { add: { type: Boolean, default: false }, edit: { type: Boolean, default: false }, delete: { type: Boolean, default: false }, models: { type: [String], default: [] } }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -185,6 +186,42 @@ function clearAdminPageCookie(res) {
     res.setHeader('Set-Cookie', `${ADMIN_PAGE_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
 }
 
+// جلسة موثوقة لجميع أدوار المنصة، وتُستخدم للتحقق من صلاحيات المنظم على الخادم.
+const APP_SESSION_COOKIE = 'qimma_app_session';
+const APP_SESSION_TTL = 8 * 60 * 60;
+const APP_SESSION_SECRET = process.env.SESSION_SECRET || ADMIN_PAGE_SECRET || crypto.randomBytes(32).toString('hex');
+function makeAppToken(payload){const body=Buffer.from(JSON.stringify(payload)).toString('base64url');const sig=crypto.createHmac('sha256',APP_SESSION_SECRET).update(body).digest('base64url');return `${body}.${sig}`;}
+function readAppToken(token){if(!token||typeof token!=='string')return null;const parts=token.split('.');if(parts.length!==2)return null;const expected=crypto.createHmac('sha256',APP_SESSION_SECRET).update(parts[0]).digest();let actual;try{actual=Buffer.from(parts[1],'base64url');}catch{return null;}if(actual.length!==expected.length||!crypto.timingSafeEqual(actual,expected))return null;try{const p=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));return p.email&&p.exp>Date.now()/1000?p:null;}catch{return null;}}
+function setAppSession(res, user) {
+    const token = makeAppToken({ email: user.email, exp: Math.floor(Date.now()/1000) + APP_SESSION_TTL });
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${APP_SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${APP_SESSION_TTL}${secure}`);
+}
+function clearAppSession(res) {
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `${APP_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
+}
+async function getAppUser(req) {
+    const payload = readAppToken(getRequestCookie(req, APP_SESSION_COOKIE));
+    if (!payload) return null;
+    return User.findOne({ email: payload.email }).select('name email role organizerPermissions');
+}
+function modelKeyForQuestion(q) {
+    return q.type === 'qiyas_simulation' ? `qiyas_simulation_${Number(q.model)}` : `${q.section}_${q.type}_${Number(q.model)}`;
+}
+async function authorizeQuestionAction(req, res, action, qOrModel) {
+    const user = await getAppUser(req);
+    if (!user) { res.status(401).json({success:false,message:'انتهت الجلسة. سجل الدخول مجدداً.'}); return false; }
+    if (user.role === 'admin') return true;
+    if (user.role !== 'organizer') { res.status(403).json({success:false,message:'هذه العملية غير متاحة لحسابك.'}); return false; }
+    const perms = user.organizerPermissions || {};
+    const key = typeof qOrModel === 'string' ? qOrModel : modelKeyForQuestion(qOrModel || {});
+    if (!perms[action] || !Array.isArray(perms.models) || !perms.models.includes(key)) {
+        res.status(403).json({success:false,message:'لا تملك الصلاحية لهذه العملية أو لهذا النموذج.'}); return false;
+    }
+    return true;
+}
+
 app.post('/api/admin/login', async (req, res) => {
     try {
         const email = String(req.body?.email || '').trim().toLowerCase();
@@ -251,6 +288,13 @@ app.post('/api/admin/private-users', async (req, res) => {
     }
 });
 
+// جميع واجهات الإدارة اللاحقة تتطلب جلسة مشرف فعلية؛ لا يكفي إخفاء عناصرها من الواجهة.
+app.use('/api/admin', async (req,res,next)=>{
+    if (req.path === '/login' || req.path === '/session' || req.path === '/logout' || req.path === '/private-users') return next();
+    try { const user=await getAppUser(req); if(!user || user.role!=='admin') return res.status(403).json({success:false,message:'هذه العملية مخصصة للمشرف.'}); req.appUser=user; return next(); }
+    catch(e){ return res.status(500).json({success:false,message:'تعذر التحقق من الصلاحية.'}); }
+});
+
 // ==================== تسجيل حساب جديد ====================
 
 app.post('/api/register', async (req, res) => {
@@ -295,6 +339,8 @@ app.post('/api/register', async (req, res) => {
 
 // ==================== تسجيل الدخول ====================
 
+app.post('/api/logout', (req, res) => { clearAppSession(res); res.json({success:true}); });
+
 app.post('/api/login', async (req, res) => {
     try {
         const { email, pass } = req.body;
@@ -313,12 +359,9 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        res.json({
-            success: true,
-            name: user.name,
-            role: user.role,
-            email: user.email
-        });
+        setAppSession(res, user);
+        res.set('Cache-Control', 'no-store');
+        res.json({ success: true, name: user.name, role: user.role, email: user.email, organizerPermissions: user.organizerPermissions || null });
     } catch (error) {
         console.error('POST /api/login:', error);
         res.status(500).json({
@@ -483,7 +526,15 @@ app.post('/api/reset-password', async (req, res) => {
 app.get('/api/questions', async (req, res) => {
     try {
         // lean() يقلل استهلاك الذاكرة والوقت عند تحميل بنك الأسئلة الكبير.
-        const questions = await Question.find({}).lean();
+        let query = {};
+        const user = await getAppUser(req);
+        if (!user) return res.status(401).json([]);
+        if (user.role === 'organizer') {
+            const keys = user.organizerPermissions?.models || [];
+            const allowed = keys.map(key => { const parts=String(key).split('_'); const model=Number(parts.pop()); const prefix=parts.join('_'); if(prefix==='qiyas_simulation') return {type:'qiyas_simulation',model}; const type=parts.pop(); const section=parts.join('_'); return {section,type,model}; });
+            query = allowed.length ? {$or:allowed} : {_id:null};
+        }
+        const questions = await Question.find(query).lean();
         res.set('Cache-Control', 'no-store');
         res.json(questions);
     } catch (error) {
@@ -509,6 +560,8 @@ app.post('/api/add-question', async (req, res) => {
         } = req.body;
 
         const modelNum = Number(model);
+        const modelKey = type === 'qiyas_simulation' ? `qiyas_simulation_${modelNum}` : `${section}_${type}_${modelNum}`;
+        if (!(await authorizeQuestionAction(req, res, 'add', modelKey))) return;
         const customModels = await CustomModel.find({});
         const customModelsMap = {};
 
@@ -581,9 +634,12 @@ app.post('/api/edit-question', async (req, res) => {
         } = req.body;
 
         const questions = await Question.find({});
-
-        if (index !== undefined && index >= 0 && index < questions.length) {
-            const targetQuestion = questions[index];
+        const targetQuestion = req.body.questionId ? await Question.findById(req.body.questionId) : (index !== undefined && index >= 0 && index < questions.length ? questions[index] : null);
+        if (targetQuestion) {
+            if (!(await authorizeQuestionAction(req, res, 'edit', targetQuestion))) return;
+            const actor = await getAppUser(req);
+            const destinationKey = type === 'qiyas_simulation' ? `qiyas_simulation_${Number(model)}` : `${section || 'quant'}_${type || 'practice'}_${Number(model)}`;
+            if (actor?.role === 'organizer' && destinationKey !== modelKeyForQuestion(targetQuestion)) return res.status(403).json({success:false,message:'لا يمكن للمنظم نقل السؤال إلى نموذج آخر.'});
 
             targetQuestion.section = section || 'quant';
             targetQuestion.type = type || 'practice';
@@ -620,6 +676,8 @@ app.post('/api/edit-question', async (req, res) => {
 
 app.post('/api/move-question', async (req, res) => {
     try {
+        const actor = await getAppUser(req);
+        if (!actor || actor.role !== 'admin') return res.status(403).json({success:false,message:'نقل الأسئلة متاح للمشرف فقط.'});
         const { index, ids, section, type, model } = req.body;
         if (Array.isArray(ids) && ids.length) {
             const validIds = ids.filter(id => mongoose.isValidObjectId(id));
@@ -660,6 +718,8 @@ app.post('/api/move-question', async (req, res) => {
 // تعديل قسم مجموعة أسئلة محددة (لمحاكي الكمي واللفظي فقط)
 app.post('/api/admin/bulk-question-section', async (req, res) => {
     try {
+        const actor = await getAppUser(req);
+        if (!actor || actor.role !== 'admin') return res.status(403).json({success:false,message:'هذه العملية للمشرف فقط.'});
         const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter(id => mongoose.isValidObjectId(id)) : [];
         const examSection = Number(req.body?.examSection);
         if (!ids.length) return res.status(400).json({ success:false, message:'حدد سؤالاً واحداً على الأقل.' });
@@ -675,9 +735,10 @@ app.post('/api/delete-question', async (req, res) => {
     try {
         const { index } = req.body;
         const questions = await Question.find({});
-
-        if (index !== undefined && index >= 0 && index < questions.length) {
-            await questions[index].deleteOne();
+        const targetQuestion = req.body.questionId ? await Question.findById(req.body.questionId) : (index !== undefined && index >= 0 && index < questions.length ? questions[index] : null);
+        if (targetQuestion) {
+            if (!(await authorizeQuestionAction(req, res, 'delete', targetQuestion))) return;
+            await targetQuestion.deleteOne();
 
             return res.json({
                 success: true,
@@ -726,6 +787,7 @@ app.get('/api/custom-models', async (req, res) => {
 
 app.post('/api/add-custom-model', async (req, res) => {
     try {
+        const actor=await getAppUser(req);if(!actor||actor.role!=='admin')return res.status(403).json({success:false,message:'إضافة النماذج متاحة للمشرف فقط.'});
         const { category, modelNumber, customName } = req.body;
 
         if (!category || !modelNumber || !customName) {
@@ -1024,35 +1086,33 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
     }
 });
 
+// ==================== إدارة المنظمين وصلاحياتهم ====================
+async function requireMainAdmin(req,res){const u=await getAppUser(req);if(!u||u.role!=='admin'){res.status(403).json({success:false,message:'هذه العملية للمشرف فقط.'});return null;}return u;}
+app.post('/api/admin/organizer/grant', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user)return res.status(404).json({success:false,message:'البريد غير مسجل في المنصة.'});if(user.role==='admin')return res.status(400).json({success:false,message:'لا يمكن تغيير حساب المشرف إلى منظم.'});user.role='organizer';user.organizerPermissions={add:false,edit:false,delete:false,models:[]};await user.save();res.json({success:true,message:`تم منح صلاحية المنظم لـ ${user.name}`,user:{name:user.name,email:user.email}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر منح الصلاحية.'});}});
+app.post('/api/admin/organizer/revoke', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user||user.role!=='organizer')return res.status(404).json({success:false,message:'المنظم غير موجود.'});user.role='student';user.organizerPermissions={add:false,edit:false,delete:false,models:[]};await user.save();res.json({success:true,message:`تم سحب صلاحيات المنظم من ${user.name}.`});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر سحب الصلاحية.'});}});
+app.post('/api/admin/organizers', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const users=await User.find({role:'organizer'}).select('name email organizerPermissions').lean();res.set('Cache-Control','no-store');res.json({success:true,users});}catch(e){res.status(500).json({success:false,message:'تعذر تحميل المنظمين.'});}});
+app.post('/api/admin/organizer/permissions', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email,role:'organizer'});if(!user)return res.status(404).json({success:false,message:'حساب المنظم غير موجود.'});const p=req.body?.permissions||{};const allowed=['quant_practice','verbal_practice','quant_simulation','verbal_simulation','qiyas_simulation'];const models=Array.isArray(p.models)?[...new Set(p.models.map(String).filter(k=>allowed.some(prefix=>k.startsWith(prefix+'_'))))]:[];user.organizerPermissions={add:!!p.add,edit:!!p.edit,delete:!!p.delete,models};await user.save();res.json({success:true,message:`تم حفظ صلاحيات المنظم ${user.name}.`,user:{name:user.name,email:user.email,organizerPermissions:user.organizerPermissions}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر حفظ الصلاحيات.'});}});
+
 // ==================== جلب المستخدمين للمشرف ====================
 
 app.post('/api/admin/users', async (req, res) => {
     try {
-        const email = String(req.body?.email || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email,
-            role: 'admin'
-        });
-
-        if (!admin) {
+        const admin = await getAppUser(req);
+        if (!admin || admin.role !== 'admin') {
             return res.status(403).json({
                 success: false,
                 message: '⛔ ليس لديك صلاحية!'
             });
         }
 
-        const users = await User.find({});
+        const users = await User.find({}).select('name email role organizerPermissions').lean();
 
         res.json({
             success: true,
             users: users.map(user => ({
                 name: user.name,
                 email: user.email,
-                pass: user.pass,
-                role: user.role === 'admin'
-                    ? 'مشرف (Admin)'
-                    : 'طالب (Student)'
+                role: user.role === 'admin' ? 'مشرف (Admin)' : user.role === 'organizer' ? 'منظم' : 'طالب (Student)', organizerPermissions: user.organizerPermissions || null
             }))
         });
     } catch (error) {
@@ -1073,22 +1133,12 @@ app.post('/api/admin/delete-user', async (req, res) => {
             userEmailToDelete
         } = req.body;
 
-        const normalizedAdminEmail =
-            String(adminEmail || '').trim().toLowerCase();
+        const normalizedUserEmail = String(userEmailToDelete || '').trim().toLowerCase();
+        const admin = await getAppUser(req);
+        const normalizedAdminEmail = admin?.email || '';
 
-        const normalizedUserEmail =
-            String(userEmailToDelete || '').trim().toLowerCase();
-
-        const admin = await User.findOne({
-            email: normalizedAdminEmail,
-            role: 'admin'
-        });
-
-        if (!admin) {
-            return res.status(403).json({
-                success: false,
-                message: '⛔ ليس لديك صلاحية!'
-            });
+        if (!admin || admin.role !== 'admin') {
+            return res.status(403).json({ success: false, message: '⛔ ليس لديك صلاحية!' });
         }
 
         if (!normalizedUserEmail) {
