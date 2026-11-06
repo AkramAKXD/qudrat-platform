@@ -1286,6 +1286,86 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 .hero-photo-main,.hero-photo-main img,.qm-word,.qm-cp{will-change:auto!important}
 </style>
 <style id="qimma-native-scroll-performance">html,body{scroll-behavior:auto!important}#adminFilteredQuestionsList{scroll-behavior:auto!important;overflow-anchor:none}</style>
+
+<style id="qimma-uiverse-buttons-refinement-v2">
+/* Reuse the Uiverse button language throughout Qimma, with the platform palette. */
+:root{--qv-deep:#123f49;--qv-green:#176b64;--qv-mint:#20a889;--qv-lime:#d5f36a;--qv-gold:#e5b85c;--qv-red:#c83d49}
+/* Quantitative and verbal section actions */
+.action-buttons-grid{display:flex;flex-wrap:wrap;gap:14px!important;align-items:center}
+.action-buttons-grid>button{
+  flex:1 1 190px;min-height:54px!important;padding:13px 22px!important;
+  border:1px solid var(--qv-deep)!important;border-radius:7px!important;
+  color:#fff!important;font-weight:900!important;font-size:15px!important;
+  background:linear-gradient(115deg,var(--qv-deep),var(--qv-green) 65%,#218978)!important;
+  box-shadow:0 9px 20px rgba(18,63,73,.16)!important;
+  isolation:isolate;overflow:hidden!important;
+}
+.action-buttons-grid>button::before{
+  content:"";position:absolute;inset:0 auto 0 -42%;width:0;z-index:-1;
+  background:linear-gradient(110deg,#1b806e,var(--qv-mint),#7bbd59);
+  transform:skewX(28deg);transition:width .42s ease;pointer-events:none
+}
+.action-buttons-grid>button:hover::before{width:155%}
+.action-buttons-grid>button:hover{transform:translateY(-3px)!important;box-shadow:0 14px 26px rgba(18,63,73,.22)!important}
+.action-buttons-grid>button:focus-visible{outline:3px solid var(--qv-lime)!important;outline-offset:3px}
+/* The model chooser reached after pressing quantitative/verbal: start, retry and review. */
+.model-status-card{border:1px solid rgba(23,107,100,.14)!important;border-radius:18px!important;box-shadow:0 9px 26px rgba(18,63,73,.07)!important;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease!important}
+.model-status-card:hover{transform:translateY(-3px)!important;border-color:rgba(32,168,137,.42)!important;box-shadow:0 16px 34px rgba(18,63,73,.12)!important}
+.model-status-actions{gap:9px!important}
+.model-status-actions .model-retry{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  width:auto!important;min-width:118px;min-height:43px!important;margin:0!important;
+  padding:10px 16px!important;border:1px solid var(--qv-deep)!important;border-radius:8px!important;
+  background:linear-gradient(115deg,var(--qv-deep),var(--qv-green))!important;
+  color:#fff!important;font-weight:900!important;box-shadow:0 6px 15px rgba(18,63,73,.15)!important;
+  transition:transform .22s ease,box-shadow .22s ease,background .22s ease!important
+}
+.model-status-actions .model-retry::before{
+  content:"";position:absolute;inset:0 auto 0 -35%;width:0;z-index:-1;
+  background:linear-gradient(110deg,#1c806e,#26a887,var(--qv-lime));transform:skewX(28deg);
+  transition:width .38s ease;pointer-events:none
+}
+.model-status-actions .model-retry:hover::before{width:145%}
+.model-status-actions .model-retry:hover{transform:translateY(-2px)!important;box-shadow:0 11px 22px rgba(18,63,73,.2)!important}
+.model-status-actions .qimma-review-model-btn{background:linear-gradient(115deg,#a87825,#d3a64d)!important;border-color:#a87825!important;color:#fff!important}
+.model-status-actions .qimma-review-model-btn::before{background:linear-gradient(110deg,#93651d,#e5b85c,#f4d98e)!important}
+.model-status-badge{font-weight:850!important}
+/* Every destructive action uses the supplied Uiverse expanding trash control. */
+button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:7px!important;min-width:46px!important;width:46px!important;height:44px!important;min-height:44px!important;
+  padding:0 12px!important;overflow:hidden!important;white-space:nowrap!important;
+  border:1px solid var(--qv-red)!important;border-radius:24px!important;
+  background:linear-gradient(135deg,#c83d49,#a92736)!important;color:#fff!important;
+  font-size:0!important;font-weight:900!important;box-shadow:0 5px 14px rgba(200,61,73,.18)!important;
+  transition:width .28s ease,min-width .28s ease,background .25s ease,box-shadow .25s ease,transform .2s ease!important
+}
+button[onclick*="confirmDelete"]::before,button[onclick*="delete" i]::before,button[onclick*="Delete"]::before{
+  content:"🗑";display:inline-block;flex:0 0 auto;font-size:18px;line-height:1;filter:grayscale(1) brightness(0) invert(1)
+}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{
+  width:auto!important;min-width:100px!important;padding:0 17px!important;
+  background:linear-gradient(135deg,#a92736,#dc4652)!important;
+  box-shadow:0 9px 20px rgba(200,61,73,.28)!important;transform:translateY(-2px)!important
+}
+button[onclick*="confirmDelete"]:hover::before,button[onclick*="delete" i]:hover::before,button[onclick*="Delete"]:hover::before{content:"🗑";font-size:16px}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{font-size:12px!important}
+/* Reuse the same animated visual treatment on tabs, filters and other action buttons. */
+.tab-btn,.modal-actions button,.qimma-account-actions button,.admin-tab-buttons button{
+  border-radius:11px!important;font-weight:850!important;transition:transform .2s ease,box-shadow .2s ease,background .2s ease!important
+}
+.tab-btn:not(.active-tab):hover,.qimma-account-actions button:hover{border-color:var(--qv-mint)!important;box-shadow:0 8px 18px rgba(23,107,100,.12)!important}
+.modal-actions button:not([onclick*="delete"]){min-height:43px!important;border-radius:11px!important}
+@media(max-width:650px){
+ .action-buttons-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+ .action-buttons-grid>button{width:100%!important;min-height:50px!important}
+ .model-status-actions .model-retry{min-width:0!important;width:100%!important;padding:9px 8px!important;font-size:12px!important}
+ button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{width:44px!important;min-width:44px!important}
+ button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{width:auto!important;min-width:88px!important}
+}
+@media(prefers-reduced-motion:reduce){.action-buttons-grid>button::before,.model-status-actions .model-retry::before{transition:none!important}}
+</style>
+
 </head>
 <body id="appBody">
 
