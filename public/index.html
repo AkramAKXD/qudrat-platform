@@ -442,7 +442,8 @@ body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0
         .math-helper-panel{display:none;background:#fff;border:1px solid #bae6fd;border-radius:10px;padding:9px;margin-top:6px;box-shadow:0 8px 20px #0f172a14;gap:6px;flex-wrap:wrap}
         .math-helper-panel.open{display:flex}
         .math-helper-panel button{width:auto!important;min-width:48px;min-height:44px;margin:0!important;padding:6px 10px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:17px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;display:inline-flex;align-items:center;justify-content:center}.math-helper-panel button:hover{background:#e0f2fe!important}.math-fraction-icon{display:inline-grid;grid-template-rows:auto 2px auto;min-width:23px;line-height:1.05;text-align:center;font-size:14px}.math-fraction-icon i{display:block;height:2px;background:currentColor;margin:2px 0}.math-helper-note{font-size:11px;color:#64748b;width:100%}.math-live-preview{direction:rtl;text-align:right;margin-top:8px;padding:10px 12px;border:1px dashed #94a3b8;border-radius:9px;background:#fff;color:#0f172a;min-height:42px;white-space:pre-wrap;overflow-wrap:anywhere}.math-live-preview:empty:before{content:'معاينة السؤال أو الإجابة الرياضية تظهر هنا أثناء الكتابة';color:#94a3b8;font-size:12px}
-    </style>
+    .qimma-account-search{margin:0 0 14px!important;background:#fff!important;border:1px solid #dbe5e8!important}.qimma-account-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:13px;border-bottom:1px solid #e8eef0}.qimma-account-actions{display:flex;gap:8px;flex-wrap:wrap}.qimma-account-actions button{width:auto;margin:0;padding:8px 12px;font-size:12px}.qimma-perm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}.qimma-perm-option{display:flex;align-items:center;gap:9px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px}.qimma-perm-option input{width:18px;height:18px;flex:0 0 auto}@media(max-width:650px){.qimma-account-row{align-items:stretch}.qimma-account-actions{width:100%}.qimma-account-actions button{flex:1}}
+</style>
 
 <style id="qimma-extra-polish">
 :root{--qm-ink:#153b35;--qm-mint:#19b88a;--qm-gold:#e5b85c;--qm-glass:rgba(255,255,255,.88)}
@@ -1337,7 +1338,16 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                 <li><button onclick="openAdminTab('platform-stats-box')"><span class="nav-icon">📊</span><span>إحصائيات المنصة</span></button></li>
                 <li><button onclick="openAdminTab('student-grades-box')"><span class="nav-icon">🎓</span><span>درجات الطلاب ومراجعتها</span></button></li>
                 <li><button onclick="openAdminTab('registered-accounts-box')"><span class="nav-icon">👥</span><span>الحسابات المسجلة</span></button></li>
+                <li><button onclick="openAdminTab('organizers-management-box')"><span class="nav-icon">🧩</span><span>حسابات المنظمين</span></button></li>
                 <li id="menu-delete-statistics"><button onclick="openAdminTab('delete-statistics-box')"><span class="nav-icon">🗑️</span><span>حذف الإحصائيات</span></button></li>
+            </div>
+
+            <div id="organizer-sidebar-section" class="admin-sidebar-group hidden">
+                <div class="admin-sidebar-title">🧩 مساحة المنظم</div>
+                <li id="organizer-add-link" class="hidden"><button onclick="openOrganizerTab('add-question-box')">➕ إضافة الأسئلة</button></li>
+                <li id="organizer-qiyas-add-link" class="hidden"><button onclick="openOrganizerTab('qiyas-question-box')">➕ إضافة أسئلة محاكي قياس</button></li>
+                <li id="organizer-edit-link" class="hidden"><button onclick="openOrganizerTab('manage-questions-box')">✏️ تعديل الأسئلة</button></li>
+                <li id="organizer-delete-link" class="hidden"><button onclick="openOrganizerTab('manage-questions-box')">🗑️ حذف الأسئلة</button></li>
             </div>
 
             <li style="margin-top: auto; padding-top: 15px;"><button onclick="logout()" style="background: #fee2e2; color: #dc2626;">🚪 تسجيل الخروج</button></li>
@@ -1731,6 +1741,11 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                     </div>
                 </div>
 
+                <div id="organizers-management-box" class="admin-tab-content hidden" style="background:#f8fafc;padding:25px;border-radius:20px;border:2px solid #e2e8f0;margin-bottom:20px">
+                    <h3 style="color:var(--primary);margin-bottom:15px">🧩 حسابات المنظمين</h3>
+                    <div id="organizersListContainer"><p style="color:#64748b">جاري التحميل...</p></div>
+                </div>
+
                 <div id="delete-statistics-box" class="admin-tab-content hidden statistics-reset-panel">
                     <div class="statistics-reset-heading">
                         <span class="statistics-reset-icon" aria-hidden="true">🗑️</span>
@@ -1821,20 +1836,18 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             const body = document.getElementById('appBody');
             const adminSidebarSec = document.getElementById('admin-sidebar-section');
             const studentSidebarGroup = document.getElementById('student-sidebar-group');
-
+            const organizerSidebar = document.getElementById('organizer-sidebar-section');
+            const role=sessionStorage.getItem('sessionUserRole');
             if (isAuth) {
                 body.classList.add('logged-in');
-                if (sessionStorage.getItem('sessionUserRole') === 'admin') {
-                    adminSidebarSec.classList.remove('hidden');
-                    studentSidebarGroup.classList.add('hidden');
-                } else {
-                    adminSidebarSec.classList.add('hidden');
-                    studentSidebarGroup.classList.remove('hidden');
-                }
+                if (role === 'admin') { adminSidebarSec.classList.remove('hidden'); studentSidebarGroup.classList.add('hidden'); organizerSidebar?.classList.add('hidden'); }
+                else if(role==='organizer'){const p=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');adminSidebarSec.classList.add('hidden');studentSidebarGroup.classList.add('hidden');organizerSidebar?.classList.remove('hidden');document.getElementById('organizer-add-link')?.classList.toggle('hidden',!p.add);document.getElementById('organizer-qiyas-add-link')?.classList.toggle('hidden',!(p.add&&p.models?.some(k=>k.startsWith('qiyas_simulation_'))));document.getElementById('organizer-edit-link')?.classList.toggle('hidden',!p.edit);document.getElementById('organizer-delete-link')?.classList.toggle('hidden',!p.delete);}
+                else { adminSidebarSec.classList.add('hidden'); studentSidebarGroup.classList.remove('hidden'); organizerSidebar?.classList.add('hidden'); }
             } else {
                 body.classList.remove('logged-in');
                 adminSidebarSec.classList.add('hidden');
                 studentSidebarGroup.classList.remove('hidden');
+                organizerSidebar?.classList.add('hidden');
             }
         }
 
@@ -1922,10 +1935,9 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         }
 
         function openAdminTab(tabId) {
-            if (sessionStorage.getItem('sessionUserRole') !== 'admin') {
-                alert('هذه الصفحة مخصصة للمشرف فقط.');
-                return;
-            }
+            const role=sessionStorage.getItem('sessionUserRole');
+            if (role !== 'admin' && role !== 'organizer') { alert('هذه الصفحة مخصصة للمشرف والمنظمين.'); return; }
+            if(role==='organizer'){openOrganizerTab(tabId);return;}
             navigateTo('admin');
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
             const tab = document.getElementById(tabId);
@@ -1936,6 +1948,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             clickedButton?.closest('li')?.classList.add('active');
             if(tabId === 'manage-questions-box') initAdminQuestionsManagement();
             else if(tabId === 'registered-accounts-box') loadRegisteredAccounts();
+            else if(tabId === 'organizers-management-box') loadOrganizers();
             else if(tabId === 'platform-stats-box') loadAdminStats();
             else if(tabId === 'student-grades-box') loadStudentGrades();
             else if(tabId === 'manage-models-box') loadAdminModelsList('quant');
@@ -2012,8 +2025,9 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             const selectEl = document.getElementById('qModel');
             selectEl.innerHTML = '<option value="">اختر النموذج...</option>';
             const prefix = `${sec}_${type}_`;
+            const organizerPerms=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');
             Object.keys(customModelNamesCache).forEach(key => {
-                if (key.startsWith(prefix)) {
+                if (key.startsWith(prefix) && (sessionStorage.getItem('sessionUserRole')!=='organizer' || organizerPerms.models?.includes(key))) {
                     const modelNum = key.replace(prefix, '');
                     const opt = document.createElement('option');
                     opt.value = modelNum;
@@ -2030,8 +2044,9 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             const selectEl = document.getElementById('editQModel');
             selectEl.innerHTML = '<option value="">اختر النموذج...</option>';
             let prefix = type === 'qiyas_simulation' ? 'qiyas_simulation_' : `${sec}_${type}_`;
+            const organizerPerms=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');
             Object.keys(customModelNamesCache).forEach(key => {
-                if (key.startsWith(prefix)) {
+                if (key.startsWith(prefix) && (sessionStorage.getItem('sessionUserRole')!=='organizer' || organizerPerms.models?.includes(key))) {
                     const modelNum = key.replace(prefix, '');
                     const opt = document.createElement('option');
                     opt.value = modelNum;
@@ -2046,8 +2061,9 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             const selectEl = document.getElementById('qiyasModelNum');
             selectEl.innerHTML = '<option value="">اختر نموذج قياس...</option>';
             const prefix = `qiyas_simulation_`;
+            const organizerPerms=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');
             Object.keys(customModelNamesCache).forEach(key => {
-                if (key.startsWith(prefix)) {
+                if (key.startsWith(prefix) && (sessionStorage.getItem('sessionUserRole')!=='organizer' || organizerPerms.models?.includes(key))) {
                     const modelNum = key.replace(prefix, '');
                     const opt = document.createElement('option');
                     opt.value = modelNum;
@@ -2106,7 +2122,12 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                 try {
                     const res = await fetch('/api/questions');
                     globalQuestionsCache = await res.json();
-                    adminSelectMainCategory('verbal');
+                    if(sessionStorage.getItem('sessionUserRole')==='organizer'){
+                        const keys=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}').models||[];
+                        const first=keys[0]||'';
+                        if(first.startsWith('qiyas_simulation_'))adminSelectMainCategory('qiyas');
+                        else {const parts=first.split('_');const sec=parts[0]||'verbal';const sub=parts[1]||'practice';adminSelectMainCategory(['quant','verbal'].includes(sec)?sec:'verbal');adminSelectSubCategory(['practice','simulation'].includes(sub)?sub:'practice');}
+                    } else adminSelectMainCategory('verbal');
                 } catch (e) { alert('تعذر جلب الأسئلة.'); }
             });
         }
@@ -2235,16 +2256,16 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                     <div style="background:#fff; padding:18px; border-radius:14px; border:1px solid #cbd5e1; display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <label style="display:flex;align-items:center;gap:5px;background:#f0fdf4;padding:5px 8px;border-radius:8px;font-size:12px;margin:0"><input type="checkbox" class="bulk-question-check" data-qid="${q._id}" onchange="toggleBulkQuestionSelection(this)" ${bulkSelectedQuestionIds.has(String(q._id))?'checked':''} style="width:17px;height:17px"> تحديد</label>
+                                ${sessionStorage.getItem('sessionUserRole')==='admin'?`<label style="display:flex;align-items:center;gap:5px;background:#f0fdf4;padding:5px 8px;border-radius:8px;font-size:12px;margin:0"><input type="checkbox" class="bulk-question-check" data-qid="${q._id}" onchange="toggleBulkQuestionSelection(this)" ${bulkSelectedQuestionIds.has(String(q._id))?'checked':''} style="width:17px;height:17px"> تحديد</label>`:''}
                                 <span style="background:#e0e7ff; color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px;">السؤال ${pageStart + questionPosition + 1}</span>
                                 <span style="background:#f1f5f9;color:#475569;padding:3px 10px;border-radius:6px;font-size:12px">${q.section === 'quant' ? 'كمي' : q.section === 'verbal' ? 'لفظي' : q.section}</span>
                                 ${examSectionLabel}
                                 <span style="background:#fef3c7; color:#d97706; padding:3px 10px; border-radius:6px; font-size:12px;">نموذج ${q.model}</span>
                             </div>
                             <div style="display:flex; gap:8px;">
-                                <button type="button" onclick="openMoveModal(${originalIndex})" style="background:#7c3aed; width:auto; padding:6px 14px; margin:0; font-size:13px;">نقل 🚚</button>
-                                <button type="button" onclick="openEditModal(${originalIndex})" style="background:#0284c7; width:auto; padding:6px 14px; margin:0; font-size:13px;">تعديل</button>
-                                <button type="button" onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444; width:auto; padding:6px 14px; margin:0; font-size:13px;">حذف</button>
+                                ${sessionStorage.getItem('sessionUserRole')==='admin'?`<button type="button" onclick="openMoveModal(${originalIndex})" style="background:#7c3aed;width:auto;padding:6px 14px;margin:0;font-size:13px">نقل 🚚</button>`:''}
+                                ${(sessionStorage.getItem('sessionUserRole')==='admin'||JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}').edit)?`<button type="button" onclick="openEditModal(${originalIndex})" style="background:#0284c7;width:auto;padding:6px 14px;margin:0;font-size:13px">تعديل</button>`:''}
+                                ${(sessionStorage.getItem('sessionUserRole')==='admin'||JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}').delete)?`<button type="button" onclick="confirmDeleteQuestion(${originalIndex})" style="background:#ef4444;width:auto;padding:6px 14px;margin:0;font-size:13px">حذف</button>`:''}
                             </div>
                         </div>
                         <p style="font-weight:700; color:#1e293b; font-size:15px;">${q.question}</p>
@@ -2602,31 +2623,26 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             });
         }
 
+        let registeredAccountsCache = [];
         async function loadRegisteredAccounts() {
-            const container = document.getElementById('accountsListContainer');
-            try {
-                const data = await (await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: sessionStorage.getItem('sessionUserEmail') }) })).json();
-                if(data.success) {
-                    container.innerHTML = data.users.map(u => `
-                        <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <div><strong>${u.name}</strong><span style="color: #64748b; font-size: 13px; display: block;">${u.email}</span></div>
-                            ${u.email !== sessionStorage.getItem('sessionUserEmail') ? `<button type="button" onclick="confirmDeleteUser('${u.email}')" style="background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 8px; width: auto; margin: 0;">حذف 🗑️</button>` : ''}
-                        </div>
-                    `).join('');
-                }
-            } catch (e) { container.innerHTML = '<p style="color: red;">خطأ في الاتصال.</p>'; }
+            const container=document.getElementById('accountsListContainer');
+            container.innerHTML='<input id="registeredAccountsSearch" class="qimma-account-search" type="search" placeholder="ابحث باسم الطالب أو بريده الإلكتروني..." oninput="filterRegisteredAccounts()"><div id="registeredAccountsResults"><p style="text-align:center;color:#64748b">جاري التحميل...</p></div>';
+            try{const data=await(await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})})).json();if(!data.success)throw new Error(data.message||'تعذر التحميل');registeredAccountsCache=data.users||[];renderRegisteredAccounts(registeredAccountsCache);}catch(e){document.getElementById('registeredAccountsResults').innerHTML='<p style="color:#b91c1c">تعذر تحميل الحسابات.</p>';}
         }
-
-        function confirmDeleteUser(userEmail) {
-            showConfirmModal(`حذف الحساب (${userEmail})؟`, () => executeDeleteUser(userEmail));
-        }
-
-        async function executeDeleteUser(userEmail) {
-            showLoading('جاري الحذف...', 600, async () => {
-                await fetch('/api/admin/delete-user', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adminEmail: sessionStorage.getItem('sessionUserEmail'), userEmailToDelete: userEmail }) });
-                loadRegisteredAccounts();
-            });
-        }
+        function filterRegisteredAccounts(){const q=(document.getElementById('registeredAccountsSearch')?.value||'').trim().toLowerCase();renderRegisteredAccounts(registeredAccountsCache.filter(u=>String(u.name||'').toLowerCase().includes(q)||String(u.email||'').toLowerCase().includes(q)));}
+        function renderRegisteredAccounts(users){const box=document.getElementById('registeredAccountsResults');if(!box)return;if(!users.length){box.innerHTML='<p style="padding:20px;text-align:center;color:#64748b">لا توجد نتائج مطابقة.</p>';return;}box.innerHTML=users.map(u=>{const self=u.email===sessionStorage.getItem('sessionUserEmail');const isOrg=u.role==='منظم';return `<div class="qimma-account-row"><div><strong>${escapeHtml(u.name||'')}</strong><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email||'')}</span><small style="color:${isOrg?'#7c3aed':'#64748b'};font-weight:800">${isOrg?'منظم':'طالب'}</small></div><div class="qimma-account-actions">${!self&&u.role!=='مشرف (Admin)'?(isOrg?`<button type="button" onclick="revokeOrganizer('${encodeURIComponent(u.email)}')" style="background:#dc2626">سحب الصلاحية</button>`:`<button type="button" onclick="grantOrganizer('${encodeURIComponent(u.email)}')" style="background:#0f766e">منح صلاحية منظم</button>`):''}${!self?`<button type="button" onclick="confirmDeleteUser('${encodeURIComponent(u.email)}')" style="background:#ef4444">حذف 🗑️</button>`:''}</div></div>`;}).join('');}
+        async function grantOrganizer(encodedEmail){const email=decodeURIComponent(encodedEmail);if(!confirm(`منح صلاحية المنظم للحساب ${email}؟`))return;const d=await(await fetch('/api/admin/organizer/grant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})).json();alert(d.message||'');if(d.success)loadRegisteredAccounts();}
+        async function revokeOrganizer(encodedEmail){const email=decodeURIComponent(encodedEmail);if(!confirm(`سحب صلاحيات المنظم من ${email} وإعادته طالباً عادياً؟`))return;const d=await(await fetch('/api/admin/organizer/revoke',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})).json();alert(d.message||'');if(d.success)loadRegisteredAccounts();}
+        async function loadOrganizers(){const box=document.getElementById('organizersListContainer');try{const d=await(await fetch('/api/admin/organizers',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();if(!d.success)throw Error();if(!d.users.length){box.innerHTML='<p style="text-align:center;color:#64748b;padding:20px">لا يوجد منظمون حالياً.</p>';return;}box.innerHTML=d.users.map(u=>`<div class="qimma-account-row"><div><strong>${escapeHtml(u.name)}</strong><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email)}</span><small style="color:#0f766e">الصلاحيات: ${[u.organizerPermissions?.add?'إضافة':'',u.organizerPermissions?.edit?'تعديل':'',u.organizerPermissions?.delete?'حذف':''].filter(Boolean).join('، ')||'لم تحدد بعد'}</small></div><div class="qimma-account-actions"><button type="button" onclick="openOrganizerPermissions('${encodeURIComponent(u.email)}')">الصلاحيات</button></div></div>`).join('');}catch(e){box.innerHTML='<p style="color:#b91c1c">تعذر تحميل المنظمين.</p>';}}
+        let permissionTargetEmail='';let permissionModelsCache={};
+        async function openOrganizerPermissions(encodedEmail){permissionTargetEmail=decodeURIComponent(encodedEmail);const d=await(await fetch('/api/admin/organizers',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();const user=(d.users||[]).find(x=>x.email===permissionTargetEmail);if(!user)return alert('تعذر العثور على المنظم.');const p=user.organizerPermissions||{};const models=await(await fetch('/api/custom-models')).json();permissionModelsCache=models.models||{};const html=`<h3 style="margin-bottom:8px">صلاحيات ${escapeHtml(user.name)}</h3><p style="color:#64748b">حدد العمليات والنماذج المسموح بها لهذا المنظم.</p><div class="qimma-perm-grid"><label class="qimma-perm-option"><input type="checkbox" id="permAdd" ${p.add?'checked':''}> إضافة أسئلة</label><label class="qimma-perm-option"><input type="checkbox" id="permEdit" ${p.edit?'checked':''}> تعديل أسئلة</label><label class="qimma-perm-option"><input type="checkbox" id="permDelete" ${p.delete?'checked':''}> حذف أسئلة</label></div><label>تحديد نوع النماذج</label><select id="permCategory" onchange="renderPermissionModels()"><option value="ordinary">اختبار محاكي عادي</option><option value="qiyas">اختبار محاكي لقياس</option><option value="training">التدريب</option></select><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" style="width:auto;margin:0" onclick="toggleAllPermissionModels(true)">تحديد الكل</button><button type="button" style="width:auto;margin:0;background:#64748b" onclick="toggleAllPermissionModels(false)">إلغاء تحديد الكل</button></div><div id="permissionModelsList" class="qimma-perm-grid"></div><div class="modal-actions"><button type="button" onclick="closePermissionModal()" style="background:#64748b">إلغاء</button><button type="button" onclick="saveOrganizerPermissions()">حفظ الصلاحيات</button></div>`;document.getElementById('organizer-permissions-body').innerHTML=html;document.getElementById('organizer-permissions-modal').classList.add('active');window.currentOrganizerPermissionKeys=p.models||[];renderPermissionModels();}
+        function permissionKeysForCategory(cat){return Object.keys(permissionModelsCache).filter(k=>cat==='qiyas'?k.startsWith('qiyas_simulation_'):cat==='ordinary'?/^(quant|verbal)_simulation_/.test(k):/^(quant|verbal)_practice_/.test(k));}
+        function renderPermissionModels(){const cat=document.getElementById('permCategory')?.value||'ordinary';const keys=permissionKeysForCategory(cat);const selected=new Set(window.currentOrganizerPermissionKeys||[]);const box=document.getElementById('permissionModelsList');if(!box)return;box.innerHTML=keys.length?keys.map(k=>`<label class="qimma-perm-option"><input type="checkbox" class="permission-model-check" value="${k}" ${selected.has(k)?'checked':''} onchange="updatePermissionModel('${k}',this.checked)"> ${escapeHtml(permissionModelsCache[k])}</label>`).join(''):'<p style="color:#64748b">لا توجد نماذج من هذا النوع حالياً.</p>';}
+        function updatePermissionModel(key,checked){const keys=new Set(window.currentOrganizerPermissionKeys||[]);if(checked)keys.add(key);else keys.delete(key);window.currentOrganizerPermissionKeys=[...keys];}
+        function toggleAllPermissionModels(checked){const keys=new Set(window.currentOrganizerPermissionKeys||[]);document.querySelectorAll('.permission-model-check').forEach(el=>{el.checked=checked;if(checked)keys.add(el.value);else keys.delete(el.value);});window.currentOrganizerPermissionKeys=[...keys];}
+        async function saveOrganizerPermissions(){const keys=new Set(window.currentOrganizerPermissionKeys||[]);document.querySelectorAll('.permission-model-check').forEach(el=>el.checked?keys.add(el.value):keys.delete(el.value));const permissions={add:document.getElementById('permAdd').checked,edit:document.getElementById('permEdit').checked,delete:document.getElementById('permDelete').checked,models:[...keys]};if((permissions.add||permissions.edit||permissions.delete)&&!permissions.models.length)return alert('حدد نموذجاً واحداً على الأقل.');const d=await(await fetch('/api/admin/organizer/permissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:permissionTargetEmail,permissions})})).json();alert(d.message||'');if(d.success){closePermissionModal();loadOrganizers();}}
+        function closePermissionModal(){document.getElementById('organizer-permissions-modal').classList.remove('active');}
+        function openOrganizerTab(tabId){const role=sessionStorage.getItem('sessionUserRole');const p=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');if(role!=='organizer'||!((['add-question-box','qiyas-question-box'].includes(tabId)&&p.add)||(tabId==='manage-questions-box'&&(p.edit||p.delete))))return alert('لا تملك هذه الصلاحية.');navigateTo('admin');document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));document.getElementById(tabId)?.classList.remove('hidden');if(tabId==='add-question-box')loadCustomModelsCache().then(()=>updateModelDropdowns());if(tabId==='qiyas-question-box')loadCustomModelsCache().then(()=>updateQiyasModelDropdowns());if(tabId==='manage-questions-box')initAdminQuestionsManagement();}
 
         function togglePasswordVisibility(fieldId, btn) {
             const input = document.getElementById(fieldId);
@@ -2951,6 +2967,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 
 
         function logout() {
+            fetch('/api/logout',{method:'POST'}).catch(()=>{});
             showLoading('خروج...', 1000, () => {
                 sessionStorage.clear();
                 updateAuthStateUI();
@@ -2966,6 +2983,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             el.style.display = 'block';
         }
 
+        function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
         function jsArg(value){return "'"+String(value??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'";}
         function reviewSectionName(section){return section==='verbal'?'اللفظي':section==='mock'?'محاكي قياس':'الكمي';}
         function reviewTypeName(type){return type==='qiyas_simulation'?'محاكي قياس':type==='simulation'?'اختبار محاكي':'تدريب';}
@@ -3109,7 +3127,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 
         async function deleteQuestion(index) {
             showLoading('حذف...', 500, async () => {
-                await fetch('/api/delete-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index }) });
+                await fetch('/api/delete-question', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index, questionId: globalQuestionsCache[index]?._id }) });
                 globalQuestionsCache = await (await fetch('/api/questions')).json();
                 renderAdminModels();
                 loadAdminStats();
@@ -3120,6 +3138,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             e.preventDefault();
             const updatedData = {
                 index: Number(document.getElementById('editQIndex').value),
+                questionId: globalQuestionsCache[Number(document.getElementById('editQIndex').value)]?._id,
                 section: document.getElementById('editQSection').value,
                 type: document.getElementById('editQType').value,
                 examSection: ['simulation','qiyas_simulation'].includes(document.getElementById('editQType').value)?Number(document.getElementById('editQExamSection').value||1):1,
@@ -3156,8 +3175,10 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
                 if(res.success) {
                     sessionStorage.setItem('sessionUserEmail', loginEmail.value);
                     sessionStorage.setItem('sessionUserRole', res.role);
+                    if(res.organizerPermissions)sessionStorage.setItem('organizerPermissions',JSON.stringify(res.organizerPermissions));else sessionStorage.removeItem('organizerPermissions');
                     updateAuthStateUI();
                     if(res.role === 'admin') openAdminTab('add-question-box');
+                    else if(res.role==='organizer'){navigateTo('admin');const p=res.organizerPermissions||{};openOrganizerTab(p.add?(p.models?.some(k=>k.startsWith('qiyas_simulation_'))&&!p.models?.some(k=>/^(quant|verbal)_/.test(k))?'qiyas-question-box':'add-question-box'):'manage-questions-box');}
                     else navigateTo('student');
                 } else showAlert('login', res.message, false);
             });
@@ -3411,6 +3432,7 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 })();
 </script>
 
+<div id="organizer-permissions-modal" class="custom-modal" role="dialog" aria-modal="true" onclick="if(event.target===this)closePermissionModal()"><div class="modal-box" style="max-width:760px"><div id="organizer-permissions-body"></div></div></div>
 <div id="discover-info-modal" class="custom-modal" role="dialog" aria-modal="true" aria-labelledby="discover-info-title" onclick="if(event.target===this)this.classList.remove('active')"><div class="modal-box"><button type="button" aria-label="إغلاق" onclick="document.getElementById('discover-info-modal').classList.remove('active')" style="width:auto;float:left;margin:0 0 12px;background:#edf2ed;color:#123b48">✕</button><div id="discover-info-body" style="clear:both"></div><button type="button" onclick="document.getElementById('discover-info-modal').classList.remove('active');switchView('login')" style="margin-top:18px;background:#123b48">ابدأ رحلتك الآن — سجّل الدخول</button></div></div>
 <script>
 (function(){const cards=[...document.querySelectorAll('#landing-section .discover-card')];const details=[{title:'القسم اللفظي',text:'طوّر مهارات فهم المقروء، والعلاقات اللفظية، وإكمال الجمل، واستيعاب النصوص. يساعدك التدريب المنتظم على بناء حصيلة لغوية أقوى وقراءة السؤال بدقة وثقة.'},{title:'القسم الكمي',text:'نمِّ مهارات التفكير الرياضي والتحليل المنطقي من خلال المسائل الحسابية، والنسب، والهندسة، والأنماط. تعلّم كيف تفكك المسألة إلى خطوات واضحة وتختار الحل بكفاءة.'},{title:'الاختبارات المحاكية',text:'اختبر استعدادك في تجربة منظّمة تحاكي أجواء الاختبار، وراجع أداءك وحدد المهارات التي تحتاج إلى مزيد من التدريب قبل الاختبار الفعلي.'}];cards.forEach((card,i)=>{card.style.cursor='pointer';card.setAttribute('role','button');card.setAttribute('tabindex','0');const open=()=>{const d=details[i]||details[0];document.getElementById('discover-info-body').innerHTML='<h3 id="discover-info-title" style="color:#123b48;margin-bottom:12px">'+d.title+'</h3><p style="line-height:2;color:#475569">'+d.text+'</p>';document.getElementById('discover-info-modal').classList.add('active')};card.addEventListener('click',e=>{if(e.target.closest('button'))e.preventDefault();open()});card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
