@@ -3836,8 +3836,20 @@ function authSlide(to){
    const state={email:sessionStorage.getItem('sessionUserEmail')||'',section:currentSectionType,mode:currentActionMode,model:Number(selectedModelNum),index:Number(currentQuestionIndex)||0,answers:trainingAnswers||{},flags:examFlaggedQuestions||{},trainingReview:!!trainingReviewMode,examReview:!!examReviewMode,examIntro:!!examSectionIntro,qiyasStarted:!!window.qiyasExamStarted,qiyasReview:!!window.qiyasReviewOnly,qiyasReturn:!!window.qiyasReturnFromReview,qiyasRemaining:Number(qiyasSecondsLeft)||0,trainingRemaining:Number(trainingSecondsLeft)||0,savedAt:Date.now(),title:window.qimmaCurrentModelTitle||''};
    localStorage.setItem(KEY,JSON.stringify(state));
  }catch(e){}}
+ function wasInsideTrainingPage(){
+   try{
+     const viewState=JSON.parse(sessionStorage.getItem('qimma-view-state')||'null');
+     // لا تستعد محاولة قديمة إذا كان المستخدم قد عاد إلى لوحة الطالب قبل تحديث الصفحة.
+     if(viewState && viewState.view && viewState.view!=='training-section'){
+       localStorage.removeItem(KEY);
+       return false;
+     }
+   }catch(e){}
+   return true;
+ }
  async function restore(){if(restoring)return;restoring=true;try{
    const state=JSON.parse(localStorage.getItem(KEY)||'null');
+   if(!wasInsideTrainingPage())return;
    if(!state||!state.email||state.email!==(sessionStorage.getItem('sessionUserEmail')||'')||!sessionStorage.getItem('sessionUserEmail'))return;
    if(!['training','exam','qiyas_simulation'].includes(state.mode)||!state.model)return;
    const res=await fetch('/api/questions',{cache:'no-store'});if(!res.ok)throw Error('questions');const all=await res.json();
@@ -3864,7 +3876,7 @@ function authSlide(to){
  setInterval(save,700);
  document.addEventListener('DOMContentLoaded',()=>{
    // أظهر شاشة الاختبار مباشرة أثناء جلب الأسئلة لاستعادة المحاولة بأسرع وقت.
-   try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.email&&(sessionStorage.getItem('sessionUserEmail')||'')===s.email&&['training','exam','qiyas_simulation'].includes(s.mode)){document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));const t=document.getElementById('training-section');if(t){t.classList.add('active-view');const c=document.getElementById('training-container');if(c)c.innerHTML='<div role="status" style="padding:24px;text-align:center;color:#164e63;font-weight:800">جارٍ استعادة الاختبار وإجاباتك…</div>';}}}catch(e){}
+   try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(wasInsideTrainingPage()&&s&&s.email&&(sessionStorage.getItem('sessionUserEmail')||'')===s.email&&['training','exam','qiyas_simulation'].includes(s.mode)){document.querySelectorAll('.app-section').forEach(el=>el.classList.remove('active-view'));const t=document.getElementById('training-section');if(t){t.classList.add('active-view');const c=document.getElementById('training-container');if(c)c.innerHTML='<div role="status" style="padding:24px;text-align:center;color:#164e63;font-weight:800">جارٍ استعادة الاختبار وإجاباتك…</div>';}}}catch(e){}
    restore();
  });
  // امنع الخروج غير المقصود من محاولة جارية عند الضغط على عناصر القائمة الجانبية.
