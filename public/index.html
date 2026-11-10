@@ -443,6 +443,86 @@ body#appBody .app-section.active-view{margin-bottom:0!important;padding-bottom:0
         .math-helper-panel.open{display:flex}
         .math-helper-panel button{width:auto!important;min-width:48px;min-height:44px;margin:0!important;padding:6px 10px!important;background:#f1f5f9!important;color:#0f172a!important;font-size:17px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;display:inline-flex;align-items:center;justify-content:center}.math-helper-panel button:hover{background:#e0f2fe!important}.math-fraction-icon{display:inline-grid;grid-template-rows:auto 2px auto;min-width:23px;line-height:1.05;text-align:center;font-size:14px}.math-fraction-icon i{display:block;height:2px;background:currentColor;margin:2px 0}.math-helper-note{font-size:11px;color:#64748b;width:100%}.math-live-preview{direction:rtl;text-align:right;margin-top:8px;padding:10px 12px;border:1px dashed #94a3b8;border-radius:9px;background:#fff;color:#0f172a;min-height:42px;white-space:pre-wrap;overflow-wrap:anywhere}.math-live-preview:empty:before{content:'معاينة السؤال أو الإجابة الرياضية تظهر هنا أثناء الكتابة';color:#94a3b8;font-size:12px}
     .qimma-perm-category-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.qimma-perm-category-tabs button{width:auto;margin:0;flex:1;min-width:110px;padding:10px 12px}.qimma-perm-category-tabs button.active-tab{background:#0f766e;color:#fff;border-color:#0f766e}.qimma-account-search{margin:0 0 14px!important;background:#fff!important;border:1px solid #dbe5e8!important}.qimma-account-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:13px;border-bottom:1px solid #e8eef0}.qimma-account-actions{display:flex;gap:8px;flex-wrap:wrap}.qimma-account-actions button{width:auto;margin:0;padding:8px 12px;font-size:12px}.qimma-perm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}.qimma-perm-option{display:flex;align-items:center;gap:9px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px}.qimma-perm-option input{width:18px;height:18px;flex:0 0 auto}@media(max-width:650px){.qimma-account-row{align-items:stretch}.qimma-account-actions{width:100%}.qimma-account-actions button{flex:1}}
+
+
+/* QIMMA UIVERSE BUTTON ADAPTATION — scoped to existing controls only */
+/* Main CTA: angular Uiverse primary button, recolored to Qimma teal/lime */
+.hero-buttons .primary-cta,
+button.primary-cta:not(.auth-submit-button){
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  border:1px solid #123f49!important;border-radius:4px!important;
+  background:linear-gradient(110deg,#164e63 0%,#176b64 62%,#1b806e 100%)!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px rgba(22,78,99,.18)!important;
+  clip-path:polygon(5% 0,100% 0,95% 100%,0 100%);
+  transition:background-position .35s ease,filter .25s ease,transform .25s ease!important;
+}
+.hero-buttons .primary-cta span,button.primary-cta:not(.auth-submit-button) span{color:#d8f66b!important}
+.hero-buttons .primary-cta:hover,button.primary-cta:not(.auth-submit-button):hover{background:linear-gradient(110deg,#0f3444,#176b64 55%,#8bbd36)!important;filter:saturate(1.12)}
+
+/* Secondary actions: diagonal swipe, matching the platform green */
+.secondary-cta{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  border:1.5px solid #176b64!important;border-radius:10px!important;
+  background:#fff!important;color:#164e63!important;
+}
+.secondary-cta::before{
+  content:"";position:absolute;inset:0 auto 0 -45px;width:0;
+  background:linear-gradient(110deg,#164e63,#176b64);transform:skewX(28deg);
+  transition:width .45s ease;z-index:-1;pointer-events:none;
+}
+.secondary-cta:hover{color:#fff!important;border-color:#164e63!important}
+.secondary-cta:hover::before{width:150%}
+
+/* Model cards: Uiverse 3D/progress feel without changing their labels or click handlers */
+.model-btn{isolation:isolate;perspective:700px!important;overflow:hidden!important}
+.model-btn::after{content:'ابدأ الآن ←';position:absolute;inset:auto 0 0;height:3px;width:0;background:#9acb43;opacity:1!important;transition:width .4s ease!important}
+.model-btn:hover::after{width:100%}
+.model-btn::before{transition:transform .25s ease,background .25s ease!important}
+.model-btn:hover::before{transform:rotateY(18deg) rotateX(8deg) scale(1.08)!important}
+
+/* Uiverse toggle switch skin for permission checkboxes only */
+.qimma-perm-option input[type="checkbox"]{
+  appearance:none!important;-webkit-appearance:none!important;position:relative!important;
+  width:38px!important;min-width:38px!important;height:20px!important;padding:0!important;
+  margin:0 2px!important;border:0!important;border-radius:20px!important;
+  background:#cbd5d1!important;box-shadow:inset 0 1px 3px #0002!important;
+  cursor:pointer;transition:background .22s ease!important;flex:0 0 38px!important;
+}
+.qimma-perm-option input[type="checkbox"]::after{
+  content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;
+  border-radius:50%;background:#fff;box-shadow:0 2px 5px #0003;transition:transform .22s ease!important;
+}
+.qimma-perm-option input[type="checkbox"]:checked{background:#16836d!important}
+.qimma-perm-option input[type="checkbox"]:checked::after{transform:translateX(-18px)}
+
+/* Round animated checkmark for bulk question selection */
+.bulk-question-check{
+  appearance:none!important;-webkit-appearance:none!important;width:22px!important;height:22px!important;
+  min-width:22px!important;padding:0!important;margin:0!important;border:2px solid #78918a!important;
+  border-radius:50%!important;background:#fff!important;display:inline-grid!important;place-content:center!important;
+  cursor:pointer;transition:background .25s,border-color .25s,transform .25s!important;
+}
+.bulk-question-check::before{content:"✓";font-size:14px;font-weight:900;color:#fff;transform:scale(0);transition:transform .2s ease}
+.bulk-question-check:checked{background:#16836d!important;border-color:#16836d!important;transform:rotate(360deg)}
+.bulk-question-check:checked::before{transform:scale(1)}
+
+/* Delete controls: compact red icon that expands on hover */
+button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{
+  min-width:44px!important;min-height:42px!important;width:auto!important;
+  border-radius:22px!important;background:#173f4a!important;color:#fff!important;
+  border:1px solid #173f4a!important;transition:width .3s ease,background .3s ease,transform .2s ease!important;
+}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{
+  background:#b8323c!important;border-color:#b8323c!important;color:#fff!important;
+}
+
+@media(max-width:600px){
+ .hero-buttons .primary-cta,.hero-buttons .secondary-cta{width:100%!important;min-height:48px!important;clip-path:none;border-radius:12px!important}
+ .qimma-perm-option{gap:10px!important}
+}
+@media(prefers-reduced-motion:reduce){.secondary-cta::before,.model-btn::before,.qimma-perm-option input,.bulk-question-check{transition:none!important}}
+
 </style>
 
 <style id="qimma-extra-polish">
@@ -1206,6 +1286,127 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
 .hero-photo-main,.hero-photo-main img,.qm-word,.qm-cp{will-change:auto!important}
 </style>
 <style id="qimma-native-scroll-performance">html,body{scroll-behavior:auto!important}#adminFilteredQuestionsList{scroll-behavior:auto!important;overflow-anchor:none}</style>
+
+<style id="qimma-uiverse-buttons-refinement-v2">
+/* Reuse the Uiverse button language throughout Qimma, with the platform palette. */
+:root{--qv-deep:#123f49;--qv-green:#176b64;--qv-mint:#20a889;--qv-lime:#d5f36a;--qv-gold:#e5b85c;--qv-red:#c83d49}
+/* Quantitative and verbal section actions */
+.action-buttons-grid{display:flex;flex-wrap:wrap;gap:14px!important;align-items:center}
+.action-buttons-grid>button{
+  flex:1 1 190px;min-height:54px!important;padding:13px 22px!important;
+  border:1px solid var(--qv-deep)!important;border-radius:7px!important;
+  color:#fff!important;font-weight:900!important;font-size:15px!important;
+  background:linear-gradient(115deg,var(--qv-deep),var(--qv-green) 65%,#218978)!important;
+  box-shadow:0 9px 20px rgba(18,63,73,.16)!important;
+  isolation:isolate;overflow:hidden!important;
+}
+.action-buttons-grid>button::before{
+  content:"";position:absolute;inset:0 auto 0 -42%;width:0;z-index:-1;
+  background:linear-gradient(110deg,#1b806e,var(--qv-mint),#7bbd59);
+  transform:skewX(28deg);transition:width .42s ease;pointer-events:none
+}
+.action-buttons-grid>button:hover::before{width:155%}
+.action-buttons-grid>button:hover{transform:translateY(-3px)!important;box-shadow:0 14px 26px rgba(18,63,73,.22)!important}
+.action-buttons-grid>button:focus-visible{outline:3px solid var(--qv-lime)!important;outline-offset:3px}
+/* The model chooser reached after pressing quantitative/verbal: start, retry and review. */
+.model-status-card{border:1px solid rgba(23,107,100,.14)!important;border-radius:18px!important;box-shadow:0 9px 26px rgba(18,63,73,.07)!important;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease!important}
+.model-status-card:hover{transform:translateY(-3px)!important;border-color:rgba(32,168,137,.42)!important;box-shadow:0 16px 34px rgba(18,63,73,.12)!important}
+.model-status-actions{gap:9px!important}
+.model-status-actions .model-retry{
+  position:relative!important;isolation:isolate;overflow:hidden!important;
+  width:auto!important;min-width:118px;min-height:43px!important;margin:0!important;
+  padding:10px 16px!important;border:1px solid var(--qv-deep)!important;border-radius:8px!important;
+  background:linear-gradient(115deg,var(--qv-deep),var(--qv-green))!important;
+  color:#fff!important;font-weight:900!important;box-shadow:0 6px 15px rgba(18,63,73,.15)!important;
+  transition:transform .22s ease,box-shadow .22s ease,background .22s ease!important
+}
+.model-status-actions .model-retry::before{
+  content:"";position:absolute;inset:0 auto 0 -35%;width:0;z-index:-1;
+  background:linear-gradient(110deg,#1c806e,#26a887,var(--qv-lime));transform:skewX(28deg);
+  transition:width .38s ease;pointer-events:none
+}
+.model-status-actions .model-retry:hover::before{width:145%}
+.model-status-actions .model-retry:hover{transform:translateY(-2px)!important;box-shadow:0 11px 22px rgba(18,63,73,.2)!important}
+.model-status-actions .qimma-review-model-btn{background:linear-gradient(115deg,#a87825,#d3a64d)!important;border-color:#a87825!important;color:#fff!important}
+.model-status-actions .qimma-review-model-btn::before{background:linear-gradient(110deg,#93651d,#e5b85c,#f4d98e)!important}
+.model-status-badge{font-weight:850!important}
+/* Every destructive action uses the supplied Uiverse expanding trash control. */
+button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  gap:7px!important;min-width:46px!important;width:46px!important;height:44px!important;min-height:44px!important;
+  padding:0 12px!important;overflow:hidden!important;white-space:nowrap!important;
+  border:1px solid var(--qv-red)!important;border-radius:24px!important;
+  background:linear-gradient(135deg,#c83d49,#a92736)!important;color:#fff!important;
+  font-size:0!important;font-weight:900!important;box-shadow:0 5px 14px rgba(200,61,73,.18)!important;
+  transition:width .28s ease,min-width .28s ease,background .25s ease,box-shadow .25s ease,transform .2s ease!important
+}
+button[onclick*="confirmDelete"]::before,button[onclick*="delete" i]::before,button[onclick*="Delete"]::before{
+  content:"🗑";display:inline-block;flex:0 0 auto;font-size:18px;line-height:1;filter:grayscale(1) brightness(0) invert(1)
+}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{
+  width:auto!important;min-width:100px!important;padding:0 17px!important;
+  background:linear-gradient(135deg,#a92736,#dc4652)!important;
+  box-shadow:0 9px 20px rgba(200,61,73,.28)!important;transform:translateY(-2px)!important
+}
+button[onclick*="confirmDelete"]:hover::before,button[onclick*="delete" i]:hover::before,button[onclick*="Delete"]:hover::before{content:"🗑";font-size:16px}
+button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{font-size:12px!important}
+/* Reuse the same animated visual treatment on tabs, filters and other action buttons. */
+.tab-btn,.modal-actions button,.qimma-account-actions button,.admin-tab-buttons button{
+  border-radius:11px!important;font-weight:850!important;transition:transform .2s ease,box-shadow .2s ease,background .2s ease!important
+}
+.tab-btn:not(.active-tab):hover,.qimma-account-actions button:hover{border-color:var(--qv-mint)!important;box-shadow:0 8px 18px rgba(23,107,100,.12)!important}
+.modal-actions button:not([onclick*="delete"]){min-height:43px!important;border-radius:11px!important}
+@media(max-width:650px){
+ .action-buttons-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+ .action-buttons-grid>button{width:100%!important;min-height:50px!important}
+ .model-status-actions .model-retry{min-width:0!important;width:100%!important;padding:9px 8px!important;font-size:12px!important}
+ button[onclick*="confirmDelete"],button[onclick*="delete" i],button[onclick*="Delete"]{width:44px!important;min-width:44px!important}
+ button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[onclick*="Delete"]:hover{width:auto!important;min-width:88px!important}
+}
+@media(prefers-reduced-motion:reduce){.action-buttons-grid>button::before,.model-status-actions .model-retry::before{transition:none!important}}
+</style>
+
+\n<style id="qimma-exact-delete-button">
+/* زر الحذف مطابق لتصميم Uiverse المرسل */
+button.qimma-uiverse-delete{
+  box-sizing:border-box!important;width:50px!important;min-width:50px!important;height:50px!important;min-height:50px!important;
+  padding:0!important;margin:4px!important;border:0!important;border-radius:50%!important;
+  background-color:rgb(20,20,20)!important;color:transparent!important;font-size:0!important;font-weight:600!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  box-shadow:0 0 20px rgba(0,0,0,.164)!important;cursor:pointer!important;overflow:hidden!important;position:relative!important;
+  vertical-align:middle!important;transition:width .3s,border-radius .3s,background-color .3s!important;
+}
+button.qimma-uiverse-delete .qimma-delete-svg{width:12px;height:14px;display:block;flex:0 0 auto;transition:transform .3s,width .3s!important}
+button.qimma-uiverse-delete .qimma-delete-svg path{fill:#fff!important}
+button.qimma-uiverse-delete::before{
+  position:absolute!important;top:-20px!important;left:0;right:0;content:"حذف"!important;color:#fff!important;
+  font-size:2px!important;line-height:normal!important;opacity:1!important;pointer-events:none;
+  transition:transform .3s,font-size .3s!important;
+}
+button.qimma-uiverse-delete:hover,button.qimma-uiverse-delete:focus-visible{
+  width:140px!important;min-width:140px!important;border-radius:50px!important;background-color:rgb(255,69,69)!important;
+  align-items:center!important;justify-content:center!important;transition-duration:.3s!important;
+}
+button.qimma-uiverse-delete:hover .qimma-delete-svg,button.qimma-uiverse-delete:focus-visible .qimma-delete-svg{
+  width:50px!important;transform:translateY(60%)!important;transition-duration:.3s!important;
+}
+button.qimma-uiverse-delete:hover::before,button.qimma-uiverse-delete:focus-visible::before{
+  font-size:13px!important;opacity:1!important;transform:translateY(30px)!important;transition-duration:.3s!important;
+}
+button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;outline-offset:3px!important}
+@media(max-width:600px){button.qimma-uiverse-delete{width:50px!important;min-width:50px!important;height:50px!important}}
+</style>
+<script id="qimma-auto-delete-buttons">
+(()=>{
+ const icon='<svg class="qimma-delete-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32S433.7 32 416 32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path></svg>';
+ const isDelete=b=>{const t=(b.innerText||b.textContent||'').trim();const h=(b.getAttribute('onclick')||'')+' '+(b.getAttribute('aria-label')||'')+' '+(b.title||'');return /حذف|delete|trash/i.test(t+' '+h)||/confirmDelete|delete[A-Z_]|remove[A-Z_]/i.test(h)};
+ const apply=b=>{if(!(b instanceof HTMLButtonElement)||b.classList.contains('qimma-uiverse-delete')||!isDelete(b))return;const label=(b.innerText||b.textContent||'Delete').trim()||'Delete';b.classList.add('qimma-uiverse-delete');b.setAttribute('aria-label',label);b.title=label;b.innerHTML=icon;};
+ const scan=root=>{if(root.matches?.('button'))apply(root);root.querySelectorAll?.('button').forEach(apply)};
+ const start=()=>{scan(document);new MutationObserver(records=>records.forEach(r=>{r.addedNodes.forEach(n=>{if(n.nodeType===1)scan(n)});if(r.type==='attributes'&&r.target instanceof HTMLButtonElement)apply(r.target)})).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['onclick','aria-label']});};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
 </head>
 <body id="appBody">
 
@@ -2636,22 +2837,22 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
             try{const data=await(await fetch('/api/admin/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:sessionStorage.getItem('sessionUserEmail')})})).json();if(!data.success)throw new Error(data.message||'تعذر التحميل');registeredAccountsCache=data.users||[];renderRegisteredAccounts(registeredAccountsCache);}catch(e){document.getElementById('registeredAccountsResults').innerHTML='<p style="color:#b91c1c">تعذر تحميل الحسابات.</p>';}
         }
         function filterRegisteredAccounts(){const q=(document.getElementById('registeredAccountsSearch')?.value||'').trim().toLowerCase();renderRegisteredAccounts(registeredAccountsCache.filter(u=>String(u.name||'').toLowerCase().includes(q)||String(u.email||'').toLowerCase().includes(q)));}
-        // حذف الحسابات المسجلة: ربط الزر بوظيفة الحذف الفعلية في الخادم.
-        function confirmDeleteUser(encodedEmail){
-            const email=decodeURIComponent(encodedEmail||'').trim().toLowerCase();
-            if(!email)return showQimmaSiteMessage('تعذر تحديد الحساب المراد حذفه.','تنبيه','⚠️');
-            showQimmaSiteConfirm(`هل أنت متأكد من حذف الحساب ${email} نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`,async()=>{
+        function renderRegisteredAccounts(users){const box=document.getElementById('registeredAccountsResults');if(!box)return;if(!users.length){box.innerHTML='<p style="padding:20px;text-align:center;color:#64748b">لا توجد نتائج مطابقة.</p>';return;}box.innerHTML=users.map(u=>{const self=u.email===sessionStorage.getItem('sessionUserEmail');const isOrg=u.role==='منظم';const isAdmin=['مشرف (Admin)','مشرف','admin'].includes(u.role);const roleLabel=isAdmin?'مشرف':isOrg?'منظم':'طالب';return `<div class="qimma-account-row"><div><strong>${escapeHtml(u.name||'')}</strong><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email||'')}</span><small style="color:${isAdmin?'#0f766e':isOrg?'#7c3aed':'#64748b'};font-weight:800">${roleLabel}</small></div><div class="qimma-account-actions">${!self&&!isAdmin&&isOrg?`<button type="button" onclick="revokeOrganizer('${encodeURIComponent(u.email)}')" style="background:#dc2626">سحب الصلاحيات</button>`:''}${!self?`<button type="button" onclick="confirmDeleteUser('${encodeURIComponent(u.email)}')" style="background:#ef4444">حذف 🗑️</button>`:''}</div></div>`;}).join('');}
+        // حذف الحساب من لوحة المشرف باستخدام مسار الخادم الموجود بالفعل.
+        async function confirmDeleteUser(encodedEmail){
+            const email=decodeURIComponent(String(encodedEmail||''));
+            if(!email)return showQimmaSiteMessage('تعذر تحديد الحساب المطلوب.','خطأ','❌');
+            showQimmaSiteConfirm(`هل أنت متأكد من حذف حساب ${email} نهائياً؟`,async()=>{
                 try{
-                    const response=await fetch('/api/admin/delete-user',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({adminEmail:sessionStorage.getItem('sessionUserEmail')||'',userEmailToDelete:email})});
+                    const response=await fetch('/api/admin/delete-user',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminEmail:sessionStorage.getItem('sessionUserEmail')||'',userEmailToDelete:email})});
                     const data=await response.json();
                     if(!response.ok||!data.success)throw new Error(data.message||'تعذر حذف الحساب.');
-                    registeredAccountsCache=registeredAccountsCache.filter(user=>String(user.email||'').toLowerCase()!==email);
+                    registeredAccountsCache=registeredAccountsCache.filter(u=>String(u.email||'').toLowerCase()!==email.toLowerCase());
                     renderRegisteredAccounts(registeredAccountsCache);
                     showQimmaSiteMessage(data.message||'تم حذف الحساب بنجاح.','تم الحذف','✅');
                 }catch(error){showQimmaSiteMessage(error.message||'تعذر الاتصال بالخادم أثناء حذف الحساب.','تعذر الحذف','❌');}
             },'تأكيد حذف الحساب');
         }
-        function renderRegisteredAccounts(users){const box=document.getElementById('registeredAccountsResults');if(!box)return;if(!users.length){box.innerHTML='<p style="padding:20px;text-align:center;color:#64748b">لا توجد نتائج مطابقة.</p>';return;}box.innerHTML=users.map(u=>{const self=u.email===sessionStorage.getItem('sessionUserEmail');const isOrg=u.role==='منظم';const isAdmin=['مشرف (Admin)','مشرف','admin'].includes(u.role);const roleLabel=isAdmin?'مشرف':isOrg?'منظم':'طالب';return `<div class="qimma-account-row"><div><strong>${escapeHtml(u.name||'')}</strong><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email||'')}</span><small style="color:${isAdmin?'#0f766e':isOrg?'#7c3aed':'#64748b'};font-weight:800">${roleLabel}</small></div><div class="qimma-account-actions">${!self&&!isAdmin&&isOrg?`<button type="button" onclick="revokeOrganizer('${encodeURIComponent(u.email)}')" style="background:#dc2626">سحب الصلاحيات</button>`:''}${!self?`<button type="button" onclick="confirmDeleteUser('${encodeURIComponent(u.email)}')" style="background:#ef4444">حذف 🗑️</button>`:''}</div></div>`;}).join('');}
         function openGrantOrganizerModal(){document.getElementById('organizerGrantEmail').value='';document.getElementById('qimma-grant-organizer-modal').classList.add('active');setTimeout(()=>document.getElementById('organizerGrantEmail').focus(),100);}
         function closeGrantOrganizerModal(){document.getElementById('qimma-grant-organizer-modal').classList.remove('active');}
         async function submitGrantOrganizer(){const email=(document.getElementById('organizerGrantEmail').value||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showQimmaSiteMessage('يرجى إدخال بريد إلكتروني صحيح.','تنبيه','⚠️');return;}closeGrantOrganizerModal();showQimmaSiteConfirm(`هل تريد منح صلاحية المنظم للحساب ${email}؟`,async()=>{try{const d=await(await fetch('/api/admin/organizer/grant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})).json();showQimmaSiteMessage(d.message||(d.success?'تم تحويل الحساب إلى منظم.':'تعذر إتمام العملية.'),d.success?'تم التأكيد':'تعذر التنفيذ',d.success?'✅':'❌');if(d.success)loadRegisteredAccounts();}catch(e){showQimmaSiteMessage('تعذر الاتصال بالخادم. حاول مرة أخرى.','خطأ','❌');}},'تأكيد إضافة المنظم');}
@@ -2906,6 +3107,9 @@ body::before,body::after{filter:none!important;animation:none!important;opacity:
         function renderQiyasQuestion(c){
           if(!currentTrainingQuestions.length)return;if(qiyasSectionIntroPending){qiyasSectionIntroPending=false;showQiyasSectionIntro(examSectionQuestions().indexOf(getExamSection(currentTrainingQuestions[currentQuestionIndex])));return;}const q=currentTrainingQuestions[currentQuestionIndex], sec=getExamSection(q), secs=examSectionQuestions();const opts=Array.isArray(q.options)?q.options:[q.options?.a,q.options?.b,q.options?.c,q.options?.d];const selected=trainingAnswers[currentQuestionIndex];const firstInSection=currentQuestionIndex===0||getExamSection(currentTrainingQuestions[currentQuestionIndex-1])!==sec;const lastInSection=currentQuestionIndex===currentTrainingQuestions.length-1||getExamSection(currentTrainingQuestions[currentQuestionIndex+1])!==sec;const sectionIndex=secs.indexOf(sec);
           c.innerHTML=`<div class="qiyas-step-transition" style="display:flex;flex-direction:row;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px;direction:ltr"><div style="direction:ltr;text-align:left;order:1"><div id="qiyas-timer" style="background:#123b48;color:#fff;padding:10px 14px;border-radius:10px;font-weight:800">${Number(window.qiyasModelMinutes||0)>0?'الوقت المتبقي '+toArabicNumber(Math.floor(qiyasSecondsLeft/60))+':'+toArabicNumber(qiyasSecondsLeft%60).padStart(2,'٠'):'الوقت: غير محدد'}</div><details style="margin-top:8px;direction:rtl;background:#fff;padding:7px 10px;border-radius:9px;border:1px solid #dbe3ed"><summary style="cursor:pointer">🔤 تغيير الخط</summary><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button onclick="setQiyasFont('normal')">عادي</button><button onclick="setQiyasFont('bold')">عريض</button><button onclick="setQiyasFont('boldplus')">عريض بزيادة</button></div></details></div><div style="text-align:right;color:#123b48;order:2;direction:rtl;margin-left:auto"><strong>${sessionStorage.getItem('sessionUserName')||'الطالب'}</strong><div>${window.qimmaCurrentModelTitle||'اختبار محاكي لقياس'}</div><div style="margin-top:6px">القسم ${toArabicNumber(sectionIndex+1)} من ${toArabicNumber(secs.length)} · السؤال ${toArabicNumber(currentQuestionIndex+1)} من ${toArabicNumber(currentTrainingQuestions.length)}</div></div></div>${window.qiyasReturnFromReview?'<button type="button" onclick="backToQiyasReview()" style="position:sticky;top:10px;z-index:20;display:block;width:auto;margin:0 0 12px auto;background:#e0f2fe;color:#075985;border:1px solid #7dd3fc;padding:11px 18px;border-radius:12px;font-weight:900">انتقل لصفحة المراجعة</button>':''}<article style="background:#f8fafc;border:1px solid #cbd5e1;padding:24px;border-radius:18px"><div style="${qiyasFontStyle()};line-height:1.9;margin-bottom:20px">${window.qimmaMathDisplay?window.qimmaMathDisplay(q.question):q.question}</div>${q.image?`<img src="${q.image}" alt="صورة السؤال" style="display:block;max-width:100%;max-height:250px;margin:0 auto 18px;border-radius:12px">`:''}<div style="display:grid;gap:12px">${opts.map((o,i)=>{const letter=['أ','ب','ج','د'][i];return `<button type="button" onclick="saveExamAnswer(${currentQuestionIndex},'${letter}')" style="${qiyasFontStyle()};text-align:right;background:${selected===letter?'#dbeafe':'white'};color:#0f172a;border:2px solid ${selected===letter?'#2563eb':'#cbd5e1'};padding:13px;border-radius:12px">${letter}) ${window.qimmaMathDisplay?window.qimmaMathDisplay(o):o}</button>`}).join('')}</div><div style="display:flex;justify-content:flex-start;margin-top:16px"><button type="button" onclick="toggleExamFlag()" style="width:auto;background:${examFlaggedQuestions[currentQuestionIndex]?'#fef3c7':'#fff'};color:#92400e;border:1px solid #f59e0b;padding:10px 14px">${examFlaggedQuestions[currentQuestionIndex]?'⚑ إزالة علامة المراجعة':'⚑ وضع علامة للمراجعة'}</button></div><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:22px">${firstInSection?'<span></span>':`<button type="button" onclick="goQiyasQuestion(-1)" style="width:auto;background:#e2e8f0;color:#1e293b;padding:12px 18px">السابق</button>`}${lastInSection?`<button type="button" onclick="showQiyasReview()" style="width:auto;background:#0f766e;color:#fff;padding:12px 18px">مراجعة القسم ←</button>`:`<button type="button" onclick="goQiyasQuestion(1)" style="width:auto;background:#0f766e;color:#fff;padding:12px 18px">التالي ←</button>`}</div></article>`;
+          // Render LaTeX fractions and other math expressions in the Qiyas exam,
+          // matching the MathJax rendering already used by training and ordinary exams.
+          if(window.MathJax?.typesetPromise) window.MathJax.typesetPromise([c]).catch(()=>{});
         }
         function saveExamAnswer(index,value){trainingAnswers[index]=value;renderQiyasQuestion(document.getElementById('training-container'));}
         function goQiyasQuestion(delta){const next=currentQuestionIndex+delta;if(next<0)return; if(next>=currentTrainingQuestions.length)return; if(delta<0&&getExamSection(currentTrainingQuestions[next])!==getExamSection(currentTrainingQuestions[currentQuestionIndex]))return;currentQuestionIndex=next;renderQiyasQuestion(document.getElementById('training-container'));}
@@ -3938,16 +4142,22 @@ function authSlide(to){
 })();
 </script>
 
-
-        // إزالة النص الشارد n/ إن ظهر أعلى الصفحة، دون التأثير على النصوص الأخرى.
-        (()=>{
-            const cleanStrayLabel=root=>{
-                const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-                const remove=[];while(walker.nextNode()){const node=walker.currentNode;if(/^\s*n\/\s*$/i.test(node.nodeValue||''))remove.push(node);}
-                remove.forEach(node=>node.parentNode&&node.parentNode.removeChild(node));
-            };
-            const start=()=>{cleanStrayLabel(document.body);const observer=new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===Node.TEXT_NODE){if(/^\s*n\/\s*$/i.test(node.nodeValue||''))node.parentNode?.removeChild(node);}else if(node.nodeType===Node.ELEMENT_NODE)cleanStrayLabel(node);})));observer.observe(document.body,{childList:true,subtree:true});};
-            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-        })();
+<script id="qimma-remove-stray-top-n">
+(()=>{
+ const clean=()=>{
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const remove=[];let node;
+  while((node=walker.nextNode())){
+   const parent=node.parentElement;if(!parent||parent.closest('script,style,noscript,textarea,pre,code'))continue;
+   if(!/^[\s\u200e\u200f]*(?:n\/?)[\s\u200e\u200f]*$/i.test(node.nodeValue||''))continue;
+   const rect=parent.getBoundingClientRect();
+   if(rect.top<220&&rect.bottom>=0)remove.push(node);
+  }
+  remove.forEach(n=>n.remove());
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});else clean();
+ new MutationObserver(()=>clean()).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
