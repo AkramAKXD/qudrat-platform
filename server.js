@@ -206,25 +206,6 @@ async function getAppUser(req) {
     if (!payload) return null;
     return User.findOne({ email: payload.email }).select('name email role organizerPermissions');
 }
-
-// مزامنة بيانات الحساب والصلاحيات مباشرة دون الحاجة إلى تسجيل الخروج.
-app.get('/api/session/current', async (req, res) => {
-    try {
-        const user = await getAppUser(req);
-        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-        if (!user) return res.status(401).json({ success: false });
-        return res.json({
-            success: true,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            organizerPermissions: user.organizerPermissions || null
-        });
-    } catch (error) {
-        console.error('GET /api/session/current:', error.message);
-        return res.status(500).json({ success: false });
-    }
-});
 function modelKeyForQuestion(q) {
     return q.type === 'qiyas_simulation' ? `qiyas_simulation_${Number(q.model)}` : `${q.section}_${q.type}_${Number(q.model)}`;
 }
