@@ -2055,6 +2055,87 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
             }
         }
 
+        // مزامنة صلاحيات وحالة حساب المنظم تلقائياً مع الخادم دون تسجيل خروج.
+        let liveSessionSyncTimer = null;
+        let liveSessionSyncBusy = false;
+        let lastLiveSessionSignature = '';
+
+        async function syncLiveSessionState() {
+            if (liveSessionSyncBusy || !checkAuth()) return;
+            liveSessionSyncBusy = true;
+            try {
+                const response = await fetch('/api/session/current', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.status === 401) return;
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data.success) return;
+
+                const oldRole = sessionStorage.getItem('sessionUserRole') || '';
+                const oldPermissions = sessionStorage.getItem('organizerPermissions') || '{}';
+                const newPermissions = JSON.stringify(data.organizerPermissions || {});
+                const signature = `${data.role}|${newPermissions}`;
+                sessionStorage.setItem('sessionUserEmail', data.email || '');
+                sessionStorage.setItem('sessionUserRole', data.role || 'student');
+                if (data.organizerPermissions) sessionStorage.setItem('organizerPermissions', newPermissions);
+                else sessionStorage.removeItem('organizerPermissions');
+
+                if (signature === lastLiveSessionSignature) return;
+                lastLiveSessionSignature = signature;
+
+                if (oldRole !== (data.role || 'student') || oldPermissions !== newPermissions) {
+                    updateAuthStateUI();
+                    if (data.role !== 'organizer') {
+                        if (oldRole === 'organizer') {
+                            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+                            navigateTo('student');
+                            showQimmaSiteMessage('تم تحديث دور حسابك من الخادم.','تحديث الحساب','ℹ️');
+                        }
+                        return;
+                    }
+
+                    const permissions = data.organizerPermissions || {};
+                    const activeTab = document.querySelector('#admin-dashboard .admin-tab-content:not(.hidden)');
+                    const activeTabId = activeTab?.id || '';
+                    const allowed =
+                        (activeTabId === 'add-question-box' && permissions.add) ||
+                        (activeTabId === 'qiyas-question-box' && permissions.qiyasAdd) ||
+                        (activeTabId === 'manage-questions-box' && (permissions.edit || permissions.delete));
+
+                    if (activeTabId && !allowed) {
+                        const nextTab = permissions.add ? 'add-question-box' :
+                            (permissions.qiyasAdd ? 'qiyas-question-box' :
+                            ((permissions.edit || permissions.delete) ? 'manage-questions-box' : ''));
+                        if (nextTab) openOrganizerTab(nextTab);
+                        else { navigateTo('student'); showQimmaSiteMessage('تم تحديث الصلاحيات ولا توجد صلاحيات إدارية مفعّلة لحسابك.','تحديث الصلاحيات','ℹ️'); }
+                    } else if (activeTabId === 'manage-questions-box' && allowed) {
+                        initAdminQuestionsManagement();
+                    } else if (activeTabId === 'add-question-box' && permissions.add) {
+                        loadCustomModelsCache().then(() => updateModelDropdowns());
+                    } else if (activeTabId === 'qiyas-question-box' && permissions.qiyasAdd) {
+                        loadCustomModelsCache().then(() => updateQiyasModelDropdowns());
+                    }
+                }
+            } catch (error) {
+                // انقطاع مؤقت لا ينهي الجلسة؛ ستُعاد المحاولة في الدورة التالية.
+            } finally {
+                liveSessionSyncBusy = false;
+            }
+        }
+
+        function startLiveSessionSync() {
+            if (liveSessionSyncTimer) clearInterval(liveSessionSyncTimer);
+            lastLiveSessionSignature = '';
+            if (checkAuth()) syncLiveSessionState();
+            liveSessionSyncTimer = setInterval(() => {
+                if (checkAuth()) syncLiveSessionState();
+            }, 2000);
+        }
+
         function hideAlerts() {
             document.querySelectorAll('.alert').forEach(el => { el.style.display = 'none'; el.innerText = ''; });
         }
@@ -3198,6 +3279,8 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
             fetch('/api/logout',{method:'POST'}).catch(()=>{});
             showLoading('خروج...', 1000, () => {
                 sessionStorage.clear();
+                if (liveSessionSyncTimer) { clearInterval(liveSessionSyncTimer); liveSessionSyncTimer = null; }
+                lastLiveSessionSignature = '';
                 updateAuthStateUI();
                 navigateTo('landing');
             });
@@ -3405,6 +3488,7 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
                     sessionStorage.setItem('sessionUserRole', res.role);
                     if(res.organizerPermissions)sessionStorage.setItem('organizerPermissions',JSON.stringify(res.organizerPermissions));else sessionStorage.removeItem('organizerPermissions');
                     updateAuthStateUI();
+                    startLiveSessionSync();
                     if(res.role === 'admin') openAdminTab('add-question-box');
                     else if(res.role==='organizer'){navigateTo('admin');const p=res.organizerPermissions||{};openOrganizerTab(p.add?'add-question-box':p.qiyasAdd?'qiyas-question-box':'manage-questions-box');}
                     else navigateTo('student');
@@ -3587,6 +3671,7 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
         window.addEventListener('DOMContentLoaded', () => {
             updateAuthStateUI();
             switchView(sessionStorage.getItem('currentView') || (checkAuth() ? 'student' : 'landing'));
+            startLiveSessionSync();
         });
     
         // Rotate supportive messages without inventing or altering student performance data.
