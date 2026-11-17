@@ -197,6 +197,15 @@ function setAppSession(res, user) {
     const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
     res.setHeader('Set-Cookie', `${APP_SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${APP_SESSION_TTL}${secure}`);
 }
+// تتبع اتصال المنظمين: تنتهي حالة الاتصال تلقائياً إذا توقف إرسال النبضات.
+const organizerPresence = new Map();
+const ORGANIZER_PRESENCE_TTL_MS = 45 * 1000;
+function cleanOrganizerPresence() {
+    const now = Date.now();
+    for (const [email, lastSeen] of organizerPresence) {
+        if (now - lastSeen > ORGANIZER_PRESENCE_TTL_MS) organizerPresence.delete(email);
+    }
+}
 function clearAppSession(res) {
     const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
     res.setHeader('Set-Cookie', `${APP_SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
@@ -340,7 +349,23 @@ app.post('/api/register', async (req, res) => {
 
 // ==================== تسجيل الدخول ====================
 
-app.post('/api/logout', (req, res) => { clearAppSession(res); res.json({success:true}); });
+app.post('/api/organizer/presence', async (req, res) => {
+    try {
+        const user = await getAppUser(req);
+        if (!user || user.role !== 'organizer') return res.status(401).json({success:false});
+        organizerPresence.set(user.email, Date.now());
+        res.set('Cache-Control', 'no-store');
+        return res.json({success:true});
+    } catch (e) { return res.status(500).json({success:false}); }
+});
+app.post('/api/logout', async (req, res) => {
+    try {
+        const user = await getAppUser(req);
+        if (user?.role === 'organizer') organizerPresence.delete(user.email);
+    } catch (e) {}
+    clearAppSession(res);
+    res.json({success:true});
+});
 
 app.post('/api/login', async (req, res) => {
     try {
@@ -1091,7 +1116,7 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 async function requireMainAdmin(req,res){const u=await getAppUser(req);if(!u||u.role!=='admin'){res.status(403).json({success:false,message:'هذه العملية للمشرف فقط.'});return null;}return u;}
 app.post('/api/admin/organizer/grant', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user)return res.status(404).json({success:false,message:'البريد غير مسجل في المنصة.'});if(user.role==='admin')return res.status(400).json({success:false,message:'لا يمكن تغيير حساب المشرف إلى منظم.'});user.role='organizer';user.organizerPermissions={add:false,edit:false,delete:false,qiyasAdd:false,models:[]};await user.save();res.json({success:true,message:`تم منح صلاحية المنظم لـ ${user.name}`,user:{name:user.name,email:user.email}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر منح الصلاحية.'});}});
 app.post('/api/admin/organizer/revoke', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user||user.role!=='organizer')return res.status(404).json({success:false,message:'المنظم غير موجود.'});user.role='student';user.organizerPermissions={add:false,edit:false,delete:false,qiyasAdd:false,models:[]};await user.save();res.json({success:true,message:`تم سحب صلاحيات المنظم من ${user.name}.`});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر سحب الصلاحية.'});}});
-app.post('/api/admin/organizers', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const users=await User.find({role:'organizer'}).select('name email organizerPermissions').lean();res.set('Cache-Control','no-store');res.json({success:true,users});}catch(e){res.status(500).json({success:false,message:'تعذر تحميل المنظمين.'});}});
+app.post('/api/admin/organizers', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;cleanOrganizerPresence();const users=await User.find({role:'organizer'}).select('name email organizerPermissions').lean();res.set('Cache-Control','no-store');res.json({success:true,users:users.map(u=>({...u,isOnline:organizerPresence.has(u.email)}))});}catch(e){res.status(500).json({success:false,message:'تعذر تحميل المنظمين.'});}});
 app.post('/api/admin/organizer/permissions', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email,role:'organizer'});if(!user)return res.status(404).json({success:false,message:'حساب المنظم غير موجود.'});const p=req.body?.permissions||{};const allowed=['quant_practice','verbal_practice','quant_simulation','verbal_simulation','qiyas_simulation'];const models=Array.isArray(p.models)?[...new Set(p.models.map(String).filter(k=>allowed.some(prefix=>k.startsWith(prefix+'_'))))]:[];user.organizerPermissions={add:!!p.add,edit:!!p.edit,delete:!!p.delete,qiyasAdd:!!p.qiyasAdd,models};await user.save();res.json({success:true,message:`تم حفظ صلاحيات المنظم ${user.name}.`,user:{name:user.name,email:user.email,organizerPermissions:user.organizerPermissions}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر حفظ الصلاحيات.'});}});
 
 // ==================== جلب المستخدمين للمشرف ====================
