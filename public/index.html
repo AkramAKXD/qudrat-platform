@@ -2857,7 +2857,7 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
         function closeGrantOrganizerModal(){document.getElementById('qimma-grant-organizer-modal').classList.remove('active');}
         async function submitGrantOrganizer(){const email=(document.getElementById('organizerGrantEmail').value||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showQimmaSiteMessage('يرجى إدخال بريد إلكتروني صحيح.','تنبيه','⚠️');return;}closeGrantOrganizerModal();showQimmaSiteConfirm(`هل تريد منح صلاحية المنظم للحساب ${email}؟`,async()=>{try{const d=await(await fetch('/api/admin/organizer/grant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})).json();showQimmaSiteMessage(d.message||(d.success?'تم تحويل الحساب إلى منظم.':'تعذر إتمام العملية.'),d.success?'تم التأكيد':'تعذر التنفيذ',d.success?'✅':'❌');if(d.success)loadRegisteredAccounts();}catch(e){showQimmaSiteMessage('تعذر الاتصال بالخادم. حاول مرة أخرى.','خطأ','❌');}},'تأكيد إضافة المنظم');}
         async function revokeOrganizer(encodedEmail){const email=decodeURIComponent(encodedEmail);showQimmaSiteConfirm(`هل تريد سحب صلاحيات المنظم من ${email} وإعادة الحساب إلى طالب؟`,async()=>{try{const d=await(await fetch('/api/admin/organizer/revoke',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})})).json();showQimmaSiteMessage(d.message||(d.success?'تمت إعادة الحساب إلى طالب.':'تعذر إتمام العملية.'),d.success?'تم التأكيد':'تعذر التنفيذ',d.success?'✅':'❌');if(d.success){loadRegisteredAccounts();loadOrganizers();}}catch(e){showQimmaSiteMessage('تعذر الاتصال بالخادم.','خطأ','❌');}},'تأكيد سحب الصلاحية');}
-        async function loadOrganizers(){const box=document.getElementById('organizersListContainer');try{const d=await(await fetch('/api/admin/organizers',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();if(!d.success)throw Error();if(!d.users.length){box.innerHTML='<p style="text-align:center;color:#64748b;padding:20px">لا يوجد منظمون حالياً.</p>';return;}box.innerHTML=d.users.map(u=>`<div class="qimma-account-row"><div><strong>${escapeHtml(u.name)}</strong><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email)}</span><small style="color:#0f766e">الصلاحيات: ${[u.organizerPermissions?.add?'إضافة الأسئلة':'',(u.organizerPermissions?.edit||u.organizerPermissions?.delete)?'إدارة وتعديل الأسئلة':'',u.organizerPermissions?.qiyasAdd?'إضافة أسئلة قياس المحاكي':''].filter(Boolean).join('، ')||'لم تحدد بعد'}</small></div><div class="qimma-account-actions"><button type="button" onclick="openOrganizerPermissions('${encodeURIComponent(u.email)}')">الصلاحيات</button></div></div>`).join('');}catch(e){box.innerHTML='<p style="color:#b91c1c">تعذر تحميل المنظمين.</p>';}}
+        async function loadOrganizers(){const box=document.getElementById('organizersListContainer');try{const d=await(await fetch('/api/admin/organizers',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();if(!d.success)throw Error();if(!d.users.length){box.innerHTML='<p style="text-align:center;color:#64748b;padding:20px">لا يوجد منظمون حالياً.</p>';return;}box.innerHTML=d.users.map(u=>`<div class="qimma-account-row"><div><strong>${escapeHtml(u.name)}</strong><span style="display:inline-flex;align-items:center;gap:6px;margin-right:9px;font-size:12px;font-weight:800;color:${u.isOnline?'#15803d':'#94a3b8'}"><i style="width:8px;height:8px;border-radius:50%;background:${u.isOnline?'#22c55e':'#cbd5e1'};display:inline-block"></i>${u.isOnline?'متصل':'غير متصل'}</span><span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email)}</span><small style="color:#0f766e">الصلاحيات: ${[u.organizerPermissions?.add?'إضافة الأسئلة':'',(u.organizerPermissions?.edit||u.organizerPermissions?.delete)?'إدارة وتعديل الأسئلة':'',u.organizerPermissions?.qiyasAdd?'إضافة أسئلة قياس المحاكي':''].filter(Boolean).join('، ')||'لم تحدد بعد'}</small></div><div class="qimma-account-actions"><button type="button" onclick="openOrganizerPermissions('${encodeURIComponent(u.email)}')">الصلاحيات</button></div></div>`).join('');}catch(e){box.innerHTML='<p style="color:#b91c1c">تعذر تحميل المنظمين.</p>';}}
         let permissionTargetEmail='';let permissionModelsCache={};
         async function openOrganizerPermissions(encodedEmail){try{permissionTargetEmail=decodeURIComponent(encodedEmail);const d=await(await fetch('/api/admin/organizers',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json();const user=(d.users||[]).find(x=>x.email===permissionTargetEmail);if(!user)return showQimmaSiteMessage('تعذر العثور على المنظم.','خطأ','❌');const p=user.organizerPermissions||{};const models=await(await fetch('/api/custom-models')).json();permissionModelsCache=models.models||{};const html=`<h3 style="margin-bottom:8px">صلاحيات ${escapeHtml(user.name)}</h3><p style="color:#64748b">اختر صلاحية واحدة أو أكثر، ثم حدد النماذج المسموح للمنظم بالعمل عليها.</p><div class="qimma-perm-grid"><label class="qimma-perm-option"><input type="checkbox" id="permAdd" ${p.add?'checked':''}> إضافة الأسئلة</label><label class="qimma-perm-option"><input type="checkbox" id="permManage" ${(p.edit||p.delete)?'checked':''}> إدارة وتعديل الأسئلة</label><label class="qimma-perm-option"><input type="checkbox" id="permQiyasAdd" ${p.qiyasAdd?'checked':''}> إضافة أسئلة قياس المحاكي</label></div><h4 style="margin:18px 0 8px;color:#123b48">تحديد النماذج</h4><div class="qimma-perm-category-tabs"><button type="button" class="tab-btn active-tab" data-perm-cat="training" onclick="selectPermissionCategory('training',this)">التدريب</button><button type="button" class="tab-btn" data-perm-cat="ordinary" onclick="selectPermissionCategory('ordinary',this)">المحاكي العادي</button><button type="button" class="tab-btn" data-perm-cat="qiyas" onclick="selectPermissionCategory('qiyas',this)">المحاكي لقياس</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button type="button" style="width:auto;margin:0" onclick="toggleAllPermissionModels(true)">تحديد الكل</button><button type="button" style="width:auto;margin:0;background:#64748b" onclick="toggleAllPermissionModels(false)">إلغاء تحديد الكل</button></div><div id="permissionModelsList" class="qimma-perm-grid"></div><div class="modal-actions"><button type="button" onclick="closePermissionModal()" style="background:#64748b">إلغاء</button><button type="button" onclick="saveOrganizerPermissions()">حفظ الصلاحيات</button></div>`;document.getElementById('organizer-permissions-body').innerHTML=html;document.getElementById('organizer-permissions-modal').classList.add('active');window.currentOrganizerPermissionKeys=p.models||[];window.currentPermissionCategory='training';renderPermissionModels();}catch(e){showQimmaSiteMessage('تعذر تحميل صلاحيات المنظم.','خطأ','❌');}}
         function selectPermissionCategory(cat,btn){window.currentPermissionCategory=cat;document.querySelectorAll('.qimma-perm-category-tabs button').forEach(b=>b.classList.toggle('active-tab',b===btn));renderPermissionModels();}
@@ -3403,6 +3403,7 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
                 if(res.success) {
                     sessionStorage.setItem('sessionUserEmail', loginEmail.value);
                     sessionStorage.setItem('sessionUserRole', res.role);
+                    if(res.role==='organizer' && typeof sendOrganizerPresence==='function') sendOrganizerPresence();
                     if(res.organizerPermissions)sessionStorage.setItem('organizerPermissions',JSON.stringify(res.organizerPermissions));else sessionStorage.removeItem('organizerPermissions');
                     updateAuthStateUI();
                     if(res.role === 'admin') openAdminTab('add-question-box');
@@ -4157,6 +4158,31 @@ function authSlide(to){
  };
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});else clean();
  new MutationObserver(()=>clean()).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+<script id="qimma-organizer-presence">
+(function(){
+    let heartbeatTimer = null;
+    window.sendOrganizerPresence = async function(){
+        if(sessionStorage.getItem('sessionUserRole') !== 'organizer' || !sessionStorage.getItem('sessionUserEmail')) return;
+        try { await fetch('/api/organizer/presence',{method:'POST',cache:'no-store'}); } catch(e) {}
+    };
+    function startPresence(){
+        if(heartbeatTimer) clearInterval(heartbeatTimer);
+        if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
+        heartbeatTimer = setInterval(()=>{
+            if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
+        },15000);
+    }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',startPresence);
+    else startPresence();
+
+    // تحديث حالة المنظمين تلقائياً أثناء بقاء صفحة حسابات المنظمين مفتوحة لدى المشرف.
+    setInterval(()=>{
+        const box=document.getElementById('organizers-management-box');
+        if(box && !box.classList.contains('hidden') && typeof window.loadOrganizers==='function') window.loadOrganizers();
+    },15000);
 })();
 </script>
 </body>
