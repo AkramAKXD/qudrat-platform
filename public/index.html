@@ -4174,16 +4174,64 @@ function authSlide(to){
 <script id="qimma-organizer-presence">
 (function(){
     let heartbeatTimer = null;
+    let syncingPermissions = false;
+
+    function organizerHasAnyPermission(p){
+        return !!(p && (p.add || p.edit || p.delete || (p.qiyasAdd && Array.isArray(p.models) && p.models.some(k=>String(k).startsWith('qiyas_simulation_')))));
+    }
+    function defaultOrganizerTab(p){
+        if(p.add) return 'add-question-box';
+        if(p.qiyasAdd && Array.isArray(p.models) && p.models.some(k=>String(k).startsWith('qiyas_simulation_'))) return 'qiyas-question-box';
+        if(p.edit || p.delete) return 'manage-questions-box';
+        return null;
+    }
+    function applyFreshOrganizerPermissions(p){
+        p = p || {add:false,edit:false,delete:false,qiyasAdd:false,models:[]};
+        const previous = sessionStorage.getItem('organizerPermissions') || '{}';
+        const next = JSON.stringify(p);
+        sessionStorage.setItem('organizerPermissions', next);
+        const changed = previous !== next;
+        const addLink=document.getElementById('organizer-add-link');
+        const qiyasLink=document.getElementById('organizer-qiyas-add-link');
+        const editLink=document.getElementById('organizer-edit-link');
+        addLink?.classList.toggle('hidden',!p.add);
+        qiyasLink?.classList.toggle('hidden',!(p.qiyasAdd && Array.isArray(p.models) && p.models.some(k=>String(k).startsWith('qiyas_simulation_'))));
+        editLink?.classList.toggle('hidden',!(p.edit||p.delete));
+        if(!changed) return;
+        const notice=document.getElementById('organizer-no-permissions-box');
+        const adminView=document.getElementById('admin');
+        if(!organizerHasAnyPermission(p)){
+            document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));
+            if(notice){notice.classList.remove('hidden');notice.style.display='flex';}
+            return;
+        }
+        // إذا كان المنظم على شاشة عدم وجود الصلاحيات أو داخل قسم سُحبت صلاحيته، انقله فوراً للقسم المسموح.
+        const visibleTab=[...document.querySelectorAll('.admin-tab-content')].find(el=>!el.classList.contains('hidden') && el.id!=='organizer-no-permissions-box');
+        const allowed = visibleTab && ((visibleTab.id==='add-question-box' && p.add) || (visibleTab.id==='qiyas-question-box' && p.qiyasAdd && p.models?.some(k=>String(k).startsWith('qiyas_simulation_'))) || (visibleTab.id==='manage-questions-box' && (p.edit||p.delete)));
+        const noticeVisible=notice && !notice.classList.contains('hidden');
+        if(adminView){
+            // إعادة تهيئة القسم الحالي أيضاً لتحديث النماذج المسموح بها فوراً.
+            window.openOrganizerTab(allowed && visibleTab ? visibleTab.id : defaultOrganizerTab(p));
+        }
+    }
+
     window.sendOrganizerPresence = async function(){
-        if(sessionStorage.getItem('sessionUserRole') !== 'organizer' || !sessionStorage.getItem('sessionUserEmail')) return;
-        try { await fetch('/api/organizer/presence',{method:'POST',cache:'no-store'}); } catch(e) {}
+        if(sessionStorage.getItem('sessionUserRole') !== 'organizer' || !sessionStorage.getItem('sessionUserEmail') || syncingPermissions) return;
+        syncingPermissions = true;
+        try {
+            const response=await fetch('/api/organizer/presence',{method:'POST',cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+            if(!response.ok) return;
+            const data=await response.json();
+            if(data.success && data.role==='organizer') applyFreshOrganizerPermissions(data.organizerPermissions);
+        } catch(e) {} finally { syncingPermissions=false; }
     };
     function startPresence(){
         if(heartbeatTimer) clearInterval(heartbeatTimer);
         if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
+        // مزامنة الصلاحيات كل 4 ثوانٍ، دون تحديث الصفحة أو تسجيل الخروج.
         heartbeatTimer = setInterval(()=>{
             if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
-        },15000);
+        },4000);
     }
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',startPresence);
     else startPresence();
