@@ -355,7 +355,9 @@ app.post('/api/organizer/presence', async (req, res) => {
         if (!user || user.role !== 'organizer') return res.status(401).json({success:false});
         organizerPresence.set(user.email, Date.now());
         res.set('Cache-Control', 'no-store');
-        return res.json({success:true});
+        // إعادة الصلاحيات الحالية من قاعدة البيانات مع كل نبضة اتصال؛
+        // حتى تصل أي تعديلات من المشرف للمنظم دون إعادة تسجيل الدخول.
+        return res.json({success:true, role:user.role, organizerPermissions:user.organizerPermissions || {add:false,edit:false,delete:false,qiyasAdd:false,models:[]}});
     } catch (e) { return res.status(500).json({success:false}); }
 });
 app.post('/api/logout', async (req, res) => {
