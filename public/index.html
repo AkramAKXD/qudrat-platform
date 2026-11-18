@@ -4189,29 +4189,33 @@ function authSlide(to){
         p = p || {add:false,edit:false,delete:false,qiyasAdd:false,models:[]};
         const previous = sessionStorage.getItem('organizerPermissions') || '{}';
         const next = JSON.stringify(p);
-        sessionStorage.setItem('organizerPermissions', next);
         const changed = previous !== next;
+        sessionStorage.setItem('organizerPermissions', next);
         const addLink=document.getElementById('organizer-add-link');
         const qiyasLink=document.getElementById('organizer-qiyas-add-link');
         const editLink=document.getElementById('organizer-edit-link');
         addLink?.classList.toggle('hidden',!p.add);
         qiyasLink?.classList.toggle('hidden',!(p.qiyasAdd && Array.isArray(p.models) && p.models.some(k=>String(k).startsWith('qiyas_simulation_'))));
         editLink?.classList.toggle('hidden',!(p.edit||p.delete));
-        if(!changed) return;
+
         const notice=document.getElementById('organizer-no-permissions-box');
-        const adminView=document.getElementById('admin');
+        const welcome=document.getElementById('admin-welcome');
+        const adminView=document.getElementById('admin-dashboard');
+        if(welcome){welcome.textContent='لوحة تحكم المنظم';welcome.classList.toggle('hidden',!organizerHasAnyPermission(p));}
+
+        // لا نسمح بظهور تبويب افتراضي (مثل إضافة الأسئلة) إذا لم توجد أي صلاحية.
         if(!organizerHasAnyPermission(p)){
             document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));
             if(notice){notice.classList.remove('hidden');notice.style.display='flex';}
             return;
         }
-        // إذا كان المنظم على شاشة عدم وجود الصلاحيات أو داخل قسم سُحبت صلاحيته، انقله فوراً للقسم المسموح.
+        if(notice){notice.classList.add('hidden');notice.style.display='none';}
+
         const visibleTab=[...document.querySelectorAll('.admin-tab-content')].find(el=>!el.classList.contains('hidden') && el.id!=='organizer-no-permissions-box');
-        const allowed = visibleTab && ((visibleTab.id==='add-question-box' && p.add) || (visibleTab.id==='qiyas-question-box' && p.qiyasAdd && p.models?.some(k=>String(k).startsWith('qiyas_simulation_'))) || (visibleTab.id==='manage-questions-box' && (p.edit||p.delete)));
-        const noticeVisible=notice && !notice.classList.contains('hidden');
-        if(adminView){
-            // إعادة تهيئة القسم الحالي أيضاً لتحديث النماذج المسموح بها فوراً.
-            window.openOrganizerTab(allowed && visibleTab ? visibleTab.id : defaultOrganizerTab(p));
+        const isAllowed = tab => tab && ((tab.id==='add-question-box' && p.add) || (tab.id==='qiyas-question-box' && p.qiyasAdd && p.models?.some(k=>String(k).startsWith('qiyas_simulation_'))) || (tab.id==='manage-questions-box' && (p.edit||p.delete)));
+        // بعد تحديث الصفحة قد لا يكون هناك تبويب منظم محدد؛ افتح أول تبويب مسموح.
+        if(adminView?.classList.contains('active-view') && (!visibleTab || !isAllowed(visibleTab) || changed)){
+            window.openOrganizerTab(isAllowed(visibleTab) ? visibleTab.id : defaultOrganizerTab(p));
         }
     }
 
@@ -4227,7 +4231,24 @@ function authSlide(to){
     };
     function startPresence(){
         if(heartbeatTimer) clearInterval(heartbeatTimer);
-        if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
+        if(sessionStorage.getItem('sessionUserRole') === 'organizer'){
+            // استعادة واجهة المنظم الصحيحة بعد تحديث الصفحة، قبل ترك أي تبويب افتراضي ظاهر.
+            setTimeout(()=>{
+                if(sessionStorage.getItem('sessionUserRole') !== 'organizer') return;
+                window.sendOrganizerPresence();
+                const cached=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');
+                if(!organizerHasAnyPermission(cached)){
+                    document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));
+                    const notice=document.getElementById('organizer-no-permissions-box');
+                    if(notice){notice.classList.remove('hidden');notice.style.display='flex';}
+                    const welcome=document.getElementById('admin-welcome');
+                    if(welcome) welcome.classList.add('hidden');
+                } else if(document.getElementById('admin-dashboard')?.classList.contains('active-view')) {
+                    const current=[...document.querySelectorAll('.admin-tab-content')].find(el=>!el.classList.contains('hidden'));
+                    if(!current || current.id==='organizer-no-permissions-box') window.openOrganizerTab(defaultOrganizerTab(cached));
+                }
+            },450);
+        }
         // مزامنة الصلاحيات كل 4 ثوانٍ، دون تحديث الصفحة أو تسجيل الخروج.
         heartbeatTimer = setInterval(()=>{
             if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
