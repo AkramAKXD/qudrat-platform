@@ -354,10 +354,16 @@ app.post('/api/organizer/presence', async (req, res) => {
         const user = await getAppUser(req);
         if (!user || user.role !== 'organizer') return res.status(401).json({success:false});
         organizerPresence.set(user.email, Date.now());
-        res.set('Cache-Control', 'no-store');
-        // إعادة الصلاحيات الحالية من قاعدة البيانات مع كل نبضة اتصال؛
-        // حتى تصل أي تعديلات من المشرف للمنظم دون إعادة تسجيل الدخول.
-        return res.json({success:true, role:user.role, organizerPermissions:user.organizerPermissions || {add:false,edit:false,delete:false,qiyasAdd:false,models:[]}});
+        // Return the latest permissions on every heartbeat so an already logged-in
+        // organizer receives admin changes without refreshing or signing out.
+        const freshUser = await User.findById(user._id).select('role organizerPermissions').lean();
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        return res.json({
+            success:true,
+            role:freshUser?.role || user.role,
+            organizerPermissions:freshUser?.organizerPermissions || {add:false,edit:false,delete:false,qiyasAdd:false,models:[]}
+        });
     } catch (e) { return res.status(500).json({success:false}); }
 });
 app.post('/api/logout', async (req, res) => {
