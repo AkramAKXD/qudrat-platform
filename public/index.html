@@ -1407,6 +1407,16 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
 })();
 </script>
 
+<style id="qimma-organizer-sync-style">
+html.qimma-organizer-session #admin-dashboard .admin-tab-content{visibility:hidden!important;}
+html.qimma-organizer-session #organizer-permissions-loading{display:flex!important;}
+#organizer-permissions-loading{display:none;min-height:260px;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:34px 20px;margin:12px 0 22px;border:1px solid #dbeafe;border-radius:22px;background:linear-gradient(135deg,#f8fbff,#eef6ff);color:#123b48;text-align:center;}
+#organizer-permissions-loading .qimma-sync-spinner{width:42px;height:42px;border:4px solid #dbeafe;border-top-color:#0f766e;border-radius:50%;animation:qimmaSyncSpin .8s linear infinite;}
+@keyframes qimmaSyncSpin{to{transform:rotate(360deg)}}
+html.qimma-organizer-session.qimma-organizer-ready #admin-dashboard .admin-tab-content{visibility:visible!important;}
+html.qimma-organizer-session.qimma-organizer-ready #organizer-permissions-loading{display:none!important;}
+</style>
+<script>(function(){try{if(sessionStorage.getItem('sessionUserRole')==='organizer')document.documentElement.classList.add('qimma-organizer-session');}catch(e){}})();</script>
 </head>
 <body id="appBody">
 
@@ -1808,6 +1818,7 @@ button.qimma-uiverse-delete:focus-visible{outline:3px solid #fca5a5!important;ou
             </div>
 
             <div id="admin-dashboard" class="app-section">
+                <div id="organizer-permissions-loading" role="status" aria-live="polite"><div class="qimma-sync-spinner"></div><strong style="font-size:18px">جارٍ تحديث الصلاحيات</strong><span style="color:#64748b;font-size:14px">لحظات ونجهّز الواجهة المسموح بها لك...</span></div>
                 <h1 id="admin-welcome">لوحة تحكم المشرف 👑</h1>
                 
                 <div id="add-custom-model-box" class="admin-tab-content hidden" style="background: #f1f5f9; padding: 22px; border-radius: 18px; margin-bottom: 20px;">
@@ -4190,6 +4201,12 @@ function authSlide(to){
         const previous = sessionStorage.getItem('organizerPermissions') || '{}';
         const next = JSON.stringify(p);
         const changed = previous !== next;
+        const root=document.documentElement;
+        const loader=document.getElementById('organizer-permissions-loading');
+        if(changed && root.classList.contains('qimma-organizer-ready')){
+            root.classList.remove('qimma-organizer-ready');
+            if(loader) loader.style.display='flex';
+        }
         sessionStorage.setItem('organizerPermissions', next);
         const addLink=document.getElementById('organizer-add-link');
         const qiyasLink=document.getElementById('organizer-qiyas-add-link');
@@ -4203,57 +4220,65 @@ function authSlide(to){
         const adminView=document.getElementById('admin-dashboard');
         if(welcome){welcome.textContent='لوحة تحكم المنظم';welcome.classList.toggle('hidden',!organizerHasAnyPermission(p));}
 
-        // لا نسمح بظهور تبويب افتراضي (مثل إضافة الأسئلة) إذا لم توجد أي صلاحية.
         if(!organizerHasAnyPermission(p)){
-            document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));
+            document.querySelectorAll('#admin-dashboard .admin-tab-content').forEach(el=>el.classList.add('hidden'));
             if(notice){notice.classList.remove('hidden');notice.style.display='flex';}
+            root.classList.add('qimma-organizer-ready');
+            if(loader) loader.style.display='none';
             return;
         }
         if(notice){notice.classList.add('hidden');notice.style.display='none';}
 
-        const visibleTab=[...document.querySelectorAll('.admin-tab-content')].find(el=>!el.classList.contains('hidden') && el.id!=='organizer-no-permissions-box');
+        const visibleTab=[...document.querySelectorAll('#admin-dashboard .admin-tab-content')].find(el=>!el.classList.contains('hidden') && el.id!=='organizer-no-permissions-box');
         const isAllowed = tab => tab && ((tab.id==='add-question-box' && p.add) || (tab.id==='qiyas-question-box' && p.qiyasAdd && p.models?.some(k=>String(k).startsWith('qiyas_simulation_'))) || (tab.id==='manage-questions-box' && (p.edit||p.delete)));
-        // بعد تحديث الصفحة قد لا يكون هناك تبويب منظم محدد؛ افتح أول تبويب مسموح.
         if(adminView?.classList.contains('active-view') && (!visibleTab || !isAllowed(visibleTab) || changed)){
             window.openOrganizerTab(isAllowed(visibleTab) ? visibleTab.id : defaultOrganizerTab(p));
         }
+        root.classList.add('qimma-organizer-ready');
+        if(loader) loader.style.display='none';
     }
 
     window.sendOrganizerPresence = async function(){
         if(sessionStorage.getItem('sessionUserRole') !== 'organizer' || !sessionStorage.getItem('sessionUserEmail') || syncingPermissions) return;
+        const root=document.documentElement;
+        root.classList.add('qimma-organizer-session');
+        if(!root.classList.contains('qimma-organizer-ready')){
+            const loader=document.getElementById('organizer-permissions-loading');
+            if(loader) loader.style.display='flex';
+        }
         syncingPermissions = true;
         try {
             const response=await fetch('/api/organizer/presence',{method:'POST',cache:'no-store',headers:{'Cache-Control':'no-cache'}});
             if(!response.ok) return;
             const data=await response.json();
             if(data.success && data.role==='organizer') applyFreshOrganizerPermissions(data.organizerPermissions);
-        } catch(e) {} finally { syncingPermissions=false; }
+        } catch(e) {
+            if(!document.documentElement.classList.contains('qimma-organizer-ready')){
+                try{applyFreshOrganizerPermissions(JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}'));}catch(_){applyFreshOrganizerPermissions({});}
+            }
+        } finally { syncingPermissions=false; }
     };
     function startPresence(){
         if(heartbeatTimer) clearInterval(heartbeatTimer);
         if(sessionStorage.getItem('sessionUserRole') === 'organizer'){
-            // استعادة واجهة المنظم الصحيحة بعد تحديث الصفحة، قبل ترك أي تبويب افتراضي ظاهر.
-            setTimeout(()=>{
-                if(sessionStorage.getItem('sessionUserRole') !== 'organizer') return;
-                window.sendOrganizerPresence();
-                const cached=JSON.parse(sessionStorage.getItem('organizerPermissions')||'{}');
-                if(!organizerHasAnyPermission(cached)){
-                    document.querySelectorAll('.admin-tab-content').forEach(el=>el.classList.add('hidden'));
-                    const notice=document.getElementById('organizer-no-permissions-box');
-                    if(notice){notice.classList.remove('hidden');notice.style.display='flex';}
-                    const welcome=document.getElementById('admin-welcome');
-                    if(welcome) welcome.classList.add('hidden');
-                } else if(document.getElementById('admin-dashboard')?.classList.contains('active-view')) {
-                    const current=[...document.querySelectorAll('.admin-tab-content')].find(el=>!el.classList.contains('hidden'));
-                    if(!current || current.id==='organizer-no-permissions-box') window.openOrganizerTab(defaultOrganizerTab(cached));
-                }
-            },450);
+            const root=document.documentElement;
+            root.classList.add('qimma-organizer-session');
+            root.classList.remove('qimma-organizer-ready');
+            const loader=document.getElementById('organizer-permissions-loading');
+            if(loader) loader.style.display='flex';
+            // اخفِ أي تبويب افتراضي فوراً، ثم اعرض الواجهة بعد وصول الصلاحيات المؤكدة من الخادم.
+            document.querySelectorAll('#admin-dashboard .admin-tab-content').forEach(el=>el.classList.add('hidden'));
+            const notice=document.getElementById('organizer-no-permissions-box');
+            if(notice){notice.classList.add('hidden');notice.style.display='none';}
+            window.sendOrganizerPresence();
+        } else {
+            document.documentElement.classList.remove('qimma-organizer-session','qimma-organizer-ready');
         }
-        // مزامنة الصلاحيات كل 4 ثوانٍ، دون تحديث الصفحة أو تسجيل الخروج.
         heartbeatTimer = setInterval(()=>{
             if(sessionStorage.getItem('sessionUserRole') === 'organizer') window.sendOrganizerPresence();
         },4000);
     }
+
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',startPresence);
     else startPresence();
 
