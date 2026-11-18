@@ -78,7 +78,10 @@ const questionSchema = new mongoose.Schema({
     question: String,
     options: [String],
     correct_answer: String,
-    image: String
+    image: String,
+    createdBy: { type: String, lowercase: true, index: true },
+    createdByName: String,
+    createdAt: { type: Date, default: Date.now, index: true }
 });
 const Question = mongoose.model('Question', questionSchema);
 
@@ -109,6 +112,15 @@ const attemptSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now, index: true }
 });
 const Attempt = mongoose.models.Attempt || mongoose.model('Attempt', attemptSchema);
+
+const organizerNoticeSchema = new mongoose.Schema({
+    organizerEmail: { type: String, required: true, lowercase: true, index: true },
+    message: { type: String, required: true, maxlength: 3000 },
+    createdAt: { type: Date, default: Date.now },
+    viewedAt: { type: Date, default: null },
+    expiresAt: { type: Date, default: null }
+});
+const OrganizerNotice = mongoose.models.OrganizerNotice || mongoose.model('OrganizerNotice', organizerNoticeSchema);
 
 // ==================== إنشاء حساب المشرف ====================
 
@@ -199,11 +211,15 @@ function setAppSession(res, user) {
 }
 // تتبع اتصال المنظمين: تنتهي حالة الاتصال تلقائياً إذا توقف إرسال النبضات.
 const organizerPresence = new Map();
+const organizerLastSeen = new Map();
+const organizerOfflineSince = new Map();
 const ORGANIZER_PRESENCE_TTL_MS = 45 * 1000;
+const ORGANIZER_STATS_DELAY_MS = 60 * 1000;
+const ORGANIZER_NOTICE_RETENTION_MS = 5 * 24 * 60 * 60 * 1000;
 function cleanOrganizerPresence() {
     const now = Date.now();
     for (const [email, lastSeen] of organizerPresence) {
-        if (now - lastSeen > ORGANIZER_PRESENCE_TTL_MS) organizerPresence.delete(email);
+        if (now - lastSeen > ORGANIZER_PRESENCE_TTL_MS) { organizerPresence.delete(email); organizerLastSeen.set(email, lastSeen); if(!organizerOfflineSince.has(email)) organizerOfflineSince.set(email, lastSeen); }
     }
 }
 function clearAppSession(res) {
@@ -353,7 +369,10 @@ app.post('/api/organizer/presence', async (req, res) => {
     try {
         const user = await getAppUser(req);
         if (!user || user.role !== 'organizer') return res.status(401).json({success:false});
-        organizerPresence.set(user.email, Date.now());
+        const heartbeatAt = Date.now();
+        organizerPresence.set(user.email, heartbeatAt);
+        organizerLastSeen.set(user.email, heartbeatAt);
+        organizerOfflineSince.delete(user.email);
         // Return the latest permissions on every heartbeat so an already logged-in
         // organizer receives admin changes without refreshing or signing out.
         const freshUser = await User.findById(user._id).select('role organizerPermissions').lean();
@@ -369,7 +388,7 @@ app.post('/api/organizer/presence', async (req, res) => {
 app.post('/api/logout', async (req, res) => {
     try {
         const user = await getAppUser(req);
-        if (user?.role === 'organizer') organizerPresence.delete(user.email);
+        if (user?.role === 'organizer') { organizerPresence.delete(user.email); organizerLastSeen.set(user.email, Date.now()); organizerOfflineSince.set(user.email, Date.now()); }
     } catch (e) {}
     clearAppSession(res);
     res.json({success:true});
@@ -624,8 +643,12 @@ app.post('/api/add-question', async (req, res) => {
 
         const count = await Question.countDocuments();
 
+        const creator = await getAppUser(req);
         await Question.create({
             id: count > 0 ? count + 1 : 1,
+            createdBy: creator?.role === 'organizer' ? creator.email : undefined,
+            createdByName: creator?.role === 'organizer' ? creator.name : undefined,
+            createdAt: new Date(),
             section: section || 'quant',
             type: type || 'practice',
             model: modelNum,
@@ -1124,8 +1147,59 @@ app.post('/api/admin/edit-model-full', async (req, res) => {
 async function requireMainAdmin(req,res){const u=await getAppUser(req);if(!u||u.role!=='admin'){res.status(403).json({success:false,message:'هذه العملية للمشرف فقط.'});return null;}return u;}
 app.post('/api/admin/organizer/grant', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user)return res.status(404).json({success:false,message:'البريد غير مسجل في المنصة.'});if(user.role==='admin')return res.status(400).json({success:false,message:'لا يمكن تغيير حساب المشرف إلى منظم.'});user.role='organizer';user.organizerPermissions={add:false,edit:false,delete:false,qiyasAdd:false,models:[]};await user.save();res.json({success:true,message:`تم منح صلاحية المنظم لـ ${user.name}`,user:{name:user.name,email:user.email}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر منح الصلاحية.'});}});
 app.post('/api/admin/organizer/revoke', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email});if(!user||user.role!=='organizer')return res.status(404).json({success:false,message:'المنظم غير موجود.'});user.role='student';user.organizerPermissions={add:false,edit:false,delete:false,qiyasAdd:false,models:[]};await user.save();res.json({success:true,message:`تم سحب صلاحيات المنظم من ${user.name}.`});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر سحب الصلاحية.'});}});
-app.post('/api/admin/organizers', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;cleanOrganizerPresence();const users=await User.find({role:'organizer'}).select('name email organizerPermissions').lean();res.set('Cache-Control','no-store');res.json({success:true,users:users.map(u=>({...u,isOnline:organizerPresence.has(u.email)}))});}catch(e){res.status(500).json({success:false,message:'تعذر تحميل المنظمين.'});}});
+app.post('/api/admin/organizers', async (req,res)=>{try{
+    if(!await requireMainAdmin(req,res))return;
+    cleanOrganizerPresence();
+    const users=await User.find({role:'organizer'}).select('name email organizerPermissions').lean();
+    const modelDocs=await CustomModel.find({}).select('key name').lean();
+    const modelNames=Object.fromEntries(modelDocs.map(m=>[m.key,m.name]));
+    const stats=await Question.aggregate([
+        {$match:{createdBy:{$in:users.map(u=>u.email)}}},
+        {$group:{_id:{email:'$createdBy',modelKey:{$cond:[{$eq:['$type','qiyas_simulation']},{$concat:['qiyas_simulation_',{$toString:'$model'}]},{$concat:['$section','_','$type','_',{$toString:'$model'}]}]}},count:{$sum:1},lastAdded:{$max:'$createdAt'}}},
+        {$sort:{'_id.email':1,count:-1}}
+    ]);
+    const byEmail={};
+    for(const row of stats){const email=row._id.email;if(!byEmail[email])byEmail[email]={total:0,models:[],lastAdded:null};byEmail[email].total+=row.count;byEmail[email].models.push({key:row._id.modelKey,name:modelNames[row._id.modelKey]||row._id.modelKey,count:row.count,lastAdded:row.lastAdded});if(!byEmail[email].lastAdded||new Date(row.lastAdded||0)>new Date(byEmail[email].lastAdded))byEmail[email].lastAdded=row.lastAdded;}
+    const now=Date.now();
+    const enriched=users.map(u=>{
+        const lastSeen=organizerLastSeen.get(u.email)||null;
+        const online=organizerPresence.has(u.email);
+        const offlineSince=online?null:(organizerOfflineSince.get(u.email)||(lastSeen?lastSeen:null));
+        const statsVisible=online || !offlineSince || now-offlineSince>=ORGANIZER_STATS_DELAY_MS;
+        return {...u,isOnline:online,workingNow:online,statsVisible,offlineForMs:offlineSince?Math.max(0,now-offlineSince):null,stats:byEmail[u.email]||{total:0,models:[],lastAdded:null}};
+    });
+    res.set('Cache-Control','no-store');res.json({success:true,users:enriched});
+}catch(e){console.error('GET organizer stats',e);res.status(500).json({success:false,message:'تعذر تحميل المنظمين.'});}});
 app.post('/api/admin/organizer/permissions', async (req,res)=>{try{if(!await requireMainAdmin(req,res))return;const email=String(req.body?.email||'').trim().toLowerCase();const user=await User.findOne({email,role:'organizer'});if(!user)return res.status(404).json({success:false,message:'حساب المنظم غير موجود.'});const p=req.body?.permissions||{};const allowed=['quant_practice','verbal_practice','quant_simulation','verbal_simulation','qiyas_simulation'];const models=Array.isArray(p.models)?[...new Set(p.models.map(String).filter(k=>allowed.some(prefix=>k.startsWith(prefix+'_'))))]:[];user.organizerPermissions={add:!!p.add,edit:!!p.edit,delete:!!p.delete,qiyasAdd:!!p.qiyasAdd,models};await user.save();res.json({success:true,message:`تم حفظ صلاحيات المنظم ${user.name}.`,user:{name:user.name,email:user.email,organizerPermissions:user.organizerPermissions}});}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر حفظ الصلاحيات.'});}});
+app.post('/api/admin/organizer/notice', async (req,res)=>{try{
+    if(!await requireMainAdmin(req,res))return;
+    const email=String(req.body?.email||'').trim().toLowerCase();
+    const message=String(req.body?.message||'').trim();
+    if(!message)return res.status(400).json({success:false,message:'اكتب الملاحظة أولاً.'});
+    if(message.length>3000)return res.status(400).json({success:false,message:'الملاحظة طويلة جداً.'});
+    const organizer=await User.findOne({email,role:'organizer'}).select('email');
+    if(!organizer)return res.status(404).json({success:false,message:'حساب المنظم غير موجود.'});
+    await OrganizerNotice.create({organizerEmail:email,message});
+    res.json({success:true,message:'تم إرسال الملاحظة إلى المنظم.'});
+}catch(e){console.error(e);res.status(500).json({success:false,message:'تعذر إرسال الملاحظة.'});}});
+app.get('/api/organizer/notices', async (req,res)=>{try{
+    const user=await getAppUser(req);
+    if(!user||user.role!=='organizer')return res.status(403).json({success:false,message:'هذه الخدمة للمنظم فقط.'});
+    const now=new Date();
+    await OrganizerNotice.deleteMany({organizerEmail:user.email,viewedAt:{$ne:null},expiresAt:{$lte:now}});
+    const notices=await OrganizerNotice.find({organizerEmail:user.email,$or:[{viewedAt:null},{expiresAt:{$gt:now}}]}).sort({createdAt:-1}).lean();
+    res.set('Cache-Control','no-store');res.json({success:true,notices});
+}catch(e){res.status(500).json({success:false,message:'تعذر تحميل الإشعارات.'});}});
+app.post('/api/organizer/notices/read', async (req,res)=>{try{
+    const user=await getAppUser(req);
+    if(!user||user.role!=='organizer')return res.status(403).json({success:false});
+    const id=String(req.body?.id||'');
+    const notice=await OrganizerNotice.findOne({_id:id,organizerEmail:user.email});
+    if(!notice)return res.status(404).json({success:false});
+    if(!notice.viewedAt){notice.viewedAt=new Date();notice.expiresAt=new Date(Date.now()+ORGANIZER_NOTICE_RETENTION_MS);await notice.save();}
+    res.json({success:true});
+}catch(e){res.status(500).json({success:false});}});
+
 
 // ==================== جلب المستخدمين للمشرف ====================
 
