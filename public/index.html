@@ -523,7 +523,17 @@ button[onclick*="confirmDelete"]:hover,button[onclick*="delete" i]:hover,button[
 }
 @media(prefers-reduced-motion:reduce){.secondary-cta::before,.model-btn::before,.qimma-perm-option input,.bulk-question-check{transition:none!important}}
 
-</style>
+
+        .qimma-notice-reply{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0}
+        .qimma-notice-reply textarea{min-height:86px;resize:vertical}
+        .qimma-notice-reply button{width:auto;margin-top:8px;padding:9px 18px}
+        .organizer-reply-badge{display:inline-flex;align-items:center;gap:7px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:8px 12px;font-weight:800;font-size:12px;cursor:pointer;margin-top:8px}
+        .organizer-reply-badge.unread{background:#fee2e2;color:#991b1b;border-color:#fecaca;animation:qimmaReplyPulse 1.8s infinite}
+        @keyframes qimmaReplyPulse{50%{box-shadow:0 0 0 5px rgba(239,68,68,.10)}}
+        #organizer-reply-view-modal{position:fixed;inset:0;z-index:12000;background:rgba(10,30,38,.62);display:none;align-items:center;justify-content:center;padding:18px}
+        #organizer-reply-view-modal.active{display:flex}
+        #organizer-reply-view-modal .reply-view-card{background:#fff;border-radius:20px;padding:24px;width:min(560px,100%);box-shadow:0 24px 70px rgba(0,0,0,.2)}
+.qimma-notice-reply{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0}.qimma-notice-reply textarea{min-height:86px;resize:vertical}.qimma-notice-reply button{width:auto;margin-top:8px;padding:9px 18px}.organizer-reply-badge{display:inline-flex;align-items:center;gap:7px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:8px 12px;font-weight:800;font-size:12px;cursor:pointer;margin-top:8px}.organizer-reply-badge.unread{background:#fee2e2;color:#991b1b;border-color:#fecaca;animation:qimmaReplyPulse 1.8s infinite}@keyframes qimmaReplyPulse{50%{box-shadow:0 0 0 5px rgba(239,68,68,.10)}}#organizer-reply-view-modal{position:fixed;inset:0;z-index:12000;background:rgba(10,30,38,.62);display:none;align-items:center;justify-content:center;padding:18px}#organizer-reply-view-modal.active{display:flex}#organizer-reply-view-modal .reply-view-card{background:#fff;border-radius:20px;padding:24px;width:min(560px,100%);box-shadow:0 24px 70px rgba(0,0,0,.2)}</style>
 
 <style id="qimma-extra-polish">
 :root{--qm-ink:#153b35;--qm-mint:#19b88a;--qm-gold:#e5b85c;--qm-glass:rgba(255,255,255,.88)}
@@ -2003,6 +2013,14 @@ html.qimma-organizer-session.qimma-organizer-ready #organizer-permissions-loadin
         </div>
     </div>
 
+    <div id="organizer-reply-view-modal" role="dialog" aria-modal="true" aria-labelledby="organizer-reply-view-title">
+        <div class="reply-view-card">
+            <h3 id="organizer-reply-view-title" style="color:#164e63;margin-bottom:8px">رد المنظم</h3>
+            <p id="organizer-reply-view-by" style="color:#64748b;font-size:13px;margin-bottom:12px"></p>
+            <div id="organizer-reply-view-message" style="white-space:pre-wrap;line-height:1.9;background:#f8fafc;border:1px solid #e2e8f0;border-radius:13px;padding:16px"></div>
+            <button type="button" style="margin-top:16px" onclick="closeOrganizerReplyView()">إغلاق</button>
+        </div>
+    </div>
     <script>
         let currentSectionType = ''; 
         let currentActionMode = '';   
@@ -2895,7 +2913,7 @@ html.qimma-organizer-session.qimma-organizer-ready #organizer-permissions-loadin
             try{
                 const d=await(await fetch('/api/admin/organizers',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},body:'{}'})).json();
                 if(!d.success)throw Error();
-                const users=d.users||[];const onlineCount=users.filter(u=>u.isOnline).length;
+                const users=d.users||[];await loadOrganizerReplies();const onlineCount=users.filter(u=>u.isOnline).length;
                 const countBadge=document.getElementById('organizersOnlineCount');if(countBadge)countBadge.textContent=`🟢 المتصلون الآن: ${onlineCount}`;
                 if(!users.length){box.innerHTML='<p style="text-align:center;color:#64748b;padding:20px">لا يوجد منظمون حالياً.</p>';return;}
                 box.innerHTML=users.map(u=>{
@@ -2903,7 +2921,8 @@ html.qimma-organizer-session.qimma-organizer-ready #organizer-permissions-loadin
                     const status=u.isOnline?'<span style="color:#15803d;font-weight:800">● متصل — يعمل الآن</span>':u.statsVisible?'<span style="color:#64748b;font-weight:700">● غير متصل</span>':'<span style="color:#b45309;font-weight:700">● خرج حديثاً — ستظهر الإحصائيات بعد دقيقة</span>';
                     const statsHtml=u.statsVisible?`<div id="organizer-stats-${encodeURIComponent(u.email)}" class="qimma-organizer-stats" style="display:none"><b style="color:#0f766e">📊 إحصائيات المنظم</b><div class="qimma-organizer-stats-grid"><div class="qimma-organizer-stat"><b>${Number(st.total||0)}</b>إجمالي الأسئلة المضافة</div><div class="qimma-organizer-stat"><b style="font-size:13px">${st.lastAdded?new Date(st.lastAdded).toLocaleString('ar-SA'):'—'}</b>وقت آخر سؤال</div></div><div style="margin-top:10px;font-weight:800">النماذج التي أضاف فيها أسئلة:</div>${(st.models||[]).length?(st.models||[]).map(m=>`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:7px 9px;margin-top:6px"><span>${escapeHtml(m.name)}</span><b style="color:#0f766e">${m.count} سؤال</b></div>`).join(''):'<p style="color:#64748b;margin-top:6px">لم يضف أسئلة بعد.</p>'}</div>`:'<div class="qimma-organizer-stats" style="display:none;color:#92400e">سيتم عرض إحصائيات هذا المنظم بعد مرور دقيقة على خروجه.</div>';
                     const statsButton=`<button type="button" style="background:#0f766e" onclick="toggleOrganizerStats('${encodeURIComponent(u.email)}',this)">📊 إحصائيات المنظم (${Number(st.total||0)})</button>`;
-                    return `<div class="qimma-account-row" style="display:block"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:180px"><strong>${escapeHtml(u.name)}</strong><span style="display:inline-flex;align-items:center;gap:6px;margin-right:9px;font-size:12px">${status}</span>${statsButton}<span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email)}</span><small style="color:#0f766e">الصلاحيات: ${[u.organizerPermissions?.add?'إضافة الأسئلة':'',(u.organizerPermissions?.edit||u.organizerPermissions?.delete)?'إدارة وتعديل الأسئلة':'',u.organizerPermissions?.qiyasAdd?'إضافة أسئلة قياس المحاكي':''].filter(Boolean).join('، ')||'لم تحدد بعد'}</small></div><div class="qimma-account-actions"><button type="button" onclick="openOrganizerPermissions('${encodeURIComponent(u.email)}')">الصلاحيات</button><button type="button" style="background:#7c3aed" onclick="openOrganizerNoteModal('${encodeURIComponent(u.email)}','${encodeURIComponent(u.name)}')">📝 إضافة ملاحظات</button></div></div>${statsHtml}</div>`;
+                    const replyBadge=organizerRepliesCache.filter(r=>r.organizerEmail===u.email).map(r=>`<button type="button" class="organizer-reply-badge ${r.viewedAt?'':'unread'}" onclick="openOrganizerReply('${r._id}')">✉️ ${r.viewedAt?'عرض رد المنظم':'رد جديد من المنظم'}</button>`).join('');
+                    return `<div class="qimma-account-row" style="display:block"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:180px"><strong>${escapeHtml(u.name)}</strong><span style="display:inline-flex;align-items:center;gap:6px;margin-right:9px;font-size:12px">${status}</span>${statsButton}${replyBadge}<span style="display:block;color:#64748b;font-size:13px">${escapeHtml(u.email)}</span><small style="color:#0f766e">الصلاحيات: ${[u.organizerPermissions?.add?'إضافة الأسئلة':'',(u.organizerPermissions?.edit||u.organizerPermissions?.delete)?'إدارة وتعديل الأسئلة':'',u.organizerPermissions?.qiyasAdd?'إضافة أسئلة قياس المحاكي':''].filter(Boolean).join('، ')||'لم تحدد بعد'}</small></div><div class="qimma-account-actions"><button type="button" onclick="openOrganizerPermissions('${encodeURIComponent(u.email)}')">الصلاحيات</button><button type="button" style="background:#7c3aed" onclick="openOrganizerNoteModal('${encodeURIComponent(u.email)}','${encodeURIComponent(u.name)}')">📝 إضافة ملاحظات</button></div></div>${statsHtml}</div>`;
                 }).join('');
             }catch(e){box.innerHTML='<p style="color:#b91c1c">تعذر تحميل المنظمين.</p>';}
         }
@@ -2914,7 +2933,12 @@ html.qimma-organizer-session.qimma-organizer-ready #organizer-permissions-loadin
         async function sendOrganizerNote(){const message=document.getElementById('organizer-note-message').value.trim();if(!message)return showQimmaSiteMessage('اكتب الملاحظة أولاً.','تنبيه','⚠️');try{const d=await(await fetch('/api/admin/organizer/notice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:organizerNoteTargetEmail,message})})).json();if(!d.success)return showQimmaSiteMessage(d.message||'تعذر إرسال الملاحظة.','خطأ','❌');closeOrganizerNoteModal();showQimmaSiteMessage('تم إرسال الملاحظة إلى المنظم.','تم الإرسال','✅');}catch(e){showQimmaSiteMessage('تعذر الاتصال بالخادم.','خطأ','❌');}}
         async function refreshOrganizerNoticeBadge(){if(sessionStorage.getItem('sessionUserRole')!=='organizer')return;try{const d=await(await fetch('/api/organizer/notices',{cache:'no-store'})).json();if(!d.success)return;const unread=(d.notices||[]).filter(n=>!n.viewedAt).length;const dot=document.getElementById('organizer-notice-dot');if(dot)dot.style.display=unread?'inline-flex':'none';}catch(e){}}
         async function openOrganizerNotifications(){navigateTo('organizer-notifications');}
-        async function loadOrganizerNotificationsPage(){const list=document.getElementById('organizer-notifications-page-list');if(!list)return;list.innerHTML='<p style="color:#64748b;text-align:center;padding:24px">جاري تحميل الإشعارات...</p>';try{const d=await(await fetch('/api/organizer/notices',{cache:'no-store'})).json();if(!d.success)throw Error();const notices=d.notices||[];if(!notices.length){list.innerHTML='<div class="qimma-notice-item" style="text-align:center;padding:28px">لا توجد إشعارات حالياً 🌿</div>';return;}list.innerHTML=notices.map(n=>`<article class="qimma-notice-item ${n.viewedAt?'':'unread'}"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${n.viewedAt?'📌 ملاحظة':'✨ ملاحظة جديدة'}</b><small style="color:#64748b">${new Date(n.createdAt).toLocaleString('ar-SA')}</small></div><p style="white-space:pre-wrap;margin:8px 0 0">${escapeHtml(n.message)}</p></article>`).join('');for(const n of notices.filter(x=>!x.viewedAt)){await fetch('/api/organizer/notices/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:n._id})});}await refreshOrganizerNoticeBadge();}catch(e){list.innerHTML='<p style="color:#b91c1c;text-align:center;padding:24px">تعذر تحميل الإشعارات.</p>';}}
+        async function loadOrganizerNotificationsPage(){const list=document.getElementById('organizer-notifications-page-list');if(!list)return;list.innerHTML='<p style="color:#64748b;text-align:center;padding:24px">جاري تحميل الإشعارات...</p>';try{const d=await(await fetch('/api/organizer/notices',{cache:'no-store'})).json();if(!d.success)throw Error();const notices=d.notices||[];if(!notices.length){list.innerHTML='<div class="qimma-notice-item" style="text-align:center;padding:28px">لا توجد إشعارات حالياً 🌿</div>';return;}list.innerHTML=notices.map(n=>`<article class="qimma-notice-item ${n.viewedAt?'':'unread'}"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>${n.viewedAt?'📌 ملاحظة':'✨ ملاحظة جديدة'}</b><small style="color:#64748b">${new Date(n.createdAt).toLocaleString('ar-SA')}</small></div><p style="white-space:pre-wrap;margin:8px 0 0">${escapeHtml(n.message)}</p><div class="qimma-notice-reply"><label for="organizer-reply-${n._id}">الرد على المشرف</label><textarea id="organizer-reply-${n._id}" maxlength="3000" placeholder="اكتب ردك هنا...">${escapeHtml(n.replyMessage||'')}</textarea><button type="button" onclick="sendOrganizerNoticeReply('${n._id}')">${n.replyMessage?'تحديث الرد':'إرسال الرد'} ✉️</button>${n.repliedAt?'<small style="display:block;color:#15803d;margin-top:6px">تم إرسال ردك إلى المشرف.</small>':''}</div></article>`).join('');for(const n of notices.filter(x=>!x.viewedAt)){await fetch('/api/organizer/notices/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:n._id})});}await refreshOrganizerNoticeBadge();}catch(e){list.innerHTML='<p style="color:#b91c1c;text-align:center;padding:24px">تعذر تحميل الإشعارات.</p>';}}
+        async function sendOrganizerNoticeReply(id){const field=document.getElementById('organizer-reply-'+id);const message=(field?.value||'').trim();if(!message)return showQimmaSiteMessage('اكتب الرد أولاً.','تنبيه','⚠️');try{const d=await(await fetch('/api/organizer/notices/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,message})})).json();if(!d.success)return showQimmaSiteMessage(d.message||'تعذر إرسال الرد.','خطأ','❌');showQimmaSiteMessage('تم إرسال ردك إلى المشرف.','تم الإرسال','✅');await loadOrganizerNotificationsPage();}catch(e){showQimmaSiteMessage('تعذر الاتصال بالخادم.','خطأ','❌');}}
+        let organizerRepliesCache=[];
+        async function loadOrganizerReplies(){if(sessionStorage.getItem('sessionUserRole')!=='admin')return;try{const d=await(await fetch('/api/admin/organizer/replies',{cache:'no-store'})).json();if(d.success)organizerRepliesCache=d.replies||[];}catch(e){}}
+        async function openOrganizerReply(id){const reply=organizerRepliesCache.find(r=>String(r._id)===String(id));if(!reply)return;const modal=document.getElementById('organizer-reply-view-modal');document.getElementById('organizer-reply-view-by').textContent=`من ${reply.organizerName} • ${new Date(reply.repliedAt).toLocaleString('ar-SA')}`;document.getElementById('organizer-reply-view-message').textContent=reply.message;modal.classList.add('active');if(!reply.viewedAt){try{await fetch('/api/admin/organizer/replies/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});reply.viewedAt=new Date().toISOString();}catch(e){}}}
+        function closeOrganizerReplyView(){document.getElementById('organizer-reply-view-modal')?.classList.remove('active');}
         function closeOrganizerNotifications(){navigateTo('admin');}
 
         let permissionTargetEmail='';let permissionModelsCache={};
@@ -4322,11 +4346,43 @@ function authSlide(to){
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',startPresence);
     else startPresence();
 
+    // مزامنة الردود والإشعارات دون الحاجة إلى تحديث الصفحة يدوياً.
+    setInterval(()=>{
+        if(document.hidden)return;
+        const role=sessionStorage.getItem('sessionUserRole');
+        if(role==='admin'){
+            loadOrganizerReplies();
+        }else if(role==='organizer'){
+            refreshOrganizerNoticeBadge();
+        }
+    },5000);
+
     // تحديث حالة المنظمين تلقائياً أثناء بقاء صفحة حسابات المنظمين مفتوحة لدى المشرف.
     setInterval(()=>{
         const box=document.getElementById('organizers-management-box');
         if(box && !box.classList.contains('hidden') && typeof window.loadOrganizers==='function') window.loadOrganizers();
     },15000);
+})();
+// مزامنة بنك الأسئلة بين المستخدمين تلقائياً بعد تعديلات المنظم.
+(function(){
+    let previousSnapshot='';
+    async function syncLiveQuestions(){
+        if(!sessionStorage.getItem('sessionUserEmail')||document.hidden)return;
+        try{
+            const response=await fetch('/api/questions',{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+            if(!response.ok)return;
+            const fresh=await response.json();if(!Array.isArray(fresh))return;
+            const signature=JSON.stringify(fresh);
+            if(signature===previousSnapshot)return;
+            const changed=!!previousSnapshot;previousSnapshot=signature;
+            if(typeof globalQuestionsCache!=='undefined')globalQuestionsCache=fresh;
+            if(changed&&(sessionStorage.getItem('sessionUserRole')==='admin'||sessionStorage.getItem('sessionUserRole')==='organizer')){
+                const list=document.getElementById('admin-questions-list');
+                if(list&&typeof renderAdminQuestionsForSelectedModel==='function')renderAdminQuestionsForSelectedModel();
+            }
+        }catch(e){}
+    }
+    setInterval(syncLiveQuestions,8000);syncLiveQuestions();
 })();
 </script>
 </body>
