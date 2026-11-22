@@ -118,7 +118,11 @@ const organizerNoticeSchema = new mongoose.Schema({
     message: { type: String, required: true, maxlength: 3000 },
     createdAt: { type: Date, default: Date.now },
     viewedAt: { type: Date, default: null },
-    expiresAt: { type: Date, default: null }
+    expiresAt: { type: Date, default: null },
+    replyMessage: { type: String, default: '', maxlength: 3000 },
+    repliedAt: { type: Date, default: null },
+    replyViewedAt: { type: Date, default: null },
+    replyExpiresAt: { type: Date, default: null }
 });
 const OrganizerNotice = mongoose.models.OrganizerNotice || mongoose.model('OrganizerNotice', organizerNoticeSchema);
 
@@ -1199,6 +1203,47 @@ app.post('/api/organizer/notices/read', async (req,res)=>{try{
     if(!notice.viewedAt){notice.viewedAt=new Date();notice.expiresAt=new Date(Date.now()+ORGANIZER_NOTICE_RETENTION_MS);await notice.save();}
     res.json({success:true});
 }catch(e){res.status(500).json({success:false});}});
+
+// يرسل المنظم رداً على ملاحظة المشرف المرتبطة به.
+app.post('/api/organizer/notices/reply', async (req,res)=>{try{
+    const user=await getAppUser(req);
+    if(!user||user.role!=='organizer')return res.status(403).json({success:false,message:'هذه الخدمة للمنظم فقط.'});
+    const id=String(req.body?.id||'');
+    const message=String(req.body?.message||'').trim();
+    if(!message)return res.status(400).json({success:false,message:'اكتب الرد أولاً.'});
+    if(message.length>3000)return res.status(400).json({success:false,message:'الرد طويل جداً.'});
+    const notice=await OrganizerNotice.findOne({_id:id,organizerEmail:user.email});
+    if(!notice)return res.status(404).json({success:false,message:'الإشعار غير موجود.'});
+    notice.replyMessage=message;
+    notice.repliedAt=new Date();
+    notice.replyViewedAt=null;
+    notice.replyExpiresAt=null;
+    await notice.save();
+    res.json({success:true,message:'تم إرسال ردك إلى المشرف.'});
+}catch(e){console.error('POST organizer notice reply:',e);res.status(500).json({success:false,message:'تعذر إرسال الرد.'});}});
+
+// يعرض ردود المنظمين للمشرف، ولا يبدأ عدّاد الحذف إلا عند فتح الرد.
+app.get('/api/admin/organizer/replies', async (req,res)=>{try{
+    const admin=await requireMainAdmin(req,res);if(!admin)return;
+    const now=new Date();
+    await OrganizerNotice.deleteMany({replyViewedAt:{$ne:null},replyExpiresAt:{$lte:now}});
+    const replies=await OrganizerNotice.find({replyMessage:{$nin:['',null]},$or:[{replyViewedAt:null},{replyExpiresAt:{$gt:now}}]})
+        .sort({repliedAt:-1}).lean();
+    const emails=[...new Set(replies.map(x=>x.organizerEmail))];
+    const users=await User.find({email:{$in:emails}}).select('email name').lean();
+    const names=Object.fromEntries(users.map(u=>[u.email,u.name]));
+    res.set('Cache-Control','no-store');
+    res.json({success:true,replies:replies.map(x=>({_id:x._id,organizerEmail:x.organizerEmail,organizerName:names[x.organizerEmail]||x.organizerEmail,message:x.replyMessage,repliedAt:x.repliedAt,viewedAt:x.replyViewedAt}))});
+}catch(e){console.error('GET organizer replies:',e);res.status(500).json({success:false,message:'تعذر تحميل ردود المنظمين.'});}});
+
+app.post('/api/admin/organizer/replies/read', async (req,res)=>{try{
+    const admin=await requireMainAdmin(req,res);if(!admin)return;
+    const id=String(req.body?.id||'');
+    const reply=await OrganizerNotice.findOne({_id:id,replyMessage:{$nin:['',null]}});
+    if(!reply)return res.status(404).json({success:false,message:'الرد غير موجود.'});
+    if(!reply.replyViewedAt){reply.replyViewedAt=new Date();reply.replyExpiresAt=new Date(Date.now()+3*60*1000);await reply.save();}
+    res.json({success:true,message:'تم تسجيل مشاهدة الرد.'});
+}catch(e){res.status(500).json({success:false,message:'تعذر تحديث حالة الرد.'});}});
 
 
 // ==================== جلب المستخدمين للمشرف ====================
